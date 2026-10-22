@@ -357,12 +357,15 @@ html, body {
 .drawer-backdrop {
   position: fixed;
   inset: 0;
-  background-color: rgba(0, 0, 0, 0.82);
+  background-color: rgba(0, 0, 0, 0.85);
   backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   z-index: 100;
   display: flex;
   justify-content: flex-end;
   animation: fadeIn 180ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  touch-action: pan-y;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .drawer-panel {
@@ -375,6 +378,7 @@ html, body {
   display: flex;
   flex-direction: column;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   animation: slideInRight var(--transition-drawer) forwards;
   z-index: 101;
 }
@@ -391,23 +395,28 @@ html, body {
   }
 
   .drawer-panel {
-    max-width: 100%;
-    height: auto;
-    max-height: 92vh;
-    border-left: none;
-    border-top: 1px solid var(--border-subtle);
-    border-radius: 20px 20px 0 0;
-    box-shadow: var(--shadow-sheet);
+    max-width: 100% !important;
+    width: 100% !important;
+    height: auto !important;
+    max-height: 90dvh !important;
+    max-height: 90vh; /* fallback */
+    border-left: none !important;
+    border-top: 1px solid var(--border-subtle) !important;
+    border-radius: 20px 20px 0 0 !important;
+    box-shadow: var(--shadow-sheet) !important;
     animation: slideInUp 260ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    padding-bottom: env(safe-area-inset-bottom, 20px);
   }
 
   .drawer-drag-handle {
     display: block;
-    width: 36px;
+    width: 40px;
     height: 4px;
-    background-color: rgba(255, 255, 255, 0.2);
+    background-color: rgba(255, 255, 255, 0.25);
     border-radius: 2px;
-    margin: 10px auto 4px;
+    margin: 10px auto 6px;
     flex-shrink: 0;
   }
 }
@@ -474,7 +483,19 @@ html, body {
   border-radius: 3px;
 }
 
-/* Form Controls */
+/* Form Controls (Strictly 16px on mobile to eliminate auto-zoom in Brave/Safari/Chrome) */
+input, select, textarea {
+  font-size: 16px !important;
+  touch-action: manipulation;
+}
+
+@media (min-width: 769px) {
+  input, select, textarea,
+  .input-luxury, .select-luxury {
+    font-size: 13.5px !important;
+  }
+}
+
 .input-luxury {
   width: 100%;
   background-color: var(--surface-elevated);
@@ -484,7 +505,6 @@ html, body {
   padding: 10px 14px;
   color: #FFFFFF;
   font-family: var(--font-sans);
-  font-size: 13.5px;
   outline: none;
   transition: all var(--transition-fast);
 }
@@ -508,13 +528,17 @@ html, body {
   padding: 10px 14px;
   color: #FFFFFF;
   font-family: var(--font-sans);
-  font-size: 13.5px;
   outline: none;
   cursor: pointer;
 }
 
 .select-luxury:focus {
   border-color: var(--border-focus);
+}
+
+/* Touch manipulation: prevents double-tap zoom on all buttons & interactive controls */
+button, a, input, select, textarea, .time-pill, .stepper-btn, .mobile-nav-item {
+  touch-action: manipulation;
 }
 
 /* Layout Utilities */

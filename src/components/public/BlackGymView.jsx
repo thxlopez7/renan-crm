@@ -6,7 +6,8 @@ import {
   Check, 
   X, 
   ChevronRight, 
-  Send
+  Send,
+  ArrowLeft
 } from 'lucide-react';
 
 export function BlackGymView() {
@@ -175,12 +176,18 @@ export function BlackGymView() {
             }}>
               <div>
                 <div className="tracking-luxury">MEMBRESÍA · BLACKGYM</div>
-                <h3 style={{ fontSize: '15px', fontWeight: 800, color: '#FFFFFF' }}>
+                <h3 style={{ fontSize: '15px', fontWeight: 800, color: '#FFFFFF', marginTop: '2px' }}>
                   {selectedPlan.name}
                 </h3>
               </div>
-              <button onClick={closeDrawer} className="btn-ghost" style={{ width: '36px', height: '36px', padding: 0, justifyContent: 'center' }}>
-                <X size={18} strokeWidth={1.5} />
+              <button 
+                onClick={closeDrawer} 
+                className="btn-secondary" 
+                style={{ padding: '6px 12px', minHeight: '34px', fontSize: '11.5px', gap: '6px', borderRadius: '4px' }}
+                aria-label="Volver a planes"
+              >
+                <ArrowLeft size={13} strokeWidth={2} />
+                <span>Volver</span>
               </button>
             </div>
 
@@ -231,10 +238,22 @@ export function BlackGymView() {
                     </div>
                   </div>
 
-                  <button type="submit" className="btn-primary" style={{ width: '100%', minHeight: '46px', marginTop: '6px' }}>
-                    <Send size={14} strokeWidth={2} />
-                    <span>Enviar Solicitud a Admisiones</span>
-                  </button>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '6px' }}>
+                    <button type="submit" className="btn-primary" style={{ width: '100%', minHeight: '46px' }}>
+                      <Send size={14} strokeWidth={2} />
+                      <span>Enviar Solicitud a Admisiones</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={closeDrawer}
+                      className="btn-ghost"
+                      style={{ width: '100%', minHeight: '38px', fontSize: '12px', color: '#A1A1AA', gap: '6px' }}
+                    >
+                      <ArrowLeft size={13} />
+                      <span>Volver a Planes</span>
+                    </button>
+                  </div>
                 </form>
               ) : (
                 <div style={{ textAlign: 'center', padding: '28px 10px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
@@ -244,11 +263,11 @@ export function BlackGymView() {
                     borderRadius: '50%', 
                     backgroundColor: 'rgba(16, 185, 129, 0.12)', 
                     border: '1.5px solid #10B981', 
-                    color: '#10B981',
+                    color: '#10B981', 
                     display: 'flex', 
                     alignItems: 'center', 
-                    justifyContent: 'center',
-                    margin: '0 auto'
+                    justifyContent: 'center', 
+                    margin: '0 auto' 
                   }}>
                     <Check size={22} strokeWidth={2.5} />
                   </div>
@@ -263,8 +282,13 @@ export function BlackGymView() {
                       Coordinaremos tu acceso y entrega de credenciales en el club.
                     </p>
                   </div>
-                  <button onClick={closeDrawer} className="btn-secondary" style={{ width: '100%', minHeight: '42px' }}>
-                    Finalizar
+                  <button 
+                    onClick={closeDrawer} 
+                    className="btn-primary" 
+                    style={{ width: '100%', minHeight: '44px', gap: '8px' }}
+                  >
+                    <ArrowLeft size={14} />
+                    <span>Volver a BlackGym</span>
                   </button>
                 </div>
               )}

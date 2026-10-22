@@ -103,7 +103,7 @@ El archivo [supabase_schema.sql](supabase_schema.sql) contiene la estructura com
 ## 📱 Unidades del Sistema
 
 1. **Portal Público (Mobile-First):**
-   - **Pádel:** Grilla interactiva de turnos de 1 hora por cancha y acceso a concierge.
+   - **Pádel:** Grilla interactiva de turnos de 1 hora por cancha, reservas y contacto directo.
    - **BlackGym:** Información de membrecías, horarios y equipamiento biostrength.
    - **BlackTeam:** Academia y entrenadores certificados (Alejandro Benítez, Santiago Morales).
    - **Circuito:** Calendario de torneos y eventos deportivos.

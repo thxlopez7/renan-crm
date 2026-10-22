@@ -7,7 +7,8 @@ import {
   UtensilsCrossed, 
   Plus, 
   ExternalLink,
-  Phone
+  Phone,
+  ArrowLeft
 } from 'lucide-react';
 
 export function MasterScheduleView({ onOpenPosTab }) {
@@ -499,8 +500,14 @@ export function MasterScheduleView({ onOpenPosTab }) {
                   {inspectBooking.clientName}
                 </h3>
               </div>
-              <button onClick={() => setInspectBooking(null)} className="btn-ghost" style={{ width: '36px', height: '36px', padding: 0, justifyContent: 'center' }}>
-                <X size={18} strokeWidth={1.5} />
+              <button 
+                onClick={() => setInspectBooking(null)} 
+                className="btn-secondary" 
+                style={{ padding: '6px 12px', minHeight: '34px', fontSize: '11.5px', gap: '6px', borderRadius: '4px' }}
+                aria-label="Volver a la agenda"
+              >
+                <ArrowLeft size={13} strokeWidth={2} />
+                <span>Volver</span>
               </button>
             </div>
 
@@ -575,6 +582,16 @@ export function MasterScheduleView({ onOpenPosTab }) {
                 }
                 return null;
               })()}
+
+              <button
+                type="button"
+                onClick={() => setInspectBooking(null)}
+                className="btn-ghost"
+                style={{ width: '100%', minHeight: '42px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontSize: '12.5px' }}
+              >
+                <ArrowLeft size={14} />
+                <span>Volver a la Agenda</span>
+              </button>
             </div>
           </div>
         </div>
@@ -595,9 +612,20 @@ export function MasterScheduleView({ onOpenPosTab }) {
                   {createSlotData.court.name}
                 </h3>
               </div>
-              <button onClick={() => setCreateSlotData(null)} className="btn-ghost" style={{ width: '36px', height: '36px', padding: 0, justifyContent: 'center' }}>
-                <X size={18} strokeWidth={1.5} />
-              </button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <button 
+                  onClick={() => setCreateSlotData(null)} 
+                  className="btn-secondary" 
+                  style={{ padding: '6px 12px', minHeight: '34px', fontSize: '11.5px', gap: '6px', borderRadius: '4px' }}
+                  aria-label="Volver"
+                >
+                  <ArrowLeft size={13} strokeWidth={2} />
+                  <span>Volver</span>
+                </button>
+                <button onClick={() => setCreateSlotData(null)} className="btn-ghost" style={{ width: '36px', height: '36px', padding: 0, justifyContent: 'center' }}>
+                  <X size={18} strokeWidth={1.5} />
+                </button>
+              </div>
             </div>
 
             <div style={{ padding: '20px', flex: 1, overflowY: 'auto' }}>
@@ -668,6 +696,16 @@ export function MasterScheduleView({ onOpenPosTab }) {
 
                 <button type="submit" className="btn-primary" style={{ width: '100%', minHeight: '46px', marginTop: '6px' }}>
                   <span>Bloquear Turno</span>
+                </button>
+
+                <button 
+                  type="button"
+                  onClick={() => setCreateSlotData(null)}
+                  className="btn-ghost"
+                  style={{ width: '100%', minHeight: '42px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontSize: '12.5px' }}
+                >
+                  <ArrowLeft size={14} />
+                  <span>Volver a la Agenda</span>
                 </button>
               </form>
             </div>

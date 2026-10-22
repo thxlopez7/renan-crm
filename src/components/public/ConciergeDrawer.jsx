@@ -12,7 +12,8 @@ import {
   Calendar,
   Copy,
   Plus,
-  Minus
+  Minus,
+  ArrowLeft
 } from 'lucide-react';
 
 export function ConciergeDrawer({ slotData, onClose }) {
@@ -100,11 +101,12 @@ export function ConciergeDrawer({ slotData, onClose }) {
           </div>
           <button 
             onClick={onClose}
-            className="btn-ghost"
-            style={{ width: '36px', height: '36px', padding: 0, justifyContent: 'center' }}
-            aria-label="Cerrar"
+            className="btn-secondary"
+            style={{ padding: '6px 12px', minHeight: '34px', fontSize: '11.5px', gap: '6px', borderRadius: '4px' }}
+            aria-label="Volver a la grilla de turnos"
           >
-            <X size={18} strokeWidth={1.5} />
+            <ArrowLeft size={13} strokeWidth={2} />
+            <span>Volver</span>
           </button>
         </div>
 
@@ -335,14 +337,26 @@ export function ConciergeDrawer({ slotData, onClose }) {
                   </div>
                 </div>
 
-                <button
-                  type="submit"
-                  className="btn-primary"
-                  style={{ width: '100%', minHeight: '46px', fontSize: '13.5px' }}
-                >
-                  <ShieldCheck size={16} strokeWidth={2} />
-                  <span>Confirmar & Emitir Reserva</span>
-                </button>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <button
+                    type="submit"
+                    className="btn-primary"
+                    style={{ width: '100%', minHeight: '46px', fontSize: '13.5px' }}
+                  >
+                    <ShieldCheck size={16} strokeWidth={2} />
+                    <span>Confirmar & Emitir Reserva</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    className="btn-ghost"
+                    style={{ width: '100%', minHeight: '38px', fontSize: '12px', color: '#A1A1AA', gap: '6px' }}
+                  >
+                    <ArrowLeft size={13} />
+                    <span>Volver a la Grilla de Turnos</span>
+                  </button>
+                </div>
               </div>
             </form>
           ) : (
@@ -353,12 +367,12 @@ export function ConciergeDrawer({ slotData, onClose }) {
                 height: '48px', 
                 borderRadius: '50%', 
                 backgroundColor: 'rgba(16, 185, 129, 0.12)', 
-                border: '1.5px solid #10B981',
-                color: '#34D399',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                margin: '0 auto'
+                border: '1.5px solid #10B981', 
+                color: '#34D399', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center', 
+                margin: '0 auto' 
               }}>
                 <Check size={24} strokeWidth={2.5} />
               </div>
@@ -426,9 +440,10 @@ export function ConciergeDrawer({ slotData, onClose }) {
                   type="button"
                   onClick={onClose}
                   className="btn-primary"
-                  style={{ minHeight: '42px' }}
+                  style={{ minHeight: '44px', gap: '8px' }}
                 >
-                  Cerrar
+                  <ArrowLeft size={14} />
+                  <span>Volver a la Grilla de Turnos</span>
                 </button>
               </div>
             </div>

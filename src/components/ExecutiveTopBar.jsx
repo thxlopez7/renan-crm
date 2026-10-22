@@ -13,7 +13,8 @@ import {
   Clock,
   ShieldCheck,
   LogOut,
-  UserCheck
+  UserCheck,
+  ArrowLeft
 } from 'lucide-react';
 
 export function ExecutiveTopBar({ viewMode, setViewMode }) {
@@ -264,10 +265,12 @@ export function ExecutiveTopBar({ viewMode, setViewMode }) {
 
               <button 
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="btn-ghost" 
-                style={{ width: '36px', height: '36px', padding: 0, justifyContent: 'center' }}
+                className="btn-secondary" 
+                style={{ padding: '6px 12px', height: '34px', fontSize: '11.5px', gap: '6px', borderRadius: '4px' }}
+                aria-label="Volver atrás"
               >
-                <X size={18} strokeWidth={1.5} />
+                <ArrowLeft size={13} strokeWidth={2} />
+                <span>Volver</span>
               </button>
             </div>
 
@@ -297,30 +300,39 @@ export function ExecutiveTopBar({ viewMode, setViewMode }) {
                   </div>
                 </div>
 
-                {/* Direct WhatsApp Concierge */}
+                {/* Direct WhatsApp Contact */}
                 <a
                   href="https://wa.me/595981000000"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="btn-athletic"
-                  style={{ width: '100%', minHeight: '42px', textDecoration: 'none', justifyContent: 'center' }}
+                  style={{ width: '100%', minHeight: '44px', textDecoration: 'none', justifyContent: 'center', fontSize: '13px' }}
                 >
                   <Phone size={14} strokeWidth={1.5} />
-                  <span>Contactar Concierge WhatsApp</span>
+                  <span>Contactar por WhatsApp</span>
                 </a>
 
                 {/* Staff Access Link */}
-                <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '14px', marginTop: '4px' }}>
+                <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '14px', marginTop: '4px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   <button
                     onClick={() => {
                       setIsMobileMenuOpen(false);
                       handleStaffAccess();
                     }}
                     className="btn-secondary"
-                    style={{ width: '100%', minHeight: '40px', justifyContent: 'center', gap: '8px' }}
+                    style={{ width: '100%', minHeight: '42px', justifyContent: 'center', gap: '8px' }}
                   >
                     <Building2 size={13} strokeWidth={1.5} />
                     <span>{user ? 'Ingresar a Suite CRM' : 'Acceso Staff / CRM'}</span>
+                  </button>
+
+                  <button
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="btn-ghost"
+                    style={{ width: '100%', minHeight: '38px', justifyContent: 'center', gap: '6px', fontSize: '12px', color: '#71717A' }}
+                  >
+                    <ArrowLeft size={13} />
+                    <span>Cerrar y Volver</span>
                   </button>
                 </div>
               </div>

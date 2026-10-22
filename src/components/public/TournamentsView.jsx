@@ -7,7 +7,8 @@ import {
   X, 
   ChevronRight, 
   Trophy,
-  Award
+  Award,
+  ArrowLeft
 } from 'lucide-react';
 
 export function TournamentsView() {
@@ -250,8 +251,14 @@ export function TournamentsView() {
                   {selectedTournament.title}
                 </h3>
               </div>
-              <button onClick={closeDrawer} className="btn-ghost" style={{ width: '36px', height: '36px', padding: 0, justifyContent: 'center' }}>
-                <X size={18} strokeWidth={1.5} />
+              <button 
+                onClick={closeDrawer} 
+                className="btn-secondary" 
+                style={{ padding: '6px 12px', minHeight: '34px', fontSize: '11.5px', gap: '6px', borderRadius: '4px' }}
+                aria-label="Volver a torneos"
+              >
+                <ArrowLeft size={13} strokeWidth={2} />
+                <span>Volver</span>
               </button>
             </div>
 
@@ -329,9 +336,21 @@ export function TournamentsView() {
                     </div>
                   </div>
 
-                  <button type="submit" className="btn-primary" style={{ width: '100%', minHeight: '46px', marginTop: '6px' }}>
-                    <span>Confirmar Inscripción</span>
-                  </button>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '6px' }}>
+                    <button type="submit" className="btn-primary" style={{ width: '100%', minHeight: '46px' }}>
+                      <span>Confirmar Inscripción</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={closeDrawer}
+                      className="btn-ghost"
+                      style={{ width: '100%', minHeight: '38px', fontSize: '12px', color: '#A1A1AA', gap: '6px' }}
+                    >
+                      <ArrowLeft size={13} />
+                      <span>Volver a Torneos</span>
+                    </button>
+                  </div>
                 </form>
               ) : (
                 <div style={{ textAlign: 'center', padding: '24px 10px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
@@ -341,11 +360,11 @@ export function TournamentsView() {
                     borderRadius: '50%', 
                     backgroundColor: 'rgba(16, 185, 129, 0.1)', 
                     border: '1px solid #10B981', 
-                    color: '#10B981',
+                    color: '#10B981', 
                     display: 'flex', 
                     alignItems: 'center', 
-                    justifyContent: 'center',
-                    margin: '0 auto'
+                    justifyContent: 'center', 
+                    margin: '0 auto' 
                   }}>
                     <Check size={22} strokeWidth={2.5} />
                   </div>
@@ -357,8 +376,13 @@ export function TournamentsView() {
                       Binomio: <strong>{successReg.pairName}</strong> (Categoría {successReg.category})
                     </p>
                   </div>
-                  <button onClick={closeDrawer} className="btn-primary" style={{ width: '100%', minHeight: '42px' }}>
-                    Listo
+                  <button 
+                    onClick={closeDrawer} 
+                    className="btn-primary" 
+                    style={{ width: '100%', minHeight: '44px', gap: '8px' }}
+                  >
+                    <ArrowLeft size={14} />
+                    <span>Volver a Torneos</span>
                   </button>
                 </div>
               )}

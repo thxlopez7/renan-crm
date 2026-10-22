@@ -61,7 +61,7 @@ export function PublicPortal() {
               }}
             >
               <Phone size={12} strokeWidth={1.5} />
-              <span>Concierge</span>
+              <span>Contacto</span>
             </a>
           </div>
 

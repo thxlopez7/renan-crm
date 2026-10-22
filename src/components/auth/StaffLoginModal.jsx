@@ -8,7 +8,8 @@ import {
   AlertCircle, 
   X, 
   Loader2, 
-  ShieldCheck 
+  ShieldCheck,
+  ArrowLeft
 } from 'lucide-react';
 
 export function StaffLoginModal({ isOpen, onClose, onSuccess }) {
@@ -73,7 +74,25 @@ export function StaffLoginModal({ isOpen, onClose, onSuccess }) {
           position: 'relative'
         }}
       >
-        {/* Close Button */}
+        {/* Back / Close Buttons */}
+        <button
+          onClick={onClose}
+          className="btn-secondary"
+          style={{
+            position: 'absolute',
+            top: '16px',
+            left: '16px',
+            padding: '5px 10px',
+            fontSize: '11px',
+            gap: '5px',
+            borderRadius: '4px'
+          }}
+          aria-label="Volver atrás"
+        >
+          <ArrowLeft size={13} strokeWidth={2} />
+          <span>Volver</span>
+        </button>
+
         <button
           onClick={onClose}
           className="btn-ghost"
@@ -225,28 +244,39 @@ export function StaffLoginModal({ isOpen, onClose, onSuccess }) {
             </div>
           </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="btn-primary"
-            style={{
-              width: '100%',
-              minHeight: '44px',
-              marginTop: '8px',
-              fontSize: '13px',
-              fontWeight: 700,
-              opacity: loading ? 0.75 : 1
-            }}
-          >
-            {loading ? (
-              <>
-                <Loader2 size={16} className="animate-spin" />
-                <span>Verificando credenciales...</span>
-              </>
-            ) : (
-              <span>Ingresar al CRM</span>
-            )}
-          </button>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px' }}>
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn-primary"
+              style={{
+                width: '100%',
+                minHeight: '44px',
+                fontSize: '13px',
+                fontWeight: 700,
+                opacity: loading ? 0.75 : 1
+              }}
+            >
+              {loading ? (
+                <>
+                  <Loader2 size={16} className="animate-spin" />
+                  <span>Verificando credenciales...</span>
+                </>
+              ) : (
+                <span>Ingresar al CRM</span>
+              )}
+            </button>
+
+            <button
+              type="button"
+              onClick={onClose}
+              className="btn-ghost"
+              style={{ width: '100%', minHeight: '38px', fontSize: '12px', color: '#A1A1AA', gap: '6px' }}
+            >
+              <ArrowLeft size={13} />
+              <span>Volver al Portal Público</span>
+            </button>
+          </div>
         </form>
       </div>
     </div>
