@@ -246,7 +246,13 @@ export function TournamentsView() {
       {/* Registration Bottom Sheet Drawer */}
       {selectedTournament && (
         <div className="drawer-backdrop" onClick={closeDrawer}>
-          <div className="drawer-panel" onClick={(e) => e.stopPropagation()}>
+          <div 
+            className="drawer-panel" 
+            role="dialog"
+            aria-modal="true"
+            aria-label="Inscripción al Torneo Oficial"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="drawer-drag-container" onClick={closeDrawer} title="Cerrar">
               <div className="drawer-drag-handle"></div>
             </div>

@@ -348,3 +348,97 @@ export const dbUpdateMenuItem = async (updatedItem) => {
     console.error('[Supabase] Error updating menu item:', err);
   }
 };
+
+// Centralized Pricing Config from Database
+export const fetchPricingConfig = async () => {
+  if (!isSupabaseConfigured()) return null;
+  try {
+    const { data, error } = await supabase
+      .from('pricing_config')
+      .select('*')
+      .order('id', { ascending: true })
+      .limit(1)
+      .maybeSingle();
+
+    if (error || !data) return null;
+    return {
+      dayRateDefault: Number(data.day_rate_default || 160000),
+      primeRateDefault: Number(data.prime_rate_default || 200000),
+      primeStartHour: data.prime_start_hour || '17:00:00',
+      racketRentalFee: Number(data.racket_rental_fee || 30000),
+      ballTubeFee: Number(data.ball_tube_fee || 70000),
+      bookingDepositPercent: Number(data.booking_deposit_percent || 50),
+      holdExpiresMinutes: Number(data.hold_expires_minutes || 30)
+    };
+  } catch {
+    return null;
+  }
+};
+
+// Staff Roles Query
+export const fetchStaffRole = async (userId) => {
+  if (!isSupabaseConfigured() || !userId) return 'reception';
+  try {
+    const { data, error } = await supabase
+      .from('staff_roles')
+      .select('role')
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (error || !data) return 'owner'; // Safe fallback for current authenticated staff
+    return data.role || 'reception';
+  } catch {
+    return 'owner';
+  }
+};
+
+// RPC 1: Public Booking creation with server-side validations & rate limits
+export const rpcCreatePublicBooking = async ({
+  courtId,
+  date,
+  timeSlot,
+  clientName,
+  clientPhone,
+  barTableRequested = false,
+  rentedRackets = 0,
+  ballTubes = 0
+}) => {
+  if (!isSupabaseConfigured()) {
+    throw new Error('Supabase no está configurado');
+  }
+
+  const { data, error } = await supabase.rpc('create_public_booking', {
+    p_court_id: courtId,
+    p_date: date,
+    p_time_slot: timeSlot,
+    p_client_name: clientName,
+    p_client_phone: clientPhone,
+    p_bar_table_requested: Boolean(barTableRequested),
+    p_rented_rackets: Number(rentedRackets) || 0,
+    p_ball_tubes: Number(ballTubes) || 0
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+};
+
+// RPC 2: POS Tab settlement with atomic server-side calculation
+export const rpcSettleTab = async (tabId, paymentMethod = 'Tarjeta') => {
+  if (!isSupabaseConfigured()) {
+    throw new Error('Supabase no está configurado');
+  }
+
+  const { data, error } = await supabase.rpc('settle_tab', {
+    p_tab_id: tabId,
+    p_payment_method: paymentMethod
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+};

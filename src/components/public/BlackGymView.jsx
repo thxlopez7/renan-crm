@@ -177,7 +177,13 @@ export function BlackGymView() {
       {/* Slide-over / Mobile Bottom Sheet Membership Application Drawer */}
       {selectedPlan && (
         <div className="drawer-backdrop" onClick={closeDrawer}>
-          <div className="drawer-panel" onClick={(e) => e.stopPropagation()}>
+          <div 
+            className="drawer-panel" 
+            role="dialog"
+            aria-modal="true"
+            aria-label="Solicitud de Membresía BlackGym"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="drawer-drag-container" onClick={closeDrawer} title="Cerrar">
               <div className="drawer-drag-handle"></div>
             </div>

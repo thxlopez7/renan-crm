@@ -18,7 +18,17 @@ import {
 } from 'lucide-react';
 
 export function ExecutiveTopBar({ viewMode, setViewMode }) {
-  const { kpis, isSupabaseLive, user, setShowAuthModal, signOutStaff } = useClub();
+  const { 
+    kpis, 
+    isSupabaseLive, 
+    user, 
+    userRole, 
+    syncStatus, 
+    pendingCount, 
+    retrySync, 
+    setShowAuthModal, 
+    signOutStaff 
+  } = useClub();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Lock background body scroll while mobile menu is open
@@ -165,8 +175,83 @@ export function ExecutiveTopBar({ viewMode, setViewMode }) {
               </button>
             </>
           ) : (
-            /* CRM ADMINISTRATIVE HEADER: Live Revenue, Occupancy, Public View Switcher & Logout */
+            /* CRM ADMINISTRATIVE HEADER: Live Revenue, Occupancy, Role & Sync Status, Public Switcher & Logout */
             <>
+              {/* Sync and Role Badges */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                {syncStatus === 'offline' ? (
+                  <span 
+                    style={{ 
+                      padding: '3px 7px', 
+                      borderRadius: '4px', 
+                      fontSize: '10px', 
+                      fontWeight: 600,
+                      backgroundColor: 'rgba(239, 68, 68, 0.15)', 
+                      color: '#F87171', 
+                      border: '1px solid rgba(239, 68, 68, 0.3)' 
+                    }}
+                    title="Modo sin conexión. Los cambios se guardan localmente y se sincronizarán al reconectar."
+                  >
+                    Offline
+                  </span>
+                ) : pendingCount > 0 ? (
+                  <button 
+                    onClick={retrySync}
+                    style={{ 
+                      padding: '3px 7px', 
+                      borderRadius: '4px', 
+                      fontSize: '10px', 
+                      fontWeight: 600,
+                      backgroundColor: 'rgba(245, 158, 11, 0.15)', 
+                      color: '#FBBF24', 
+                      border: '1px solid rgba(245, 158, 11, 0.3)',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}
+                    title="Operaciones pendientes de sincronización. Toca para reintentar."
+                  >
+                    <span>{pendingCount} pend.</span>
+                  </button>
+                ) : (
+                  <span 
+                    className="hide-mobile"
+                    style={{ 
+                      padding: '3px 7px', 
+                      borderRadius: '4px', 
+                      fontSize: '10px', 
+                      fontWeight: 600,
+                      backgroundColor: 'rgba(16, 185, 129, 0.1)', 
+                      color: '#34D399', 
+                      border: '1px solid rgba(16, 185, 129, 0.25)' 
+                    }}
+                    title="Sincronizado con Supabase en tiempo real"
+                  >
+                    En línea
+                  </span>
+                )}
+
+                {/* Staff Role Badge */}
+                <span 
+                  className="hide-mobile"
+                  style={{ 
+                    padding: '3px 7px', 
+                    borderRadius: '4px', 
+                    fontSize: '9.5px', 
+                    fontWeight: 700, 
+                    textTransform: 'uppercase', 
+                    letterSpacing: '0.06em', 
+                    backgroundColor: userRole === 'owner' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(161, 161, 170, 0.1)', 
+                    color: userRole === 'owner' ? '#FFFFFF' : '#A1A1AA', 
+                    border: '1px solid rgba(255, 255, 255, 0.08)' 
+                  }}
+                  title={`Rol de Staff: ${userRole === 'owner' ? 'Propietario / Admin' : 'Recepción'}`}
+                >
+                  {userRole === 'owner' ? 'Propietario' : 'Recepción'}
+                </span>
+              </div>
+
               {/* Desktop Financial Metrics */}
               <div className="hide-mobile" style={{ alignItems: 'center', gap: '14px', borderRight: '1px solid rgba(255,255,255,0.08)', paddingRight: '14px' }}>
                 <div style={{ textAlign: 'right' }}>
@@ -251,7 +336,14 @@ export function ExecutiveTopBar({ viewMode, setViewMode }) {
       {/* Mobile Drawer */}
       {isMobileMenuOpen && (
         <div className="drawer-backdrop" onClick={() => setIsMobileMenuOpen(false)}>
-          <div className="drawer-panel" onClick={(e) => e.stopPropagation()} style={{ padding: '20px' }}>
+          <div 
+            className="drawer-panel" 
+            role="dialog"
+            aria-modal="true"
+            aria-label="Menú móvil de opciones"
+            onClick={(e) => e.stopPropagation()} 
+            style={{ padding: '20px' }}
+          >
             <div className="drawer-drag-handle"></div>
 
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', paddingBottom: '12px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>

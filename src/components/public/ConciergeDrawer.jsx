@@ -90,7 +90,7 @@ export function ConciergeDrawer({ slotData, onClose }) {
     setTimeout(() => setCopiedBankData(false), 2000);
   };
 
-  const handleConfirm = (e) => {
+  const handleConfirm = async (e) => {
     e.preventDefault();
     if (!clientName.trim()) {
       setErrorMsg('Por favor ingrese el nombre del titular.');
@@ -102,7 +102,7 @@ export function ConciergeDrawer({ slotData, onClose }) {
     }
 
     try {
-      const newBooking = createBooking({
+      const newBooking = await createBooking({
         courtId: court.id,
         date,
         timeSlot,
@@ -116,8 +116,16 @@ export function ConciergeDrawer({ slotData, onClose }) {
         ballTubes
       });
       setConfirmedBooking(newBooking);
-    } catch {
-      setErrorMsg('Error al emitir la reserva. Por favor intente nuevamente.');
+    } catch (err) {
+      if (err.message && (err.message.includes('SLOT_ALREADY_BOOKED') || err.message.includes('23505') || err.code === '23505' || err.code === 'P0001')) {
+        setErrorMsg('Este turno acaba de ser reservado por otro cliente. Por favor elegí otro horario.');
+      } else if (err.message && err.message.includes('MAX_PENDING_REACHED')) {
+        setErrorMsg('Has alcanzado el límite máximo de reservas pendientes de confirmación.');
+      } else if (err.message && err.message.includes('SLOT_PAST')) {
+        setErrorMsg('No es posible reservar un turno en un horario que ya ha transcurrido.');
+      } else {
+        setErrorMsg(err.message || 'Error al emitir la reserva. Por favor intente nuevamente.');
+      }
     }
   };
 
@@ -125,6 +133,9 @@ export function ConciergeDrawer({ slotData, onClose }) {
     <div className="drawer-backdrop" onClick={onClose}>
       <div 
         className="drawer-panel" 
+        role="dialog"
+        aria-modal="true"
+        aria-label="Panel de Reserva de Cancha"
         onClick={(e) => e.stopPropagation()}
         style={{
           transform: dragY > 0 ? `translateY(${dragY}px)` : undefined,

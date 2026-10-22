@@ -200,7 +200,13 @@ export function BlackTeamView() {
       {/* Booking Drawer / Bottom Sheet */}
       {activeCoach && (
         <div className="drawer-backdrop" onClick={closeDrawer}>
-          <div className="drawer-panel" onClick={(e) => e.stopPropagation()}>
+          <div 
+            className="drawer-panel" 
+            role="dialog"
+            aria-modal="true"
+            aria-label="Reserva de Clase Particular BlackTeam"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="drawer-drag-container" onClick={closeDrawer} title="Cerrar">
               <div className="drawer-drag-handle"></div>
             </div>

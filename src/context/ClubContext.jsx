@@ -20,12 +20,26 @@ import {
   dbUpdateTabEquipment,
   dbSettleTab,
   dbUpdateCourtRate,
-  dbUpdateMenuItem
+  dbUpdateMenuItem,
+  fetchPricingConfig,
+  fetchStaffRole,
+  rpcCreatePublicBooking,
+  rpcSettleTab
 } from '../services/clubService';
 
 const ClubContext = createContext();
 
 const STORAGE_KEY = 'black_club_elite_prod_v1';
+const PENDING_QUEUE_KEY = 'black_club_pending_queue';
+
+const getInitialPendingQueue = () => {
+  try {
+    const raw = localStorage.getItem(PENDING_QUEUE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+};
 
 export function ClubProvider({ children }) {
   // Load state from localStorage or initial seed
@@ -57,7 +71,35 @@ export function ClubProvider({ children }) {
   const [isLoadingDb, setIsLoadingDb] = useState(false);
   const [user, setUser] = useState(null);
   const [session, setSession] = useState(null);
+  const [userRole, setUserRole] = useState('anon'); // 'owner' | 'reception' | 'anon'
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [pendingQueue, setPendingQueue] = useState(getInitialPendingQueue);
+  const [syncStatus, setSyncStatus] = useState(typeof navigator !== 'undefined' && navigator.onLine ? 'synced' : 'offline');
+  const [pricingConfig, setPricingConfig] = useState({
+    dayRateDefault: 160000,
+    primeRateDefault: 200000,
+    primeStartHour: '17:00:00',
+    racketRentalFee: 30000,
+    ballTubeFee: 70000,
+    bookingDepositPercent: 50,
+    holdExpiresMinutes: 30
+  });
+
+  // Fetch Pricing Config on startup
+  useEffect(() => {
+    fetchPricingConfig().then(cfg => {
+      if (cfg) setPricingConfig(cfg);
+    });
+  }, []);
+
+  // Fetch Staff Role when user changes
+  useEffect(() => {
+    if (user && user.id) {
+      fetchStaffRole(user.id).then(role => setUserRole(role));
+    } else {
+      setUserRole('anon');
+    }
+  }, [user]);
 
   // Initialize and subscribe to Supabase Auth state changes
   useEffect(() => {
@@ -103,6 +145,7 @@ export function ClubProvider({ children }) {
     }
     setUser(null);
     setSession(null);
+    setUserRole('anon');
   };
 
   // Sync data from Supabase
@@ -120,10 +163,108 @@ export function ClubProvider({ children }) {
     setIsLoadingDb(false);
   }, []);
 
-  // Connect to Supabase & Realtime updates on mount
+  // Enqueue failed or offline mutation
+  const enqueueMutation = useCallback((mutation) => {
+    const current = getInitialPendingQueue();
+    const updated = [...current, { ...mutation, enqueuedAt: Date.now() }];
+    try {
+      localStorage.setItem(PENDING_QUEUE_KEY, JSON.stringify(updated));
+    } catch {
+      // ignore
+    }
+    setPendingQueue(updated);
+    setSyncStatus(navigator.onLine ? 'pending' : 'offline');
+  }, []);
+
+  // Offline queue worker
+  const processPendingQueue = useCallback(async () => {
+    if (typeof navigator !== 'undefined' && !navigator.onLine) {
+      setSyncStatus('offline');
+      return;
+    }
+    if (!isSupabaseConfigured()) return;
+
+    const currentQueue = getInitialPendingQueue();
+    if (currentQueue.length === 0) {
+      setSyncStatus('synced');
+      return;
+    }
+
+    setSyncStatus('pending');
+    const remaining = [];
+
+    for (const item of currentQueue) {
+      try {
+        if (item.type === 'CREATE_BOOKING') {
+          await dbCreateBookingAndTab(item.bookingData, item.newBooking, item.newTab);
+        } else if (item.type === 'UPDATE_STATUS') {
+          await dbUpdateBookingStatus(item.bookingId, item.newStatus, item.depositAmount);
+        } else if (item.type === 'ADD_TAB_ITEM') {
+          await dbAddTabItem(item.tabId, item.menuItem, item.qty);
+        } else if (item.type === 'UPDATE_EQUIPMENT') {
+          await dbUpdateTabEquipment(item.tabId, item.equipment);
+        } else if (item.type === 'SETTLE_TAB') {
+          try {
+            await rpcSettleTab(item.tabId, item.paymentMethod);
+          } catch {
+            await dbSettleTab(item.tabId, item.paymentMethod);
+          }
+        } else if (item.type === 'UPDATE_COURT_RATE') {
+          await dbUpdateCourtRate(item.courtId, item.newRate);
+        } else if (item.type === 'UPDATE_MENU_ITEM') {
+          await dbUpdateMenuItem(item.updatedItem);
+        }
+      } catch (err) {
+        console.warn('[Queue Worker] Failed mutation, retaining for retry:', item, err);
+        remaining.push(item);
+      }
+    }
+
+    try {
+      localStorage.setItem(PENDING_QUEUE_KEY, JSON.stringify(remaining));
+    } catch {
+      // ignore
+    }
+    setPendingQueue(remaining);
+    setSyncStatus(remaining.length === 0 ? 'synced' : 'pending');
+
+    if (remaining.length === 0) {
+      syncFromSupabase();
+    }
+  }, [syncFromSupabase]);
+
+  // Online / offline window listeners
+  useEffect(() => {
+    const handleOnline = () => {
+      setSyncStatus('pending');
+      processPendingQueue();
+    };
+
+    const handleOffline = () => {
+      setSyncStatus('offline');
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, [processPendingQueue]);
+
+  // Connect to Supabase & Realtime updates on mount with 400ms debounce
   useEffect(() => {
     if (isSupabaseConfigured()) {
       syncFromSupabase();
+
+      let debounceTimer = null;
+      const debouncedSync = () => {
+        if (debounceTimer) clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+          syncFromSupabase();
+        }, 400);
+      };
 
       // Subscribe to real-time changes on public schema
       const channel = supabase
@@ -132,12 +273,13 @@ export function ClubProvider({ children }) {
           'postgres_changes',
           { event: '*', schema: 'public' },
           () => {
-            syncFromSupabase();
+            debouncedSync();
           }
         )
         .subscribe();
 
       return () => {
+        if (debounceTimer) clearTimeout(debounceTimer);
         supabase.removeChannel(channel);
       };
     }
@@ -222,14 +364,97 @@ export function ClubProvider({ children }) {
   }, [data.bookings, data.tabs, data.courts, selectedDate]);
 
   // Actions
-  const createBooking = (bookingData) => {
-    const bookingCode = `BC-${Math.floor(1000 + Math.random() * 9000)}`;
-    const newBookingId = `book-${Date.now()}`;
-    const newTabId = `tab-${Date.now()}`;
+  const createBooking = async (bookingData) => {
+    const isPublicUser = !user;
 
     const court = data.courts.find(c => c.id === bookingData.courtId);
     const courtAmount = bookingData.courtAmount || (court ? court.rate : 160000);
-    const depositPaid = bookingData.depositPaid !== undefined ? bookingData.depositPaid : Math.round(courtAmount * 0.5);
+    const depositPercent = pricingConfig.bookingDepositPercent || 50;
+    const depositPaid = bookingData.depositPaid !== undefined 
+      ? bookingData.depositPaid 
+      : Math.round(courtAmount * (depositPercent / 100));
+
+    // If public user and online Supabase is available, call transactional RPC
+    if (isPublicUser && isSupabaseConfigured() && typeof navigator !== 'undefined' && navigator.onLine) {
+      try {
+        const rpcResult = await rpcCreatePublicBooking({
+          courtId: bookingData.courtId,
+          date: bookingData.date || selectedDate,
+          timeSlot: bookingData.timeSlot,
+          clientName: bookingData.clientName,
+          clientPhone: bookingData.clientPhone,
+          barTableRequested: Boolean(bookingData.barTableRequested),
+          rentedRackets: Number(bookingData.rentedRackets) || 0,
+          ballTubes: Number(bookingData.ballTubes) || 0
+        });
+
+        const newBooking = {
+          id: rpcResult.id,
+          code: rpcResult.code,
+          courtId: rpcResult.courtId,
+          date: rpcResult.date,
+          timeSlot: rpcResult.timeSlot,
+          clientName: rpcResult.clientName,
+          clientPhone: rpcResult.clientPhone,
+          category: rpcResult.category || 'Reserva Estándar',
+          status: rpcResult.status || 'Seña Pendiente',
+          courtAmount: Number(rpcResult.courtAmount),
+          depositPaid: Number(rpcResult.depositPaid),
+          barTableRequested: Boolean(rpcResult.barTableRequested),
+          rentedRackets: Number(rpcResult.rentedRackets),
+          ballTubes: Number(rpcResult.ballTubes),
+          linkedTabId: rpcResult.linkedTabId,
+          createdAt: rpcResult.createdAt || new Date().toLocaleTimeString('es-PY', { hour: '2-digit', minute: '2-digit' })
+        };
+
+        const newTab = {
+          id: rpcResult.linkedTabId,
+          linkedBookingId: rpcResult.id,
+          courtId: rpcResult.courtId,
+          courtName: court ? court.name : 'Cancha del Club',
+          clientName: rpcResult.clientName,
+          courtAmount: Number(rpcResult.courtAmount),
+          depositPaid: Number(rpcResult.depositPaid),
+          racketCount: Number(rpcResult.rentedRackets),
+          racketUnitFee: pricingConfig.racketRentalFee || 30000,
+          ballTubeCount: Number(rpcResult.ballTubes),
+          ballTubeUnitFee: pricingConfig.ballTubeFee || 70000,
+          items: [],
+          status: 'open',
+          activityStatus: 'en_cancha',
+          paymentMethod: null,
+          barTableRequested: Boolean(rpcResult.barTableRequested),
+          openedAt: newBooking.createdAt
+        };
+
+        // Update local state immediately
+        setData(prev => ({
+          ...prev,
+          bookings: [newBooking, ...prev.bookings],
+          tabs: [newTab, ...prev.tabs]
+        }));
+
+        return newBooking;
+      } catch (err) {
+        console.error('[Public Booking RPC Error]', err);
+        if (err.message && (err.message.includes('SLOT_ALREADY_BOOKED') || err.message.includes('23505') || err.code === '23505' || err.code === 'P0001')) {
+          syncFromSupabase();
+          throw new Error('Este turno acaba de ser reservado por otro cliente. Por favor elegí otro horario.');
+        }
+        if (err.message && err.message.includes('MAX_PENDING_REACHED')) {
+          throw new Error('Has alcanzado el límite máximo de reservas pendientes de confirmación.');
+        }
+        if (err.message && err.message.includes('SLOT_PAST')) {
+          throw new Error('No es posible reservar un turno en un horario que ya ha transcurrido.');
+        }
+        throw err;
+      }
+    }
+
+    // Staff or Offline flow
+    const bookingCode = `BC-${Math.floor(1000 + Math.random() * 9000)}`;
+    const newBookingId = `book-${Date.now()}`;
+    const newTabId = `tab-${Date.now()}`;
 
     const newBooking = {
       id: newBookingId,
@@ -259,9 +484,9 @@ export function ClubProvider({ children }) {
       courtAmount,
       depositPaid,
       racketCount: Number(bookingData.rentedRackets) || 0,
-      racketUnitFee: 30000,
+      racketUnitFee: pricingConfig.racketRentalFee || 30000,
       ballTubeCount: Number(bookingData.ballTubes) || 0,
-      ballTubeUnitFee: 70000,
+      ballTubeUnitFee: pricingConfig.ballTubeFee || 70000,
       items: [],
       status: 'open',
       activityStatus: 'en_cancha',
@@ -306,8 +531,14 @@ export function ClubProvider({ children }) {
       players: updatedPlayers
     }));
 
-    // Persist to Supabase if live
-    dbCreateBookingAndTab(bookingData, newBooking, newTab);
+    // Persist to Supabase if live, or enqueue if offline
+    if (isSupabaseConfigured() && typeof navigator !== 'undefined' && navigator.onLine) {
+      dbCreateBookingAndTab(bookingData, newBooking, newTab).catch(() => {
+        enqueueMutation({ type: 'CREATE_BOOKING', bookingData, newBooking, newTab });
+      });
+    } else {
+      enqueueMutation({ type: 'CREATE_BOOKING', bookingData, newBooking, newTab });
+    }
 
     return newBooking;
   };
@@ -343,7 +574,13 @@ export function ClubProvider({ children }) {
       };
     });
 
-    dbUpdateBookingStatus(bookingId, newStatus, depositAmount);
+    if (isSupabaseConfigured() && typeof navigator !== 'undefined' && navigator.onLine) {
+      dbUpdateBookingStatus(bookingId, newStatus, depositAmount).catch(() => {
+        enqueueMutation({ type: 'UPDATE_STATUS', bookingId, newStatus, depositAmount });
+      });
+    } else {
+      enqueueMutation({ type: 'UPDATE_STATUS', bookingId, newStatus, depositAmount });
+    }
   };
 
   const addItemToTab = (tabId, menuItem, qty = 1) => {
@@ -372,7 +609,13 @@ export function ClubProvider({ children }) {
       return { ...prev, tabs: updatedTabs };
     });
 
-    dbAddTabItem(tabId, menuItem, qty);
+    if (isSupabaseConfigured() && typeof navigator !== 'undefined' && navigator.onLine) {
+      dbAddTabItem(tabId, menuItem, qty).catch(() => {
+        enqueueMutation({ type: 'ADD_TAB_ITEM', tabId, menuItem, qty });
+      });
+    } else {
+      enqueueMutation({ type: 'ADD_TAB_ITEM', tabId, menuItem, qty });
+    }
   };
 
   const updateTabItemQty = (tabId, itemId, delta) => {
@@ -411,7 +654,13 @@ export function ClubProvider({ children }) {
       return { ...prev, tabs: updatedTabs };
     });
 
-    dbUpdateTabEquipment(tabId, { racketCount, ballTubeCount });
+    if (isSupabaseConfigured() && typeof navigator !== 'undefined' && navigator.onLine) {
+      dbUpdateTabEquipment(tabId, { racketCount, ballTubeCount }).catch(() => {
+        enqueueMutation({ type: 'UPDATE_EQUIPMENT', tabId, equipment: { racketCount, ballTubeCount } });
+      });
+    } else {
+      enqueueMutation({ type: 'UPDATE_EQUIPMENT', tabId, equipment: { racketCount, ballTubeCount } });
+    }
   };
 
   const settleTab = (tabId, paymentMethod = 'Tarjeta') => {
@@ -447,7 +696,16 @@ export function ClubProvider({ children }) {
       };
     });
 
-    dbSettleTab(tabId, paymentMethod);
+    if (isSupabaseConfigured() && typeof navigator !== 'undefined' && navigator.onLine) {
+      rpcSettleTab(tabId, paymentMethod).catch((rpcErr) => {
+        console.warn('[settleTab RPC fallback to direct mutation]', rpcErr);
+        dbSettleTab(tabId, paymentMethod).catch(() => {
+          enqueueMutation({ type: 'SETTLE_TAB', tabId, paymentMethod });
+        });
+      });
+    } else {
+      enqueueMutation({ type: 'SETTLE_TAB', tabId, paymentMethod });
+    }
   };
 
   const bookCoachClass = ({ coachId, date, timeSlot, clientName, clientPhone }) => {
@@ -529,7 +787,13 @@ export function ClubProvider({ children }) {
       menuItems: prev.menuItems.map(item => item.id === updatedItem.id ? updatedItem : item)
     }));
 
-    dbUpdateMenuItem(updatedItem);
+    if (isSupabaseConfigured() && typeof navigator !== 'undefined' && navigator.onLine) {
+      dbUpdateMenuItem(updatedItem).catch(() => {
+        enqueueMutation({ type: 'UPDATE_MENU_ITEM', updatedItem });
+      });
+    } else {
+      enqueueMutation({ type: 'UPDATE_MENU_ITEM', updatedItem });
+    }
   };
 
   const updateCourtRate = (courtId, newRate) => {
@@ -538,7 +802,13 @@ export function ClubProvider({ children }) {
       courts: prev.courts.map(c => c.id === courtId ? { ...c, rate: Number(newRate) } : c)
     }));
 
-    dbUpdateCourtRate(courtId, newRate);
+    if (isSupabaseConfigured() && typeof navigator !== 'undefined' && navigator.onLine) {
+      dbUpdateCourtRate(courtId, newRate).catch(() => {
+        enqueueMutation({ type: 'UPDATE_COURT_RATE', courtId, newRate });
+      });
+    } else {
+      enqueueMutation({ type: 'UPDATE_COURT_RATE', courtId, newRate });
+    }
   };
 
   const resetToSeedData = () => {
@@ -576,6 +846,11 @@ export function ClubProvider({ children }) {
         isLoadingDb,
         user,
         session,
+        userRole,
+        syncStatus,
+        pendingCount: pendingQueue.length,
+        pricingConfig,
+        retrySync: processPendingQueue,
         isStaffAuthenticated: Boolean(user),
         showAuthModal,
         setShowAuthModal,

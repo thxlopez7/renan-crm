@@ -41,13 +41,17 @@ export function POSTerminalView({ highlightedTabId }) {
     menuItems.find(i => i.id === 'menu-10') || { id: 'menu-10', name: 'Tubo Bullpadel Pro', price: 65000 }
   ];
 
-  const handleSettle = () => {
+  const handleSettle = async () => {
     if (!currentTab) return;
-    settleTab(currentTab.id, paymentMethod);
-    setSettleSuccessMsg(true);
-    setTimeout(() => {
-      setSettleSuccessMsg(false);
-    }, 2500);
+    try {
+      await settleTab(currentTab.id, paymentMethod);
+      setSettleSuccessMsg(true);
+      setTimeout(() => {
+        setSettleSuccessMsg(false);
+      }, 2500);
+    } catch (err) {
+      console.error('[POSTerminalView] Settle error:', err);
+    }
   };
 
   return (

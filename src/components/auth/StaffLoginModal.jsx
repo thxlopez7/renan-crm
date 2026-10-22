@@ -62,6 +62,9 @@ export function StaffLoginModal({ isOpen, onClose, onSuccess }) {
     >
       <div 
         className="card-obsidian"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Acceso Exclusivo Staff y Dirección"
         onClick={(e) => e.stopPropagation()}
         style={{
           width: '100%',

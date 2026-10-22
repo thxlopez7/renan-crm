@@ -9,7 +9,8 @@ import {
 } from 'lucide-react';
 
 export function CatalogManagementView() {
-  const { courts, menuItems, updateCourtRate, updateMenuItem } = useClub();
+  const { courts, menuItems, updateCourtRate, updateMenuItem, userRole } = useClub();
+  const isOwner = userRole === 'owner';
 
   const [editingCourtId, setEditingCourtId] = useState(null);
   const [courtRateInput, setCourtRateInput] = useState('');
@@ -152,14 +153,20 @@ export function CatalogManagementView() {
                       {formatGs(court.rate)}
                     </div>
                   </div>
-                  <button
-                    onClick={() => handleStartEditCourt(court)}
-                    className="btn-ghost"
-                    style={{ minHeight: '32px', padding: '4px 10px', fontSize: '11px', border: '1px solid rgba(255,255,255,0.1)' }}
-                  >
-                    <Edit2 size={11} strokeWidth={1.5} />
-                    <span>Modificar</span>
-                  </button>
+                  {isOwner ? (
+                    <button
+                      onClick={() => handleStartEditCourt(court)}
+                      className="btn-ghost"
+                      style={{ minHeight: '32px', padding: '4px 10px', fontSize: '11px', border: '1px solid rgba(255,255,255,0.1)' }}
+                    >
+                      <Edit2 size={11} strokeWidth={1.5} />
+                      <span>Modificar</span>
+                    </button>
+                  ) : (
+                    <span style={{ fontSize: '10px', color: '#71717A', fontStyle: 'italic' }}>
+                      Tarifa Oficial
+                    </span>
+                  )}
                 </div>
               )}
             </div>
@@ -319,14 +326,18 @@ export function CatalogManagementView() {
                     </button>
                   </td>
                   <td style={{ textAlign: 'right' }}>
-                    <button
-                      onClick={() => handleStartEditItem(item)}
-                      className="btn-ghost"
-                      style={{ padding: '4px 8px', fontSize: '11px' }}
-                    >
-                      <Edit2 size={11} strokeWidth={1.5} />
-                      <span>Editar</span>
-                    </button>
+                    {isOwner ? (
+                      <button
+                        onClick={() => handleStartEditItem(item)}
+                        className="btn-ghost"
+                        style={{ padding: '4px 8px', fontSize: '11px' }}
+                      >
+                        <Edit2 size={11} strokeWidth={1.5} />
+                        <span>Editar</span>
+                      </button>
+                    ) : (
+                      <span style={{ fontSize: '10px', color: '#71717A' }}>Oficial</span>
+                    )}
                   </td>
                 </tr>
               ))}

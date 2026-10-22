@@ -502,7 +502,13 @@ export function MasterScheduleView({ onOpenPosTab }) {
       {/* Inspect / Edit Booking Bottom Sheet */}
       {inspectBooking && (
         <div className="drawer-backdrop" onClick={() => setInspectBooking(null)}>
-          <div className="drawer-panel" onClick={(e) => e.stopPropagation()}>
+          <div 
+            className="drawer-panel" 
+            role="dialog"
+            aria-modal="true"
+            aria-label="Detalle del Turno"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="drawer-drag-handle"></div>
 
             <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255, 255, 255, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#09090B' }}>
@@ -614,7 +620,13 @@ export function MasterScheduleView({ onOpenPosTab }) {
       {/* Manual Booking Creation Bottom Sheet */}
       {createSlotData && (
         <div className="drawer-backdrop" onClick={() => setCreateSlotData(null)}>
-          <div className="drawer-panel" onClick={(e) => e.stopPropagation()}>
+          <div 
+            className="drawer-panel" 
+            role="dialog"
+            aria-modal="true"
+            aria-label="Bloquear Turno Manual"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="drawer-drag-handle"></div>
 
             <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255, 255, 255, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#09090B' }}>
