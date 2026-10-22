@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useClub } from '../../context/ClubContext';
 import { formatGs, formatShortDate } from '../../utils/formatters';
+import { isSlotPast } from '../../utils/dateHelpers';
 import { ConciergeDrawer } from './ConciergeDrawer';
 import { Calendar } from 'lucide-react';
 
@@ -25,30 +26,6 @@ export function CourtsBookingView() {
       };
     });
   }, []);
-
-  // Check if a time slot has already passed
-  const isSlotPast = (slot, dateStr) => {
-    const now = new Date();
-    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-    
-    // Past date entirely
-    if (dateStr < todayStr) return true;
-    // Future date
-    if (dateStr > todayStr) return false;
-    
-    // dateStr === todayStr: compare hours
-    const startTime = slot.split(' - ')[0]; // e.g. "07:00", "17:00"
-    const [slotHour, slotMinute] = startTime.split(':').map(Number);
-    
-    const currentHour = now.getHours();
-    const currentMinute = now.getMinutes();
-    
-    // If the slot starts earlier than current hour, or same hour (already started)
-    if (slotHour < currentHour || (slotHour === currentHour && currentMinute >= 0)) {
-      return true;
-    }
-    return false;
-  };
 
   const filteredCourts = selectedCourtFilter === 'all'
     ? courts

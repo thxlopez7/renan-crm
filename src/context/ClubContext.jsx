@@ -26,6 +26,7 @@ import {
   rpcCreatePublicBooking,
   rpcSettleTab
 } from '../services/clubService';
+import { calculateTabBalances as computeTabBalances } from '../utils/financeHelpers';
 
 const ClubContext = createContext();
 
@@ -294,27 +295,8 @@ export function ClubProvider({ children }) {
     }
   }, [data]);
 
-  // Tab calculations helper
-  const calculateTabBalances = (tab) => {
-    const courtBase = tab.courtAmount || 0;
-    const depositDeduction = tab.depositPaid || 0;
-    const racketCharge = (tab.racketCount || 0) * (tab.racketUnitFee || 30000);
-    const ballTubeCharge = (tab.ballTubeCount || 0) * (tab.ballTubeUnitFee || 70000);
-    const itemsTotal = (tab.items || []).reduce((acc, item) => acc + (item.price * item.qty), 0);
-
-    const grossTotal = courtBase + racketCharge + ballTubeCharge + itemsTotal;
-    const netPending = Math.max(0, grossTotal - depositDeduction);
-
-    return {
-      courtBase,
-      depositDeduction,
-      racketCharge,
-      ballTubeCharge,
-      itemsTotal,
-      grossTotal,
-      netPending
-    };
-  };
+  // Tab calculations helper using shared finance helper
+  const calculateTabBalances = (tab) => computeTabBalances(tab, pricingConfig);
 
   // Live KPIs Calculation
   const kpis = useMemo(() => {
