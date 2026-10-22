@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useClub } from '../../context/ClubContext';
 import { formatGs } from '../../utils/formatters';
 import { 
@@ -21,6 +21,20 @@ export function TournamentsView() {
   const [phone, setPhone] = useState('');
   const [category, setCategory] = useState('');
   const [successReg, setSuccessReg] = useState(null);
+
+  // Lock background body scroll while drawer is open
+  useEffect(() => {
+    if (!selectedTournament) return;
+    const originalOverflow = document.body.style.overflow;
+    const originalTouchAction = document.body.style.touchAction;
+    document.body.style.overflow = 'hidden';
+    document.body.style.touchAction = 'none';
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      document.body.style.touchAction = originalTouchAction;
+    };
+  }, [selectedTournament]);
 
   const handleRegister = (e) => {
     e.preventDefault();
@@ -233,7 +247,9 @@ export function TournamentsView() {
       {selectedTournament && (
         <div className="drawer-backdrop" onClick={closeDrawer}>
           <div className="drawer-panel" onClick={(e) => e.stopPropagation()}>
-            <div className="drawer-drag-handle"></div>
+            <div className="drawer-drag-container" onClick={closeDrawer} title="Cerrar">
+              <div className="drawer-drag-handle"></div>
+            </div>
 
             <div style={{ 
               padding: '16px 20px', 

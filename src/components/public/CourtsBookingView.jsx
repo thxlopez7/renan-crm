@@ -26,6 +26,30 @@ export function CourtsBookingView() {
     });
   }, []);
 
+  // Check if a time slot has already passed
+  const isSlotPast = (slot, dateStr) => {
+    const now = new Date();
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    
+    // Past date entirely
+    if (dateStr < todayStr) return true;
+    // Future date
+    if (dateStr > todayStr) return false;
+    
+    // dateStr === todayStr: compare hours
+    const startTime = slot.split(' - ')[0]; // e.g. "07:00", "17:00"
+    const [slotHour, slotMinute] = startTime.split(':').map(Number);
+    
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
+    
+    // If the slot starts earlier than current hour, or same hour (already started)
+    if (slotHour < currentHour || (slotHour === currentHour && currentMinute >= 0)) {
+      return true;
+    }
+    return false;
+  };
+
   const filteredCourts = selectedCourtFilter === 'all'
     ? courts
     : courts.filter(c => c.id === selectedCourtFilter);
@@ -69,54 +93,96 @@ export function CourtsBookingView() {
         </div>
       </div>
 
-      {/* Court Filter Pills */}
-      <div style={{ 
-        display: 'flex', 
-        alignItems: 'center', 
-        gap: '6px', 
-        marginBottom: '20px', 
-        overflowX: 'auto', 
-        paddingBottom: '2px',
-        scrollbarWidth: 'none',
-        WebkitOverflowScrolling: 'touch'
-      }}>
-        <button
-          onClick={() => setSelectedCourtFilter('all')}
-          style={{
-            padding: '7px 14px',
-            fontSize: '11.5px',
-            fontWeight: 700,
-            borderRadius: '20px',
-            border: selectedCourtFilter === 'all' ? '1px solid #FFFFFF' : '1px solid rgba(255, 255, 255, 0.07)',
-            backgroundColor: selectedCourtFilter === 'all' ? '#FFFFFF' : 'transparent',
-            color: selectedCourtFilter === 'all' ? '#09090B' : '#71717A',
-            cursor: 'pointer',
-            whiteSpace: 'nowrap',
-            flexShrink: 0
-          }}
-        >
-          Todas (3)
-        </button>
-        {courts.map(c => (
+      {/* Court Filter Pills with Right Fade Indicator */}
+      <div style={{ position: 'relative', marginBottom: '14px' }}>
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: '8px', 
+          overflowX: 'auto', 
+          paddingRight: '36px',
+          paddingBottom: '2px',
+          scrollbarWidth: 'none',
+          WebkitOverflowScrolling: 'touch'
+        }}>
           <button
-            key={c.id}
-            onClick={() => setSelectedCourtFilter(c.id)}
+            onClick={() => setSelectedCourtFilter('all')}
             style={{
               padding: '7px 14px',
               fontSize: '11.5px',
               fontWeight: 700,
               borderRadius: '20px',
-              border: selectedCourtFilter === c.id ? '1px solid #FFFFFF' : '1px solid rgba(255, 255, 255, 0.07)',
-              backgroundColor: selectedCourtFilter === c.id ? '#FFFFFF' : 'transparent',
-              color: selectedCourtFilter === c.id ? '#09090B' : '#71717A',
+              border: selectedCourtFilter === 'all' ? '1px solid #FFFFFF' : '1px solid rgba(255, 255, 255, 0.08)',
+              backgroundColor: selectedCourtFilter === 'all' ? '#FFFFFF' : '#111113',
+              color: selectedCourtFilter === 'all' ? '#09090B' : '#A1A1AA',
               cursor: 'pointer',
               whiteSpace: 'nowrap',
-              flexShrink: 0
+              flexShrink: 0,
+              transition: 'all 120ms ease'
             }}
           >
-            {c.name}
+            Todas ({courts.length})
           </button>
-        ))}
+          {courts.map(c => (
+            <button
+              key={c.id}
+              onClick={() => setSelectedCourtFilter(c.id)}
+              style={{
+                padding: '7px 14px',
+                fontSize: '11.5px',
+                fontWeight: 700,
+                borderRadius: '20px',
+                border: selectedCourtFilter === c.id ? '1px solid #FFFFFF' : '1px solid rgba(255, 255, 255, 0.08)',
+                backgroundColor: selectedCourtFilter === c.id ? '#FFFFFF' : '#111113',
+                color: selectedCourtFilter === c.id ? '#09090B' : '#A1A1AA',
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+                flexShrink: 0,
+                transition: 'all 120ms ease'
+              }}
+            >
+              {c.name}
+            </button>
+          ))}
+        </div>
+        {/* Right edge fade gradient indicating horizontal scroll */}
+        <div style={{
+          position: 'absolute',
+          right: 0,
+          top: 0,
+          bottom: 0,
+          width: '32px',
+          background: 'linear-gradient(to right, transparent, rgba(9, 9, 11, 0.95))',
+          pointerEvents: 'none'
+        }} />
+      </div>
+
+      {/* Visual Status Legend */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '14px',
+        marginBottom: '18px',
+        padding: '7px 12px',
+        backgroundColor: 'rgba(255, 255, 255, 0.02)',
+        borderRadius: '6px',
+        border: '1px solid rgba(255, 255, 255, 0.05)',
+        fontSize: '11px',
+        color: '#A1A1AA',
+        flexWrap: 'wrap'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+          <span className="status-dot emerald" style={{ width: '6px', height: '6px' }}></span>
+          <span style={{ color: '#FFFFFF', fontWeight: 600 }}>Disponible</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+          <span className="status-dot muted" style={{ width: '5px', height: '5px' }}></span>
+          <span>Ocupado / Reservado</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+          <span style={{ fontSize: '10px', color: '#52525B', fontWeight: 700 }}>✕</span>
+          <span style={{ color: '#71717A' }}>Hora Pasada</span>
+        </div>
       </div>
 
       {/* Courts & Slots Section */}
@@ -128,7 +194,7 @@ export function CourtsBookingView() {
               className="card-obsidian" 
               style={{ backgroundColor: '#111113', border: '1px solid rgba(255, 255, 255, 0.07)' }}
             >
-              {/* Court Header: Shows Court Name, Specs, Total Rate & Split per Player */}
+              {/* Court Header: Shows Court Name, Specs, Total Rate */}
               <div style={{ 
                 padding: '14px 18px', 
                 borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
@@ -148,7 +214,7 @@ export function CourtsBookingView() {
                     {court.name}
                   </h3>
                   <div style={{ fontSize: '11px', color: '#71717A', marginTop: '1px' }}>
-                    {court.specs.split('·')[0]}
+                    {court.specs?.split('·')[0]}
                   </div>
                 </div>
 
@@ -159,7 +225,7 @@ export function CourtsBookingView() {
                 </div>
               </div>
 
-              {/* Clean Time Pill Grid (Zero Redundant Pricing Fluff) */}
+              {/* Clean Time Pill Grid with Real-Time Availability */}
               <div style={{ padding: '14px 16px' }}>
                 <div className="slots-grid">
                   {timeSlots.map(slot => {
@@ -168,14 +234,29 @@ export function CourtsBookingView() {
                     );
 
                     const startTime = slot.split(' - ')[0];
+                    const isPast = isSlotPast(slot, selectedDate);
+
+                    if (isPast) {
+                      return (
+                        <button
+                          key={slot}
+                          disabled
+                          className="time-pill past"
+                          title={`Turno pasado: ${slot}`}
+                        >
+                          <span>{startTime}</span>
+                          <span style={{ fontSize: '9px', color: '#52525B', lineHeight: 1 }}>✕</span>
+                        </button>
+                      );
+                    }
 
                     if (booking) {
                       return (
                         <button
                           key={slot}
                           disabled
-                          className="time-pill"
-                          title={`Ocupado (${booking.clientName})`}
+                          className="time-pill occupied"
+                          title={`Ocupado: ${slot}`}
                         >
                           <span>{startTime}</span>
                           <span className="status-dot muted" style={{ width: '4px', height: '4px' }}></span>
@@ -188,7 +269,7 @@ export function CourtsBookingView() {
                       <button
                         key={slot}
                         onClick={() => setActiveSlotData({ court, timeSlot: slot, date: selectedDate })}
-                        className="time-pill"
+                        className="time-pill available"
                         title={`Disponible: ${slot} (1 hora)`}
                       >
                         <span>{startTime}</span>
@@ -203,7 +284,7 @@ export function CourtsBookingView() {
         })}
       </div>
 
-      {/* Slide-over / Mobile Bottom Sheet Concierge Drawer */}
+      {/* Slide-over / Mobile Bottom Sheet Drawer */}
       {activeSlotData && (
         <ConciergeDrawer
           slotData={activeSlotData}

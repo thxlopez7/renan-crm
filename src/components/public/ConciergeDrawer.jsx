@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useClub } from '../../context/ClubContext';
-import { formatGs, formatFullDate } from '../../utils/formatters';
+import { formatGs, formatFullDate, formatShortDate } from '../../utils/formatters';
 import { 
   X, 
   Check, 
@@ -27,6 +27,49 @@ export function ConciergeDrawer({ slotData, onClose }) {
   const [confirmedBooking, setConfirmedBooking] = useState(null);
   const [errorMsg, setErrorMsg] = useState('');
   const [copiedBankData, setCopiedBankData] = useState(false);
+
+  // Swipe-to-dismiss gesture state
+  const [dragY, setDragY] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const touchStartY = useRef(0);
+  const currentDragY = useRef(0);
+
+  // Lock background body scroll while drawer is open (prevents iOS rubber-banding and scroll chaining)
+  useEffect(() => {
+    const originalOverflow = document.body.style.overflow;
+    const originalTouchAction = document.body.style.touchAction;
+    
+    document.body.style.overflow = 'hidden';
+    document.body.style.touchAction = 'none';
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      document.body.style.touchAction = originalTouchAction;
+    };
+  }, []);
+
+  const handleTouchStart = (e) => {
+    touchStartY.current = e.touches[0].clientY;
+    setIsDragging(true);
+  };
+
+  const handleTouchMove = (e) => {
+    const delta = e.touches[0].clientY - touchStartY.current;
+    if (delta > 0) {
+      currentDragY.current = delta;
+      setDragY(delta);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    setIsDragging(false);
+    if (currentDragY.current > 75) {
+      onClose();
+    } else {
+      setDragY(0);
+      currentDragY.current = 0;
+    }
+  };
 
   if (!slotData) return null;
 
@@ -80,19 +123,40 @@ export function ConciergeDrawer({ slotData, onClose }) {
 
   return (
     <div className="drawer-backdrop" onClick={onClose}>
-      <div className="drawer-panel" onClick={(e) => e.stopPropagation()}>
-        {/* Mobile drag handle */}
-        <div className="drawer-drag-handle"></div>
+      <div 
+        className="drawer-panel" 
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          transform: dragY > 0 ? `translateY(${dragY}px)` : undefined,
+          transition: isDragging ? 'none' : 'transform 200ms cubic-bezier(0.2, 0.9, 0.3, 1)',
+        }}
+      >
+        {/* Mobile drag handle with touch swipe to dismiss */}
+        <div 
+          className="drawer-drag-container"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          onClick={onClose}
+          title="Deslizar o tocar para cerrar"
+        >
+          <div className="drawer-drag-handle"></div>
+        </div>
 
-        {/* Header */}
-        <div style={{ 
-          padding: '16px 20px', 
-          borderBottom: '1px solid rgba(255, 255, 255, 0.07)', 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'space-between',
-          backgroundColor: '#0E0E10'
-        }}>
+        {/* Header with swipe listener */}
+        <div 
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          style={{ 
+            padding: '16px 20px', 
+            borderBottom: '1px solid rgba(255, 255, 255, 0.07)', 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'space-between',
+            backgroundColor: '#0E0E10'
+          }}
+        >
           <div>
             <div className="tracking-luxury">RESERVA DE TURNO · PÁDEL</div>
             <h2 style={{ fontSize: '15px', fontWeight: 800, color: '#FFFFFF', marginTop: '2px' }}>
@@ -235,21 +299,37 @@ export function ConciergeDrawer({ slotData, onClose }) {
                   display: 'flex', 
                   alignItems: 'center', 
                   justifyContent: 'space-between', 
-                  padding: '12px', 
+                  padding: '12px 14px', 
                   backgroundColor: barTableRequested ? 'rgba(255, 255, 255, 0.05)' : '#111113', 
                   borderRadius: '6px', 
                   border: barTableRequested ? '1px solid #FFFFFF' : '1px solid rgba(255,255,255,0.06)',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  gap: '12px'
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <UtensilsCrossed size={15} strokeWidth={1.5} color={barTableRequested ? '#FFFFFF' : '#71717A'} />
-                  <div>
-                    <div style={{ fontSize: '12.5px', fontWeight: 700, color: barTableRequested ? '#FFFFFF' : '#A1A1AA' }}>
-                      Mesa Post-Partido en BlackBar (Tercer Tiempo)
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: 0 }}>
+                  <UtensilsCrossed size={16} strokeWidth={1.5} color={barTableRequested ? '#FFFFFF' : '#71717A'} style={{ flexShrink: 0 }} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                      <span style={{ fontSize: '12.5px', fontWeight: 700, color: barTableRequested ? '#FFFFFF' : '#E4E4E7' }}>
+                        Mesa en BlackBar
+                      </span>
+                      <span style={{ 
+                        fontSize: '9.5px', 
+                        fontWeight: 700, 
+                        color: '#10B981', 
+                        backgroundColor: 'rgba(16, 185, 129, 0.12)', 
+                        border: '1px solid rgba(16, 185, 129, 0.25)', 
+                        padding: '1px 6px', 
+                        borderRadius: '4px',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.04em'
+                      }}>
+                        Sin costo adicional
+                      </span>
                     </div>
-                    <div style={{ fontSize: '10.5px', color: '#71717A' }}>
-                      Reserva de lounge gastronómico para el equipo
+                    <div style={{ fontSize: '11px', color: '#71717A', marginTop: '2px' }}>
+                      Tercer tiempo · Reserva de mesa gastronómica
                     </div>
                   </div>
                 </div>
@@ -261,7 +341,8 @@ export function ConciergeDrawer({ slotData, onClose }) {
                   backgroundColor: barTableRequested ? '#FFFFFF' : 'transparent',
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center'
+                  justifyContent: 'center',
+                  flexShrink: 0
                 }}>
                   {barTableRequested && <Check size={12} strokeWidth={3} color="#09090B" />}
                 </div>
@@ -306,6 +387,23 @@ export function ConciergeDrawer({ slotData, onClose }) {
                 <div style={{ fontSize: '11px', color: '#71717A', lineHeight: 1.4 }}>
                   Banco Itaú Paraguay · Cta Cte: <strong>720049182</strong> · Black Club Elite S.A.
                 </div>
+
+                {/* Clear Validation Feedback Callout */}
+                <div style={{ 
+                  marginTop: '10px',
+                  padding: '9px 12px', 
+                  backgroundColor: 'rgba(255, 255, 255, 0.03)', 
+                  borderRadius: '6px',
+                  border: '1px dashed rgba(255, 255, 255, 0.12)',
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '8px'
+                }}>
+                  <span style={{ fontSize: '13px', lineHeight: 1.2 }}>📲</span>
+                  <div style={{ fontSize: '11px', color: '#A1A1AA', lineHeight: 1.4 }}>
+                    <strong style={{ color: '#FFFFFF' }}>Validación Inmediata:</strong> Al confirmar, serás redirigido a WhatsApp con el resumen de la reserva para enviar tu comprobante de transferencia y validar tu reserva con recepción.
+                  </div>
+                </div>
               </div>
 
               {errorMsg && (
@@ -345,16 +443,6 @@ export function ConciergeDrawer({ slotData, onClose }) {
                   >
                     <ShieldCheck size={16} strokeWidth={2} />
                     <span>Confirmar & Emitir Reserva</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={onClose}
-                    className="btn-ghost"
-                    style={{ width: '100%', minHeight: '38px', fontSize: '12px', color: '#A1A1AA', gap: '6px' }}
-                  >
-                    <ArrowLeft size={13} />
-                    <span>Volver a la Grilla de Turnos</span>
                   </button>
                 </div>
               </div>

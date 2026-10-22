@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useClub } from '../../context/ClubContext';
 import { formatGs } from '../../utils/formatters';
 import { 
@@ -19,6 +19,20 @@ export function BlackTeamView() {
   const [clientPhone, setClientPhone] = useState('');
   const [confirmation, setConfirmation] = useState(null);
   const [errorMsg, setErrorMsg] = useState('');
+
+  // Lock background body scroll while drawer is open
+  useEffect(() => {
+    if (!activeCoach) return;
+    const originalOverflow = document.body.style.overflow;
+    const originalTouchAction = document.body.style.touchAction;
+    document.body.style.overflow = 'hidden';
+    document.body.style.touchAction = 'none';
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      document.body.style.touchAction = originalTouchAction;
+    };
+  }, [activeCoach]);
 
   const handleBookLesson = (e) => {
     e.preventDefault();
@@ -187,7 +201,9 @@ export function BlackTeamView() {
       {activeCoach && (
         <div className="drawer-backdrop" onClick={closeDrawer}>
           <div className="drawer-panel" onClick={(e) => e.stopPropagation()}>
-            <div className="drawer-drag-handle"></div>
+            <div className="drawer-drag-container" onClick={closeDrawer} title="Cerrar">
+              <div className="drawer-drag-handle"></div>
+            </div>
 
             <div style={{ 
               padding: '16px 20px', 

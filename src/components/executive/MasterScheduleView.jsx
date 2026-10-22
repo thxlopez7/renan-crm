@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useClub } from '../../context/ClubContext';
 import { formatGs, formatFullDate, formatShortDate } from '../../utils/formatters';
 import { 
@@ -27,6 +27,20 @@ export function MasterScheduleView({ onOpenPosTab }) {
   const [createSlotData, setCreateSlotData] = useState(null);
   const [mobileViewCourtId, setMobileViewCourtId] = useState(() => courts[0]?.id || 'court-1');
   const [scheduleViewMode, setScheduleViewMode] = useState('cards'); // 'cards' (mobile-first) | 'table'
+
+  // Lock background body scroll while drawer is open
+  useEffect(() => {
+    if (!inspectBooking && !createSlotData) return;
+    const originalOverflow = document.body.style.overflow;
+    const originalTouchAction = document.body.style.touchAction;
+    document.body.style.overflow = 'hidden';
+    document.body.style.touchAction = 'none';
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      document.body.style.touchAction = originalTouchAction;
+    };
+  }, [inspectBooking, createSlotData]);
 
   // Form states for manual booking
   const [newClientName, setNewClientName] = useState('');

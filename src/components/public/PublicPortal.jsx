@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useClub } from '../../context/ClubContext';
 import { CourtsBookingView } from './CourtsBookingView';
 import { BlackBarMenuView } from './BlackBarMenuView';
@@ -17,8 +17,96 @@ import {
 } from 'lucide-react';
 
 export function PublicPortal() {
-  const { kpis } = useClub();
+  const { courts, bookings } = useClub();
   const [activeTab, setActiveTab] = useState('courts');
+
+  // Real-time dynamic operational calculations
+  const padelRealtime = useMemo(() => {
+    const now = new Date();
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const currentHour = now.getHours();
+    
+    // Check bookings for today during the current hour (e.g. 17:00 - 18:00)
+    const inPlayBookings = (bookings || []).filter(b => {
+      if (b.date !== todayStr || b.status === 'Cancelada') return false;
+      const startHour = parseInt(b.timeSlot?.split(':')[0], 10);
+      return startHour === currentHour;
+    });
+
+    const inPlayCount = inPlayBookings.length;
+    const totalCourts = courts?.length || 3;
+    
+    return {
+      title: `${totalCourts} Canchas Habilitadas`,
+      subtitle: inPlayCount > 0 
+        ? `${inPlayCount} en juego · Turnos de 1h` 
+        : `Todas disponibles · Turnos de 1h`,
+      dotClass: inPlayCount > 0 ? 'emerald' : 'emerald'
+    };
+  }, [courts, bookings]);
+
+  const gymRealtime = useMemo(() => {
+    const now = new Date();
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
+    const dayOfWeek = now.getDay(); // 0 is Sunday
+    const timeDec = currentHour + currentMinute / 60;
+
+    // Sunday schedule: 08:00 - 13:00
+    if (dayOfWeek === 0) {
+      if (timeDec >= 8 && timeDec < 13) {
+        return {
+          title: 'BlackGym Abierto',
+          subtitle: 'Domingo · Cierra 13:00 hs',
+          dotClass: 'emerald'
+        };
+      }
+      return {
+        title: 'BlackGym Cerrado',
+        subtitle: 'Abre Lun a las 06:00 hs',
+        dotClass: 'muted'
+      };
+    }
+
+    // Mon - Sat schedule: 06:00 - 12:00 / 14:00 - 22:00
+    if (timeDec >= 6 && timeDec < 12) {
+      return {
+        title: 'BlackGym Abierto',
+        subtitle: 'Mañana · Cierra 12:00',
+        dotClass: 'emerald'
+      };
+    } else if (timeDec >= 12 && timeDec < 14) {
+      return {
+        title: 'BlackGym en Pausa',
+        subtitle: 'Pausa Almuerzo · Abre 14:00',
+        dotClass: 'amber'
+      };
+    } else if (timeDec >= 14 && timeDec < 22) {
+      return {
+        title: 'BlackGym Abierto',
+        subtitle: 'Tarde · Cierra 22:00',
+        dotClass: 'emerald'
+      };
+    } else {
+      return {
+        title: 'BlackGym Cerrado',
+        subtitle: 'Abre hoy a las 06:00 hs',
+        dotClass: 'muted'
+      };
+    }
+  }, []);
+
+  const barRealtime = useMemo(() => {
+    const now = new Date();
+    const hour = now.getHours();
+    const isOpen = hour >= 17 || hour === 0;
+
+    return {
+      title: isOpen ? 'Bar & Lounge Abierto' : 'Bar & Lounge',
+      subtitle: isOpen ? 'Cocina & Tragos hasta 00:00' : 'Abre hoy a las 17:00 hs',
+      dotClass: isOpen ? 'amber' : 'muted'
+    };
+  }, []);
 
   // Business units aligned with @blackclubparaguay
   const navItems = [
@@ -86,11 +174,11 @@ export function PublicPortal() {
               flexShrink: 0
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                <span className="status-dot emerald"></span>
-                <span style={{ fontSize: '12px', fontWeight: 700, color: '#FFFFFF' }}>3 Canchas Habilitadas</span>
+                <span className={`status-dot ${padelRealtime.dotClass}`}></span>
+                <span style={{ fontSize: '12px', fontWeight: 700, color: '#FFFFFF' }}>{padelRealtime.title}</span>
               </div>
               <div className="font-tabular" style={{ fontSize: '11px', color: '#A1A1AA', marginTop: '2px' }}>
-                {kpis.courtsInPlayCount} en juego · Turnos de 1 hora
+                {padelRealtime.subtitle}
               </div>
             </div>
 
@@ -101,15 +189,15 @@ export function PublicPortal() {
               border: '1px solid rgba(255, 255, 255, 0.08)', 
               borderRadius: '6px', 
               padding: '8px 14px',
-              minWidth: '190px',
+              minWidth: '175px',
               flexShrink: 0
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                <span className="status-dot blue"></span>
-                <span style={{ fontSize: '12px', fontWeight: 700, color: '#FFFFFF' }}>BlackGym Abierto</span>
+                <span className={`status-dot ${gymRealtime.dotClass}`}></span>
+                <span style={{ fontSize: '12px', fontWeight: 700, color: '#FFFFFF' }}>{gymRealtime.title}</span>
               </div>
               <div className="font-tabular" style={{ fontSize: '11px', color: '#A1A1AA', marginTop: '2px' }}>
-                07:00-12:00 / 14:00-21:00
+                {gymRealtime.subtitle}
               </div>
             </div>
 
@@ -124,11 +212,11 @@ export function PublicPortal() {
               flexShrink: 0
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                <span className="status-dot amber"></span>
-                <span style={{ fontSize: '12px', fontWeight: 700, color: '#FFFFFF' }}>Bar & Delivery</span>
+                <span className={`status-dot ${barRealtime.dotClass}`}></span>
+                <span style={{ fontSize: '12px', fontWeight: 700, color: '#FFFFFF' }}>{barRealtime.title}</span>
               </div>
               <div className="font-tabular" style={{ fontSize: '11px', color: '#A1A1AA', marginTop: '2px' }}>
-                17:00 a 00:00 hs
+                {barRealtime.subtitle}
               </div>
             </div>
 

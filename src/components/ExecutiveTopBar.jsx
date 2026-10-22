@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useClub } from '../context/ClubContext';
 import { formatGs } from '../utils/formatters';
 import { 
@@ -20,6 +20,20 @@ import {
 export function ExecutiveTopBar({ viewMode, setViewMode }) {
   const { kpis, isSupabaseLive, user, setShowAuthModal, signOutStaff } = useClub();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Lock background body scroll while mobile menu is open
+  useEffect(() => {
+    if (!isMobileMenuOpen) return;
+    const originalOverflow = document.body.style.overflow;
+    const originalTouchAction = document.body.style.touchAction;
+    document.body.style.overflow = 'hidden';
+    document.body.style.touchAction = 'none';
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      document.body.style.touchAction = originalTouchAction;
+    };
+  }, [isMobileMenuOpen]);
 
   const isPublic = viewMode === 'public';
 

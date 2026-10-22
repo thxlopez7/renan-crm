@@ -329,28 +329,41 @@ html, body {
   font-family: var(--font-mono);
   font-size: 13.5px;
   font-weight: 700;
-  transition: all var(--transition-fast);
-  border: 1px solid var(--border-subtle);
-  background-color: #121215;
+  transition: background-color var(--transition-fast), border-color var(--transition-fast);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background-color: #131316;
   color: #FFFFFF;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.time-pill:hover:not(:disabled) {
-  border-color: rgba(255, 255, 255, 0.25);
-  background-color: #1A1A22;
-  transform: translateY(-1px);
+@media (hover: hover) and (pointer: fine) {
+  .time-pill:hover:not(:disabled) {
+    border-color: rgba(255, 255, 255, 0.35);
+    background-color: #1C1C24;
+    transform: translateY(-1px);
+  }
 }
 
 .time-pill:active:not(:disabled) {
   transform: scale(0.97);
+  background-color: #22222C;
 }
 
-.time-pill:disabled {
-  background-color: #0E0E11;
-  border-color: rgba(255, 255, 255, 0.03);
-  color: #52525B;
-  cursor: not-allowed;
+.time-pill:disabled,
+.time-pill.occupied {
+  background-color: #0B0B0D !important;
+  border-color: rgba(255, 255, 255, 0.04) !important;
+  color: #52525B !important;
+  cursor: not-allowed !important;
   opacity: 0.65;
+}
+
+.time-pill.past {
+  background-color: rgba(255, 255, 255, 0.02) !important;
+  border-color: rgba(255, 255, 255, 0.03) !important;
+  color: #3F3F46 !important;
+  cursor: not-allowed !important;
+  opacity: 0.45;
 }
 
 /* Slide-over Drawer & Mobile Bottom Sheet */
@@ -410,14 +423,29 @@ html, body {
     padding-bottom: env(safe-area-inset-bottom, 20px);
   }
 
+  .drawer-drag-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 12px 0 6px;
+    cursor: grab;
+    touch-action: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
   .drawer-drag-handle {
     display: block;
-    width: 40px;
-    height: 4px;
-    background-color: rgba(255, 255, 255, 0.25);
-    border-radius: 2px;
-    margin: 10px auto 6px;
+    width: 44px;
+    height: 5px;
+    background-color: rgba(255, 255, 255, 0.35);
+    border-radius: 3px;
     flex-shrink: 0;
+    transition: background-color 150ms ease;
+  }
+
+  .drawer-drag-container:active .drawer-drag-handle {
+    background-color: rgba(255, 255, 255, 0.6);
   }
 }
 
@@ -671,6 +699,15 @@ button, a, input, select, textarea, .time-pill, .stepper-btn, .mobile-nav-item {
 .stepper-btn:active {
   transform: scale(0.92);
   background-color: var(--surface-active);
+}
+
+.stepper-btn:disabled {
+  opacity: 0.25 !important;
+  cursor: not-allowed !important;
+  pointer-events: none !important;
+  border-color: rgba(255, 255, 255, 0.04) !important;
+  color: #52525B !important;
+  background-color: rgba(255, 255, 255, 0.02) !important;
 }
 
 /* Responsive typography */
