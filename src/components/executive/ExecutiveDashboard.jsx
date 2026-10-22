@@ -6,240 +6,311 @@ import {
   Calendar, 
   Receipt, 
   Users, 
-  Clock, 
-  UtensilsCrossed, 
-  ShieldAlert, 
-  ChevronRight,
-  Activity,
-  Layers,
-  CheckCircle2,
-  AlertCircle
+  ChevronRight
 } from 'lucide-react';
 
 export function ExecutiveDashboard({ onNavigate }) {
   const { kpis, bookings, tabs, selectedDate } = useClub();
 
+  const todayBookings = bookings.filter(b => b.date === selectedDate);
+  const openTabs = tabs.filter(t => t.status === 'open');
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
-      {/* Header */}
-      <div>
-        <div className="tracking-luxury" style={{ color: '#C5A880' }}>
-          DIRECCIÓN GENERAL · CENTRO DE CONTROL EJECUTIVO
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      {/* Header - Direct and concise */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em', color: '#A1A1AA', textTransform: 'uppercase' }}>
+            Centro de Control
+          </div>
+          <h2 style={{ fontSize: '20px', fontWeight: 800, color: '#FFFFFF', letterSpacing: '-0.02em', marginTop: '2px' }}>
+            Monitoreo en Tiempo Real
+          </h2>
         </div>
-        <h2 style={{ fontSize: '26px', fontWeight: 800, color: '#F4F4F6', letterSpacing: '-0.02em', marginTop: '2px' }}>
-          Monitoreo Operativo & Financiero
-        </h2>
-        <p style={{ fontSize: '13px', color: '#A1A1AA', marginTop: '4px' }}>
-          Consolidación en tiempo real del estado de pistas, recaudación y comandas gastronómicas.
-        </p>
       </div>
 
       {/* 4 Executive KPI Cards */}
       <div style={{ 
         display: 'grid', 
-        gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', 
-        gap: '20px' 
+        gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))', 
+        gap: '12px' 
       }}>
         {/* KPI 1: Facturación Total del Día */}
-        <div className="card-obsidian" style={{ padding: '24px', backgroundColor: '#121216' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
-            <span className="tracking-luxury">FACTURACIÓN CONCILIADA HOY</span>
+        <div style={{ padding: '18px', backgroundColor: '#111113', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+            <span style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.06em', color: '#71717A', textTransform: 'uppercase' }}>
+              Facturación Conciliada
+            </span>
             <div style={{ 
               width: '28px', 
               height: '28px', 
-              borderRadius: '4px', 
-              backgroundColor: 'rgba(197, 168, 128, 0.1)', 
-              border: '1px solid rgba(197, 168, 128, 0.25)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
+              borderRadius: '6px', 
+              backgroundColor: '#18181B', 
+              border: '1px solid rgba(255, 255, 255, 0.08)',
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center' 
             }}>
-              <TrendingUp size={14} strokeWidth={1.5} color="#C5A880" />
+              <TrendingUp size={14} color="#FFFFFF" />
             </div>
           </div>
 
-          <div className="font-tabular" style={{ fontSize: '28px', fontWeight: 800, color: '#F4F4F6', marginBottom: '12px' }}>
+          <div className="font-tabular" style={{ fontSize: '22px', fontWeight: 800, color: '#FFFFFF', marginBottom: '8px' }}>
             {formatGs(kpis.totalRevenueToday)}
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '12px', fontSize: '12px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', color: '#A1A1AA' }}>
-              <span>Pádel & Equipamiento:</span>
-              <span className="font-tabular" style={{ color: '#F4F4F6', fontWeight: 600 }}>{formatGs(kpis.courtRevenueToday)}</span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', borderTop: '1px solid rgba(255, 255, 255, 0.05)', paddingTop: '8px', fontSize: '11px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', color: '#71717A' }}>
+              <span>Pádel:</span>
+              <span className="font-tabular" style={{ color: '#D4D4D8', fontWeight: 600 }}>{formatGs(kpis.courtRevenueToday)}</span>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', color: '#A1A1AA' }}>
-              <span>BlackBar & Gastronomía:</span>
-              <span className="font-tabular" style={{ color: '#C5A880', fontWeight: 600 }}>{formatGs(kpis.barRevenueToday)}</span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', color: '#71717A' }}>
+              <span>Bar & Merch:</span>
+              <span className="font-tabular" style={{ color: '#D4D4D8', fontWeight: 600 }}>{formatGs(kpis.barRevenueToday)}</span>
             </div>
           </div>
         </div>
 
-        {/* KPI 2: Tasa de Ocupación de Pistas */}
-        <div className="card-obsidian" style={{ padding: '24px', backgroundColor: '#121216' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
-            <span className="tracking-luxury">OCUPACIÓN DE PISTAS</span>
+        {/* KPI 2: Tasa de Ocupación */}
+        <div style={{ padding: '18px', backgroundColor: '#111113', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+            <span style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.06em', color: '#71717A', textTransform: 'uppercase' }}>
+              Ocupación Canchas
+            </span>
             <div style={{ 
               width: '28px', 
               height: '28px', 
-              borderRadius: '4px', 
-              backgroundColor: 'rgba(56, 189, 248, 0.1)', 
-              border: '1px solid rgba(56, 189, 248, 0.25)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
+              borderRadius: '6px', 
+              backgroundColor: '#18181B', 
+              border: '1px solid rgba(255, 255, 255, 0.08)',
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center' 
             }}>
-              <Calendar size={14} strokeWidth={1.5} color="#38BDF8" />
+              <Calendar size={14} color="#38BDF8" />
             </div>
           </div>
 
-          <div className="font-tabular" style={{ fontSize: '28px', fontWeight: 800, color: '#38BDF8', marginBottom: '12px' }}>
+          <div className="font-tabular" style={{ fontSize: '22px', fontWeight: 800, color: '#38BDF8', marginBottom: '8px' }}>
             {kpis.occupancyRate}%
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '12px', fontSize: '12px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', color: '#A1A1AA' }}>
-              <span>Turnos Reservados:</span>
-              <span className="font-tabular" style={{ color: '#F4F4F6', fontWeight: 600 }}>{kpis.activeBookingsCount} de {kpis.totalSlotsPossible} bloques</span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', borderTop: '1px solid rgba(255, 255, 255, 0.05)', paddingTop: '8px', fontSize: '11px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', color: '#71717A' }}>
+              <span>Turnos:</span>
+              <span className="font-tabular" style={{ color: '#D4D4D8', fontWeight: 600 }}>{kpis.activeBookingsCount} de {kpis.totalSlotsPossible}</span>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', color: '#A1A1AA' }}>
-              <span>Pistas Actualmente en Juego:</span>
-              <span className="font-tabular" style={{ color: '#10B981', fontWeight: 600 }}>{kpis.courtsInPlayCount} pistas</span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', color: '#71717A' }}>
+              <span>En Juego Ahora:</span>
+              <span className="font-tabular" style={{ color: '#10B981', fontWeight: 600 }}>{kpis.courtsInPlayCount} activas</span>
             </div>
           </div>
         </div>
 
-        {/* KPI 3: Saldo en Cuentas Abiertas */}
-        <div className="card-obsidian" style={{ padding: '24px', backgroundColor: '#121216' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
-            <span className="tracking-luxury">SALDO EN CUENTAS ABIERTAS</span>
+        {/* KPI 3: Cuentas Abiertas */}
+        <div style={{ padding: '18px', backgroundColor: '#111113', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+            <span style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.06em', color: '#71717A', textTransform: 'uppercase' }}>
+              Cuentas por Liquidar
+            </span>
             <div style={{ 
               width: '28px', 
               height: '28px', 
-              borderRadius: '4px', 
-              backgroundColor: 'rgba(245, 158, 11, 0.1)', 
-              border: '1px solid rgba(245, 158, 11, 0.25)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
+              borderRadius: '6px', 
+              backgroundColor: '#18181B', 
+              border: '1px solid rgba(255, 255, 255, 0.08)',
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center' 
             }}>
-              <Receipt size={14} strokeWidth={1.5} color="#F59E0B" />
+              <Receipt size={14} color="#F59E0B" />
             </div>
           </div>
 
-          <div className="font-tabular" style={{ fontSize: '28px', fontWeight: 800, color: '#F59E0B', marginBottom: '12px' }}>
+          <div className="font-tabular" style={{ fontSize: '22px', fontWeight: 800, color: '#F59E0B', marginBottom: '8px' }}>
             {formatGs(kpis.openTabsTotal)}
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '12px', fontSize: '12px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', color: '#A1A1AA' }}>
-              <span>Cuentas por Liquidar en POS:</span>
-              <span className="font-tabular" style={{ color: '#F4F4F6', fontWeight: 600 }}>
-                {tabs.filter(t => t.status === 'open').length} activas
-              </span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', borderTop: '1px solid rgba(255, 255, 255, 0.05)', paddingTop: '8px', fontSize: '11px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', color: '#71717A' }}>
+              <span>Cuentas Abiertas:</span>
+              <span className="font-tabular" style={{ color: '#D4D4D8', fontWeight: 600 }}>{openTabs.length}</span>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', color: '#A1A1AA' }}>
-              <span>Estado Financiero:</span>
-              <span style={{ color: '#FCD34D' }}>En consumo activo</span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', color: '#71717A' }}>
+              <span>Señas Previas:</span>
+              <span className="font-tabular" style={{ color: '#10B981', fontWeight: 600 }}>{formatGs(kpis.collectedDepositsToday)}</span>
             </div>
           </div>
         </div>
 
-        {/* KPI 4: Monitor de Operaciones */}
-        <div className="card-obsidian" style={{ padding: '24px', backgroundColor: '#121216' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
-            <span className="tracking-luxury">MONITOR DE OPERACIONES</span>
+        {/* KPI 4: Turnos Totales Hoy */}
+        <div style={{ padding: '18px', backgroundColor: '#111113', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+            <span style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.06em', color: '#71717A', textTransform: 'uppercase' }}>
+              Actividad del Día
+            </span>
             <div style={{ 
               width: '28px', 
               height: '28px', 
-              borderRadius: '4px', 
-              backgroundColor: 'rgba(244, 63, 94, 0.1)', 
-              border: '1px solid rgba(244, 63, 94, 0.25)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
+              borderRadius: '6px', 
+              backgroundColor: '#18181B', 
+              border: '1px solid rgba(255, 255, 255, 0.08)',
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center' 
             }}>
-              <Activity size={14} strokeWidth={1.5} color="#F43F5E" />
+              <Users size={14} color="#E4E4E7" />
             </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', marginBottom: '12px' }}>
-            <span className="font-tabular" style={{ fontSize: '28px', fontWeight: 800, color: '#F43F5E' }}>
-              {kpis.pendingDepositsCount}
-            </span>
-            <span style={{ fontSize: '12px', color: '#A1A1AA' }}>señas pendientes</span>
+          <div className="font-tabular" style={{ fontSize: '22px', fontWeight: 800, color: '#FFFFFF', marginBottom: '8px' }}>
+            {todayBookings.length}
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '12px', fontSize: '12px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', color: '#A1A1AA' }}>
-              <span>Mesas Solicitadas en Bar:</span>
-              <span className="font-tabular" style={{ color: '#C5A880', fontWeight: 600 }}>
-                {kpis.barTableRequestsCount} mesas post-partido
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', borderTop: '1px solid rgba(255, 255, 255, 0.05)', paddingTop: '8px', fontSize: '11px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', color: '#71717A' }}>
+              <span>Abonos Fijos:</span>
+              <span className="font-tabular" style={{ color: '#D4D4D8', fontWeight: 600 }}>
+                {todayBookings.filter(b => b.category === 'Abono Fijo Semanal').length}
               </span>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', color: '#A1A1AA' }}>
-              <span>Pistas en Juego:</span>
-              <span className="font-tabular" style={{ color: '#34D399', fontWeight: 600 }}>
-                {kpis.courtsInPlayCount} pistas
+            <div style={{ display: 'flex', justifyContent: 'space-between', color: '#71717A' }}>
+              <span>Clases BlackTeam:</span>
+              <span className="font-tabular" style={{ color: '#38BDF8', fontWeight: 600 }}>
+                {todayBookings.filter(b => b.category === 'Clase BlackTeam').length}
               </span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Operational Highlights & Shortcuts */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '20px' }}>
-        {/* Quick action 1: Master Schedule preview */}
-        <div 
+      {/* Direct Action Navigation Shortcuts */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: '10px' }}>
+        <button
           onClick={() => onNavigate('schedule')}
-          className="card-obsidian"
-          style={{ 
-            padding: '24px', 
-            backgroundColor: '#121216', 
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '14px 16px',
+            backgroundColor: '#111113',
+            border: '1px solid rgba(255, 255, 255, 0.08)',
+            borderRadius: '6px',
             cursor: 'pointer',
-            border: '1px solid rgba(255, 255, 255, 0.08)'
+            textAlign: 'left',
+            transition: 'all 120ms ease'
           }}
-          onMouseEnter={(e) => e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.25)'}
-          onMouseLeave={(e) => e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)'}
         >
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Calendar size={16} strokeWidth={1.5} color="#C5A880" />
-              <span style={{ fontSize: '15px', fontWeight: 700, color: '#F4F4F6' }}>
-                Gestión de Agenda Maestra
-              </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <Calendar size={16} color="#FFFFFF" />
+            <div>
+              <div style={{ fontSize: '13px', fontWeight: 700, color: '#FFFFFF' }}>Agenda de Canchas</div>
+              <div style={{ fontSize: '11px', color: '#71717A' }}>Ver grilla y canchas en vivo</div>
             </div>
-            <ChevronRight size={16} strokeWidth={1.5} color="#A1A1AA" />
           </div>
-          <p style={{ fontSize: '12.5px', color: '#A1A1AA', lineHeight: 1.45 }}>
-            Visualice el estado de las 3 pistas en tiempo real. Asigne abonos fijos semanales, confirme señas bancarias recibidas y habilite turnos en pista.
-          </p>
+          <ChevronRight size={15} color="#71717A" />
+        </button>
+
+        <button
+          onClick={() => onNavigate('pos')}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '14px 16px',
+            backgroundColor: '#111113',
+            border: '1px solid rgba(255, 255, 255, 0.08)',
+            borderRadius: '6px',
+            cursor: 'pointer',
+            textAlign: 'left',
+            transition: 'all 120ms ease'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <Receipt size={16} color="#FFFFFF" />
+            <div>
+              <div style={{ fontSize: '13px', fontWeight: 700, color: '#FFFFFF' }}>Terminal POS</div>
+              <div style={{ fontSize: '11px', color: '#71717A' }}>{openTabs.length} cuentas pendientes</div>
+            </div>
+          </div>
+          <ChevronRight size={15} color="#71717A" />
+        </button>
+      </div>
+
+      {/* Live Operations Monitor: En Cancha vs Tercer Tiempo */}
+      <div style={{ backgroundColor: '#111113', padding: '18px', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+          <div>
+            <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em', color: '#A1A1AA', textTransform: 'uppercase' }}>
+              Monitor Operativo
+            </div>
+            <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#FFFFFF', marginTop: '2px' }}>
+              Cuentas Activas (En Cancha & Tercer Tiempo)
+            </h3>
+          </div>
+          <button
+            onClick={() => onNavigate('pos')}
+            className="btn-ghost"
+            style={{ fontSize: '11.5px', color: '#FFFFFF', padding: '4px 10px' }}
+          >
+            Ver en POS
+          </button>
         </div>
 
-        {/* Quick action 2: POS terminal preview */}
-        <div 
-          onClick={() => onNavigate('pos')}
-          className="card-obsidian"
-          style={{ 
-            padding: '24px', 
-            backgroundColor: '#121216', 
-            cursor: 'pointer',
-            border: '1px solid rgba(255, 255, 255, 0.08)'
-          }}
-          onMouseEnter={(e) => e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.25)'}
-          onMouseLeave={(e) => e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)'}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Receipt size={16} strokeWidth={1.5} color="#38BDF8" />
-              <span style={{ fontSize: '15px', fontWeight: 700, color: '#F4F4F6' }}>
-                Terminal POS & Split-Bill
-              </span>
-            </div>
-            <ChevronRight size={16} strokeWidth={1.5} color="#A1A1AA" />
-          </div>
-          <p style={{ fontSize: '12.5px', color: '#A1A1AA', lineHeight: 1.45 }}>
-            Liquidación rápida en barra y recepción. Cargue consumos a pistas activas con un solo clic y divida la cuenta equitativamente entre los 4 jugadores.
-          </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          {openTabs.map(tab => {
+            const isInPlay = tab.activityStatus === 'en_cancha' || tab.activityStatus === 'en_pista';
+
+            return (
+              <div
+                key={tab.id}
+                onClick={() => onNavigate('pos')}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '12px 14px',
+                  backgroundColor: '#161619',
+                  border: isInPlay ? '1px solid rgba(16, 185, 129, 0.4)' : '1px solid rgba(255, 255, 255, 0.06)',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  transition: 'all 120ms ease'
+                }}
+              >
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span 
+                      style={{ 
+                        fontSize: '9px', 
+                        fontWeight: 700, 
+                        padding: '1px 6px', 
+                        borderRadius: '3px',
+                        textTransform: 'uppercase',
+                        backgroundColor: isInPlay ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)',
+                        color: isInPlay ? '#10B981' : '#F59E0B',
+                        border: isInPlay ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(245, 158, 11, 0.3)'
+                      }}
+                    >
+                      {isInPlay ? 'En Cancha' : 'En Barra · 3er Tiempo'}
+                    </span>
+                    <span style={{ fontSize: '13px', fontWeight: 700, color: '#FFFFFF' }}>{tab.courtName}</span>
+                  </div>
+                  <div style={{ fontSize: '11.5px', color: '#A1A1AA', marginTop: '3px' }}>
+                    {tab.clientName}
+                  </div>
+                </div>
+
+                <div style={{ textAlign: 'right' }}>
+                  <div className="font-tabular" style={{ fontSize: '13.5px', fontWeight: 800, color: '#FFFFFF' }}>
+                    {formatGs(tab.netPending || 0)}
+                  </div>
+                  <div style={{ fontSize: '10.5px', color: '#71717A' }}>
+                    {tab.items?.length || 0} consumos
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>

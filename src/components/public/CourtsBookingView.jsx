@@ -1,17 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useClub } from '../../context/ClubContext';
 import { formatGs, formatShortDate } from '../../utils/formatters';
 import { ConciergeDrawer } from './ConciergeDrawer';
-import { 
-  Calendar, 
-  Clock, 
-  ShieldCheck, 
-  Sparkles, 
-  CheckCircle2, 
-  Users, 
-  ChevronRight,
-  Filter
-} from 'lucide-react';
+import { Calendar } from 'lucide-react';
 
 export function CourtsBookingView() {
   const { courts, timeSlots, bookings, selectedDate, setSelectedDate } = useClub();
@@ -20,18 +11,20 @@ export function CourtsBookingView() {
   const [activeSlotData, setActiveSlotData] = useState(null);
 
   // Generate 7 consecutive days starting from today
-  const dateOptions = Array.from({ length: 7 }).map((_, i) => {
-    const d = new Date();
-    d.setDate(d.getDate() + i);
-    const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-    const days = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
-    return {
-      dateStr,
-      dayName: i === 0 ? 'Hoy' : days[d.getDay()],
-      dayNumber: d.getDate(),
-      formatted: formatShortDate(dateStr)
-    };
-  });
+  const dateOptions = useMemo(() => {
+    return Array.from({ length: 7 }).map((_, i) => {
+      const d = new Date();
+      d.setDate(d.getDate() + i);
+      const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      const days = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+      return {
+        dateStr,
+        dayName: i === 0 ? 'Hoy' : days[d.getDay()],
+        dayNumber: d.getDate(),
+        formatted: formatShortDate(dateStr)
+      };
+    });
+  }, []);
 
   const filteredCourts = selectedCourtFilter === 'all'
     ? courts
@@ -39,19 +32,9 @@ export function CourtsBookingView() {
 
   return (
     <div>
-      {/* Date Selector Bar */}
-      <div style={{ marginBottom: '28px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-          <span className="tracking-luxury">FECHA DE JUEGO SELECCIONADA</span>
-          <span style={{ fontSize: '12px', color: '#A1A1AA' }}>Bloques oficiales de 90 minutos</span>
-        </div>
-
-        <div style={{ 
-          display: 'flex', 
-          gap: '10px', 
-          overflowX: 'auto', 
-          paddingBottom: '8px' 
-        }}>
+      {/* Date Carousel Selector (Ultra-Fast 3-second selection) */}
+      <div style={{ marginBottom: '18px' }}>
+        <div className="date-carousel">
           {dateOptions.map(option => {
             const isSelected = option.dateStr === selectedDate;
             return (
@@ -59,24 +42,25 @@ export function CourtsBookingView() {
                 key={option.dateStr}
                 onClick={() => setSelectedDate(option.dateStr)}
                 style={{
-                  minWidth: '85px',
-                  padding: '12px 10px',
-                  backgroundColor: isSelected ? '#F4F4F6' : '#111115',
-                  color: isSelected ? '#070709' : '#A1A1AA',
-                  border: isSelected ? '1px solid #FFFFFF' : '1px solid rgba(255, 255, 255, 0.08)',
+                  minWidth: '72px',
+                  padding: '9px 8px',
+                  backgroundColor: isSelected ? '#FFFFFF' : '#111113',
+                  color: isSelected ? '#09090B' : '#A1A1AA',
+                  border: isSelected ? '1px solid #FFFFFF' : '1px solid rgba(255, 255, 255, 0.07)',
                   borderRadius: '6px',
                   cursor: 'pointer',
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
-                  gap: '4px',
-                  transition: 'all 150ms ease'
+                  gap: '2px',
+                  transition: 'all 120ms ease',
+                  flexShrink: 0
                 }}
               >
-                <span style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                <span style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase' }}>
                   {option.dayName}
                 </span>
-                <span className="font-tabular" style={{ fontSize: '18px', fontWeight: 700 }}>
+                <span className="font-tabular" style={{ fontSize: '17px', fontWeight: 800 }}>
                   {option.dayNumber}
                 </span>
               </button>
@@ -86,21 +70,32 @@ export function CourtsBookingView() {
       </div>
 
       {/* Court Filter Pills */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '28px', flexWrap: 'wrap' }}>
+      <div style={{ 
+        display: 'flex', 
+        alignItems: 'center', 
+        gap: '6px', 
+        marginBottom: '20px', 
+        overflowX: 'auto', 
+        paddingBottom: '2px',
+        scrollbarWidth: 'none',
+        WebkitOverflowScrolling: 'touch'
+      }}>
         <button
           onClick={() => setSelectedCourtFilter('all')}
           style={{
             padding: '7px 14px',
-            fontSize: '12px',
-            fontWeight: 600,
-            borderRadius: '4px',
-            border: selectedCourtFilter === 'all' ? '1px solid #FFFFFF' : '1px solid rgba(255, 255, 255, 0.08)',
-            backgroundColor: selectedCourtFilter === 'all' ? '#1E1E26' : 'transparent',
-            color: selectedCourtFilter === 'all' ? '#FFFFFF' : '#71717A',
-            cursor: 'pointer'
+            fontSize: '11.5px',
+            fontWeight: 700,
+            borderRadius: '20px',
+            border: selectedCourtFilter === 'all' ? '1px solid #FFFFFF' : '1px solid rgba(255, 255, 255, 0.07)',
+            backgroundColor: selectedCourtFilter === 'all' ? '#FFFFFF' : 'transparent',
+            color: selectedCourtFilter === 'all' ? '#09090B' : '#71717A',
+            cursor: 'pointer',
+            whiteSpace: 'nowrap',
+            flexShrink: 0
           }}
         >
-          Todas las Pistas (3)
+          Todas (3)
         </button>
         {courts.map(c => (
           <button
@@ -108,13 +103,15 @@ export function CourtsBookingView() {
             onClick={() => setSelectedCourtFilter(c.id)}
             style={{
               padding: '7px 14px',
-              fontSize: '12px',
-              fontWeight: 600,
-              borderRadius: '4px',
-              border: selectedCourtFilter === c.id ? '1px solid #C5A880' : '1px solid rgba(255, 255, 255, 0.08)',
-              backgroundColor: selectedCourtFilter === c.id ? 'rgba(197, 168, 128, 0.1)' : 'transparent',
-              color: selectedCourtFilter === c.id ? '#C5A880' : '#71717A',
-              cursor: 'pointer'
+              fontSize: '11.5px',
+              fontWeight: 700,
+              borderRadius: '20px',
+              border: selectedCourtFilter === c.id ? '1px solid #FFFFFF' : '1px solid rgba(255, 255, 255, 0.07)',
+              backgroundColor: selectedCourtFilter === c.id ? '#FFFFFF' : 'transparent',
+              color: selectedCourtFilter === c.id ? '#09090B' : '#71717A',
+              cursor: 'pointer',
+              whiteSpace: 'nowrap',
+              flexShrink: 0
             }}
           >
             {c.name}
@@ -123,149 +120,79 @@ export function CourtsBookingView() {
       </div>
 
       {/* Courts & Slots Section */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
         {filteredCourts.map(court => {
           return (
             <div 
               key={court.id} 
               className="card-obsidian" 
-              style={{ backgroundColor: '#0D0D11', border: '1px solid rgba(255, 255, 255, 0.08)' }}
+              style={{ backgroundColor: '#111113', border: '1px solid rgba(255, 255, 255, 0.07)' }}
             >
-              {/* Court Header Card */}
+              {/* Court Header: Shows Court Name, Specs, Total Rate & Split per Player */}
               <div style={{ 
-                padding: '20px 24px', 
-                borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
+                padding: '14px 18px', 
+                borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
                 display: 'flex',
                 flexWrap: 'wrap',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                gap: '16px',
-                backgroundColor: '#121216'
+                gap: '10px',
+                backgroundColor: '#141417'
               }}>
                 <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <span className="status-dot emerald"></span>
-                    <span className="tracking-luxury" style={{ color: '#C5A880' }}>{court.code}</span>
+                    <span className="tracking-luxury" style={{ color: '#A1A1AA' }}>{court.code}</span>
                   </div>
-                  <h3 style={{ fontSize: '18px', fontWeight: 700, color: '#F4F4F6', marginTop: '3px' }}>
+                  <h3 style={{ fontSize: '15px', fontWeight: 800, color: '#FFFFFF', marginTop: '2px' }}>
                     {court.name}
                   </h3>
-                  <p style={{ fontSize: '12px', color: '#A1A1AA', marginTop: '4px' }}>
-                    {court.specs}
-                  </p>
+                  <div style={{ fontSize: '11px', color: '#71717A', marginTop: '1px' }}>
+                    {court.specs.split('·')[0]}
+                  </div>
                 </div>
 
                 <div style={{ textAlign: 'right' }}>
-                  <div className="tracking-luxury">TARIFA POR 90 MINUTOS</div>
-                  <div className="font-tabular" style={{ fontSize: '20px', fontWeight: 700, color: '#F4F4F6', marginTop: '2px' }}>
-                    {formatGs(court.rate)}
-                  </div>
-                  <div style={{ fontSize: '11px', color: '#71717A' }}>
-                    Equivale a {formatGs(Math.round(court.rate / 4))} / jugador
+                  <div className="font-tabular" style={{ fontSize: '16px', fontWeight: 800, color: '#FFFFFF' }}>
+                    {formatGs(court.rate)} <span style={{ fontSize: '11px', fontWeight: 400, color: '#71717A' }}>/ hora</span>
                   </div>
                 </div>
               </div>
 
-              {/* Slot Matrix */}
-              <div style={{ padding: '20px 24px' }}>
-                <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.12em', color: '#71717A', marginBottom: '12px' }}>
-                  DISPONIBILIDAD HORARIA · 90 MINUTOS
-                </div>
-
+              {/* Clean Time Pill Grid (Zero Redundant Pricing Fluff) */}
+              <div style={{ padding: '14px 16px' }}>
                 <div className="slots-grid">
                   {timeSlots.map(slot => {
                     const booking = bookings.find(
                       b => b.courtId === court.id && b.date === selectedDate && b.timeSlot === slot && b.status !== 'Cancelada'
                     );
 
+                    const startTime = slot.split(' - ')[0];
+
                     if (booking) {
-                      // Slot occupied
-                      const isFixedPass = booking.category === 'Abono Fijo Semanal';
-                      const isBlackTeam = booking.category === 'Clase BlackTeam';
-
                       return (
-                        <div
+                        <button
                           key={slot}
-                          style={{
-                            padding: '12px 10px',
-                            backgroundColor: '#141419',
-                            border: isFixedPass ? '1px solid rgba(197, 168, 128, 0.3)' : '1px solid rgba(255, 255, 255, 0.05)',
-                            borderRadius: '4px',
-                            opacity: 0.75,
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: '5px'
-                          }}
+                          disabled
+                          className="time-pill"
+                          title={`Ocupado (${booking.clientName})`}
                         >
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <span className="font-tabular" style={{ fontSize: '11.5px', color: '#A1A1AA', fontWeight: 500 }}>
-                              {slot.split(' - ')[0]}
-                            </span>
-                            <span 
-                              className={`status-dot ${isFixedPass ? 'bronze' : isBlackTeam ? 'blue' : 'terracotta'}`}
-                            ></span>
-                          </div>
-
-                          <div style={{ 
-                            fontSize: '11px', 
-                            fontWeight: 600, 
-                            color: isFixedPass ? '#C5A880' : isBlackTeam ? '#38BDF8' : '#A1A1AA',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap'
-                          }}>
-                            {isFixedPass ? 'Abono Fijo' : isBlackTeam ? 'BlackTeam' : 'Reservada'}
-                          </div>
-
-                          <div style={{ fontSize: '10px', color: '#52525B' }}>
-                            No disponible
-                          </div>
-                        </div>
+                          <span>{startTime}</span>
+                          <span className="status-dot muted" style={{ width: '4px', height: '4px' }}></span>
+                        </button>
                       );
                     }
 
-                    // Slot available
+                    // Available Clean Time Pill
                     return (
                       <button
                         key={slot}
                         onClick={() => setActiveSlotData({ court, timeSlot: slot, date: selectedDate })}
-                        style={{
-                          padding: '12px 10px',
-                          backgroundColor: '#16161D',
-                          border: '1px solid rgba(255, 255, 255, 0.1)',
-                          borderRadius: '4px',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: '5px',
-                          textAlign: 'left',
-                          transition: 'all 150ms ease'
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.borderColor = '#FFFFFF';
-                          e.currentTarget.style.backgroundColor = '#1E1E28';
-                          e.currentTarget.style.transform = 'translateY(-1px)';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-                          e.currentTarget.style.backgroundColor = '#16161D';
-                          e.currentTarget.style.transform = 'translateY(0)';
-                        }}
+                        className="time-pill"
+                        title={`Disponible: ${slot} (1 hora)`}
                       >
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                          <span className="font-tabular" style={{ fontSize: '12px', fontWeight: 600, color: '#F4F4F6' }}>
-                            {slot.split(' - ')[0]}
-                          </span>
-                          <span className="status-dot emerald"></span>
-                        </div>
-
-                        <div className="font-tabular" style={{ fontSize: '12px', color: '#C5A880', fontWeight: 600 }}>
-                          {formatGs(court.rate)}
-                        </div>
-
-                        <div style={{ fontSize: '10px', color: '#10B981', display: 'flex', alignItems: 'center', gap: '3px' }}>
-                          <span>Disponible</span>
-                        </div>
+                        <span>{startTime}</span>
+                        <span className="status-dot emerald" style={{ width: '5px', height: '5px' }}></span>
                       </button>
                     );
                   })}
@@ -276,7 +203,7 @@ export function CourtsBookingView() {
         })}
       </div>
 
-      {/* Slide-over Concierge Drawer */}
+      {/* Slide-over / Mobile Bottom Sheet Concierge Drawer */}
       {activeSlotData && (
         <ConciergeDrawer
           slotData={activeSlotData}

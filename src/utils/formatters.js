@@ -17,7 +17,7 @@ export function formatGs(value) {
 
 export function formatShortDate(dateStr) {
   try {
-    const [year, month, day] = dateStr.split('-');
+    const [_year, month, day] = dateStr.split('-');
     const months = [
       'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun',
       'Jul', 'Ago', 'Set', 'Oct', 'Nov', 'Dic'

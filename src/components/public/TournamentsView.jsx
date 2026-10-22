@@ -2,15 +2,12 @@ import React, { useState } from 'react';
 import { useClub } from '../../context/ClubContext';
 import { formatGs } from '../../utils/formatters';
 import { 
-  Trophy, 
   Calendar, 
-  Users, 
   Check, 
   X, 
   ChevronRight, 
-  ShieldCheck, 
-  Award,
-  Sparkles
+  Trophy,
+  Award
 } from 'lucide-react';
 
 export function TournamentsView() {
@@ -51,209 +48,280 @@ export function TournamentsView() {
   };
 
   return (
-    <div>
-      {/* Editorial Header */}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      {/* Flagship Hero Card - Circuito Black Pádel */}
       <div 
-        className="card-obsidian"
         style={{
           position: 'relative',
-          padding: '40px 32px',
-          marginBottom: '32px',
-          backgroundImage: 'linear-gradient(to right, rgba(7, 7, 9, 0.95) 45%, rgba(7, 7, 9, 0.45) 100%), url(/images/court_panoramic.jpg)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          border: '1px solid rgba(255, 255, 255, 0.1)'
+          padding: '28px 22px',
+          borderRadius: '8px',
+          backgroundImage: 'linear-gradient(135deg, rgba(14, 14, 17, 0.98) 0%, rgba(20, 20, 26, 0.94) 100%)',
+          border: '1px solid rgba(225, 29, 72, 0.35)',
+          boxShadow: '0 10px 30px rgba(0, 0, 0, 0.4)'
         }}
       >
-        <div style={{ maxWidth: '640px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-            <span className="status-dot bronze"></span>
-            <span className="tracking-luxury" style={{ color: '#C5A880' }}>
-              CIRCUITO OFICIAL · BLACKCLUB ELITE
-            </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+          <span 
+            style={{ 
+              backgroundColor: '#E11D48', 
+              color: '#FFFFFF', 
+              fontSize: '9.5px', 
+              fontWeight: 800, 
+              letterSpacing: '0.08em', 
+              padding: '3px 8px', 
+              borderRadius: '4px',
+              textTransform: 'uppercase'
+            }}
+          >
+            Evento Insignia
+          </span>
+          <span style={{ fontSize: '11px', color: '#A1A1AA', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+            FIP Ranking & Premios
+          </span>
+        </div>
+
+        <h2 style={{ fontSize: '24px', fontWeight: 800, color: '#FFFFFF', letterSpacing: '-0.02em', margin: '4px 0 10px' }}>
+          Circuito Black Pádel · 2da Edición
+        </h2>
+
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', fontSize: '12px', color: '#D4D4D8', marginBottom: '16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <Calendar size={14} color="#E11D48" />
+            <span>24 al 27 de Noviembre 2026</span>
           </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <Trophy size={14} color="#E4E4E7" />
+            <span>Bolsa: <strong className="font-tabular" style={{ color: '#FFFFFF' }}>20.000.000 Gs.</strong></span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <Award size={14} color="#E4E4E7" />
+            <span>Categorías: <strong>2da a 6ta</strong></span>
+          </div>
+        </div>
 
-          <h2 style={{ fontSize: '28px', fontWeight: 800, color: '#F4F4F6', letterSpacing: '-0.02em', lineHeight: 1.2 }}>
-            Campeonatos & Torneos Corporativos
-          </h2>
+        <button
+          onClick={() => {
+            const flagship = tournaments.find(t => t.isFlagship) || tournaments[0];
+            setSelectedTournament(flagship);
+            setCategory(flagship.categories[0] || '');
+          }}
+          className="btn-primary"
+          style={{ 
+            backgroundColor: '#FFFFFF', 
+            color: '#09090B', 
+            minHeight: '44px', 
+            padding: '0 20px', 
+            fontWeight: 700 
+          }}
+        >
+          <span>Inscribir Pareja Titular</span>
+          <ChevronRight size={15} strokeWidth={2.5} />
+        </button>
+      </div>
 
-          <p style={{ fontSize: '13.5px', color: '#A1A1AA', marginTop: '10px', lineHeight: 1.5 }}>
-            Competencias de alto nivel regidas bajo el reglamento oficial de la FIP. Cuadros principales, premios en efectivo y servicio de hospitalidad post-partido.
-          </p>
+      {/* Grid of All Tournaments & Events */}
+      <div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+          <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#F4F4F6' }}>
+            Calendario de Competencias & Sorteos
+          </h3>
+          <span style={{ fontSize: '11.5px', color: '#71717A' }}>
+            {tournaments.length} eventos habilitados
+          </span>
+        </div>
+
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 320px), 1fr))', 
+          gap: '14px' 
+        }}>
+          {tournaments.map(tournament => {
+            const slotsLeft = tournament.slots - tournament.registeredCount;
+            const isFlagship = tournament.isFlagship;
+
+            return (
+              <div
+                key={tournament.id}
+                style={{
+                  backgroundColor: '#111113',
+                  border: isFlagship ? '1px solid rgba(225, 29, 72, 0.4)' : '1px solid rgba(255, 255, 255, 0.08)',
+                  padding: '20px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  borderRadius: '8px'
+                }}
+              >
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+                    <span 
+                      style={{ 
+                        fontSize: '9.5px', 
+                        fontWeight: 700,
+                        padding: '2px 8px', 
+                        borderRadius: '4px',
+                        textTransform: 'uppercase',
+                        backgroundColor: isFlagship ? 'rgba(225, 29, 72, 0.15)' : '#18181B',
+                        color: isFlagship ? '#FB7185' : '#A1A1AA',
+                        border: isFlagship ? '1px solid rgba(225, 29, 72, 0.3)' : '1px solid rgba(255, 255, 255, 0.06)'
+                      }}
+                    >
+                      {tournament.type}
+                    </span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: '#10B981' }}>
+                      <span className="status-dot emerald"></span>
+                      <span>{slotsLeft} cupos</span>
+                    </div>
+                  </div>
+
+                  <h4 style={{ fontSize: '16px', fontWeight: 700, color: '#FFFFFF', marginBottom: '6px' }}>
+                    {tournament.title}
+                  </h4>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#A1A1AA', marginBottom: '14px' }}>
+                    <Calendar size={13} strokeWidth={1.5} />
+                    <span>{tournament.dates}</span>
+                  </div>
+
+                  <div style={{ 
+                    padding: '12px', 
+                    backgroundColor: '#09090B', 
+                    borderRadius: '6px', 
+                    border: '1px solid rgba(255, 255, 255, 0.05)',
+                    marginBottom: '14px',
+                    display: 'flex',
+                    justifyContent: 'space-between'
+                  }}>
+                    <div>
+                      <div style={{ fontSize: '10px', color: '#71717A' }}>Premios</div>
+                      <div className="font-tabular" style={{ fontSize: '14px', fontWeight: 800, color: '#FFFFFF' }}>
+                        {formatGs(tournament.prizePool)}
+                      </div>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontSize: '10px', color: '#71717A' }}>Inscripción</div>
+                      <div className="font-tabular" style={{ fontSize: '14px', fontWeight: 800, color: '#E4E4E7' }}>
+                        {formatGs(tournament.entryFee)}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style={{ fontSize: '11.5px', color: '#71717A', marginBottom: '16px' }}>
+                    Categorías: <strong style={{ color: '#D4D4D8' }}>{tournament.categories.join(' · ')}</strong>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => {
+                    setSelectedTournament(tournament);
+                    setCategory(tournament.categories[0] || '');
+                  }}
+                  className="btn-primary"
+                  style={{ width: '100%', minHeight: '42px', fontSize: '12.5px' }}
+                >
+                  <span>Inscribir Pareja</span>
+                  <ChevronRight size={14} />
+                </button>
+              </div>
+            );
+          })}
         </div>
       </div>
 
-      {/* Tournaments Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: '24px' }}>
-        {tournaments.map(tournament => {
-          const slotsLeft = tournament.slots - tournament.registeredCount;
-
-          return (
-            <div
-              key={tournament.id}
-              className="card-obsidian"
-              style={{
-                backgroundColor: '#121216',
-                border: '1px solid rgba(255, 255, 255, 0.08)',
-                padding: '28px 24px',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between'
-              }}
-            >
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-                  <span className="status-pill bronze">
-                    {tournament.status}
-                  </span>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <Calendar size={13} strokeWidth={1.5} color="#A1A1AA" />
-                    <span style={{ fontSize: '12px', color: '#A1A1AA' }}>{tournament.dates}</span>
-                  </div>
-                </div>
-
-                <h3 style={{ fontSize: '20px', fontWeight: 700, color: '#F4F4F6', marginBottom: '6px' }}>
-                  {tournament.name}
-                </h3>
-
-                <p style={{ fontSize: '13px', color: '#A1A1AA', lineHeight: 1.5, marginBottom: '18px' }}>
-                  {tournament.description}
-                </p>
-
-                {/* Key specs */}
-                <div style={{ 
-                  backgroundColor: '#0D0D11', 
-                  border: '1px solid rgba(255, 255, 255, 0.06)', 
-                  borderRadius: '6px', 
-                  padding: '16px',
-                  marginBottom: '20px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '10px'
-                }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
-                    <span style={{ color: '#71717A' }}>Inscripción por Pareja</span>
-                    <span className="font-tabular" style={{ fontWeight: 700, color: '#C5A880' }}>
-                      {formatGs(tournament.fee)}
-                    </span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
-                    <span style={{ color: '#71717A' }}>Bolsa de Premios</span>
-                    <span className="font-tabular" style={{ fontWeight: 600, color: '#F4F4F6' }}>
-                      {tournament.prizePool}
-                    </span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
-                    <span style={{ color: '#71717A' }}>Cupos Disponibles</span>
-                    <span className="font-tabular" style={{ color: slotsLeft <= 6 ? '#F43F5E' : '#38BDF8', fontWeight: 600 }}>
-                      {slotsLeft} de {tournament.slots} parejas
-                    </span>
-                  </div>
-                </div>
-
-                {/* Welcome Kit & Sponsor */}
-                <div style={{ fontSize: '11.5px', color: '#71717A', marginBottom: '20px' }}>
-                  <div><strong style={{ color: '#A1A1AA' }}>Kit:</strong> {tournament.welcomeKit}</div>
-                  <div style={{ marginTop: '3px' }}><strong style={{ color: '#A1A1AA' }}>Auspicio:</strong> {tournament.sponsor}</div>
-                </div>
-              </div>
-
-              <button
-                onClick={() => {
-                  setSelectedTournament(tournament);
-                  setCategory(tournament.categoryList[0] || '');
-                }}
-                className="btn-primary"
-                style={{ width: '100%', padding: '12px' }}
-              >
-                <span>INSCRIBIR PAREJA</span>
-                <ChevronRight size={15} strokeWidth={1.5} />
-              </button>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Slide-over Registration Drawer */}
+      {/* Registration Bottom Sheet Drawer */}
       {selectedTournament && (
         <div className="drawer-backdrop" onClick={closeDrawer}>
           <div className="drawer-panel" onClick={(e) => e.stopPropagation()}>
+            <div className="drawer-drag-handle"></div>
+
             <div style={{ 
-              padding: '20px 24px', 
+              padding: '16px 20px', 
               borderBottom: '1px solid rgba(255, 255, 255, 0.08)', 
               display: 'flex', 
               alignItems: 'center', 
               justifyContent: 'space-between',
-              backgroundColor: '#0D0D11'
+              backgroundColor: '#09090B'
             }}>
               <div>
-                <div className="tracking-luxury">INSCRIPCIÓN DE BINOMIO · CIRCUITO</div>
-                <h3 style={{ fontSize: '17px', fontWeight: 700, color: '#F4F4F6' }}>
-                  {selectedTournament.name}
+                <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em', color: '#A1A1AA', textTransform: 'uppercase' }}>
+                  Inscripción Oficial
+                </div>
+                <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#FFFFFF', marginTop: '2px' }}>
+                  {selectedTournament.title}
                 </h3>
               </div>
-              <button onClick={closeDrawer} className="btn-ghost" style={{ width: '32px', height: '32px', padding: 0, justifyContent: 'center' }}>
+              <button onClick={closeDrawer} className="btn-ghost" style={{ width: '36px', height: '36px', padding: 0, justifyContent: 'center' }}>
                 <X size={18} strokeWidth={1.5} />
               </button>
             </div>
 
-            <div style={{ padding: '24px', flex: 1, overflowY: 'auto' }}>
+            <div style={{ padding: '20px', flex: 1, overflowY: 'auto' }}>
               {!successReg ? (
-                <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
-                  <div className="card-obsidian" style={{ padding: '16px', backgroundColor: '#131318' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                      <span style={{ fontSize: '13px', color: '#71717A' }}>Arancel por Pareja</span>
-                      <span className="font-tabular" style={{ fontSize: '14px', fontWeight: 700, color: '#C5A880' }}>
-                        {formatGs(selectedTournament.fee)}
+                <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                  <div style={{ padding: '12px 14px', backgroundColor: '#14141A', borderRadius: '6px', border: '1px solid rgba(255, 255, 255, 0.06)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
+                      <span style={{ fontSize: '12px', color: '#71717A' }}>Tarifa de Inscripción:</span>
+                      <span className="font-tabular" style={{ fontSize: '13px', fontWeight: 800, color: '#FFFFFF' }}>
+                        {formatGs(selectedTournament.entryFee)}
                       </span>
                     </div>
-                    <div style={{ fontSize: '11.5px', color: '#A1A1AA' }}>
-                      Incluye Welcome Kit y acceso al cocktail de clausura en BlackBar.
+                    <div style={{ fontSize: '11px', color: '#71717A' }}>
+                      Mínimo 2 partidos garantizados y Welcome Pack oficial.
                     </div>
                   </div>
 
-                  {/* Category Selection */}
                   <div>
-                    <label className="tracking-luxury" style={{ display: 'block', marginBottom: '8px' }}>
-                      CATEGORÍA DE COMPETICIÓN
+                    <label style={{ display: 'block', fontSize: '10.5px', fontWeight: 700, letterSpacing: '0.06em', color: '#A1A1AA', marginBottom: '6px', textTransform: 'uppercase' }}>
+                      Categoría
                     </label>
                     <select
                       value={category}
                       onChange={(e) => setCategory(e.target.value)}
                       className="select-luxury"
                     >
-                      {selectedTournament.categoryList.map(cat => (
-                        <option key={cat} value={cat}>{cat}</option>
+                      {selectedTournament.categories.map(cat => (
+                        <option key={cat} value={cat}>Categoría {cat}</option>
                       ))}
                     </select>
                   </div>
 
-                  {/* Players inputs */}
-                  <div>
-                    <label className="tracking-luxury" style={{ display: 'block', marginBottom: '8px' }}>
-                      INTEGRANTES DEL BINOMIO
-                    </label>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '10.5px', fontWeight: 700, letterSpacing: '0.05em', color: '#A1A1AA', marginBottom: '4px', textTransform: 'uppercase' }}>
+                        Jugador 1 *
+                      </label>
                       <input
                         type="text"
                         required
-                        placeholder="Jugador 1 (Titular)"
+                        placeholder="Nombre y Apellido"
                         value={player1}
                         onChange={(e) => setPlayer1(e.target.value)}
                         className="input-luxury"
                       />
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '10.5px', fontWeight: 700, letterSpacing: '0.05em', color: '#A1A1AA', marginBottom: '4px', textTransform: 'uppercase' }}>
+                        Jugador 2 *
+                      </label>
                       <input
                         type="text"
                         required
-                        placeholder="Jugador 2 (Pareja)"
+                        placeholder="Nombre y Apellido"
                         value={player2}
                         onChange={(e) => setPlayer2(e.target.value)}
                         className="input-luxury"
                       />
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '10.5px', fontWeight: 700, letterSpacing: '0.05em', color: '#A1A1AA', marginBottom: '4px', textTransform: 'uppercase' }}>
+                        WhatsApp de Contacto *
+                      </label>
                       <input
                         type="tel"
                         required
-                        placeholder="Teléfono de contacto (+595 981 ...)"
+                        placeholder="+595 981 000 000"
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
                         className="input-luxury"
@@ -261,34 +329,36 @@ export function TournamentsView() {
                     </div>
                   </div>
 
-                  <button type="submit" className="btn-primary" style={{ width: '100%', padding: '14px' }}>
-                    <span>CONFIRMAR REGISTRO DE PAREJA</span>
-                    <ChevronRight size={16} strokeWidth={1.5} />
+                  <button type="submit" className="btn-primary" style={{ width: '100%', minHeight: '46px', marginTop: '6px' }}>
+                    <span>Confirmar Inscripción</span>
                   </button>
                 </form>
               ) : (
-                <div style={{ textAlign: 'center', padding: '30px 10px' }}>
+                <div style={{ textAlign: 'center', padding: '24px 10px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
                   <div style={{ 
-                    width: '48px', 
-                    height: '48px', 
+                    width: '44px', 
+                    height: '44px', 
                     borderRadius: '50%', 
                     backgroundColor: 'rgba(16, 185, 129, 0.1)', 
-                    border: '1px solid #10B981',
+                    border: '1px solid #10B981', 
+                    color: '#10B981',
                     display: 'flex', 
                     alignItems: 'center', 
                     justifyContent: 'center',
-                    margin: '0 auto 16px'
+                    margin: '0 auto'
                   }}>
-                    <Check size={24} strokeWidth={2} color="#10B981" />
+                    <Check size={22} strokeWidth={2.5} />
                   </div>
-                  <h4 style={{ fontSize: '18px', fontWeight: 700, color: '#F4F4F6' }}>
-                    Pareja Inscripta con Éxito
-                  </h4>
-                  <p style={{ fontSize: '13px', color: '#A1A1AA', marginTop: '6px' }}>
-                    El cupo ha sido reservado. La organización del torneo enviará los horarios de las llaves y grupos por mensajería directa.
-                  </p>
-                  <button onClick={closeDrawer} className="btn-secondary" style={{ width: '100%', marginTop: '24px' }}>
-                    <span>CERRAR</span>
+                  <div>
+                    <h4 style={{ fontSize: '17px', fontWeight: 700, color: '#FFFFFF' }}>
+                      Inscripción Registrada
+                    </h4>
+                    <p style={{ fontSize: '12.5px', color: '#A1A1AA', marginTop: '4px' }}>
+                      Binomio: <strong>{successReg.pairName}</strong> (Categoría {successReg.category})
+                    </p>
+                  </div>
+                  <button onClick={closeDrawer} className="btn-primary" style={{ width: '100%', minHeight: '42px' }}>
+                    Listo
                   </button>
                 </div>
               )}

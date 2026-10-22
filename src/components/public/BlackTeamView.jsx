@@ -2,16 +2,11 @@ import React, { useState } from 'react';
 import { useClub } from '../../context/ClubContext';
 import { formatGs } from '../../utils/formatters';
 import { 
-  Award, 
-  Calendar, 
   Clock, 
   Check, 
   X, 
   ChevronRight, 
-  ShieldCheck, 
-  UserCheck,
-  Zap,
-  Activity
+  UserCheck
 } from 'lucide-react';
 
 export function BlackTeamView() {
@@ -56,40 +51,43 @@ export function BlackTeamView() {
   };
 
   return (
-    <div>
-      {/* Editorial Header */}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      {/* Header Banner - Direct & Clean */}
       <div 
         className="card-obsidian"
         style={{
           position: 'relative',
-          padding: '40px 32px',
-          marginBottom: '32px',
-          backgroundImage: 'linear-gradient(to right, rgba(7, 7, 9, 0.95) 45%, rgba(7, 7, 9, 0.45) 100%), url(/images/blackteam.jpg)',
+          padding: '20px',
+          backgroundImage: 'linear-gradient(to right, rgba(9, 9, 11, 0.95) 45%, rgba(9, 9, 11, 0.6) 100%), url(/images/blackteam.jpg)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          border: '1px solid rgba(255, 255, 255, 0.1)'
+          border: '1px solid rgba(255, 255, 255, 0.07)'
         }}
       >
         <div style={{ maxWidth: '640px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
             <span className="status-dot blue"></span>
-            <span className="tracking-luxury" style={{ color: '#38BDF8' }}>
-              BLACKTEAM ACADEMY · ALTO RENDIMIENTO
-            </span>
+            <span className="tracking-luxury">BLACKTEAM · ACADEMIA & CLASES</span>
           </div>
 
-          <h2 style={{ fontSize: '28px', fontWeight: 800, color: '#F4F4F6', letterSpacing: '-0.02em', lineHeight: 1.2 }}>
-            Cuerpo Técnico & Clínicas de Perfeccionamiento
+          <h2 className="title-section" style={{ color: '#FFFFFF' }}>
+            Coaches & Clínicas Personalizadas
           </h2>
 
-          <p style={{ fontSize: '13.5px', color: '#A1A1AA', marginTop: '10px', lineHeight: 1.5 }}>
-            Metodología de entrenamiento biomecánico y preparación táctica orientada a jugadores de competición. Toda sesión privada bloquea automáticamente la pista correspondiente en la agenda general.
-          </p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '6px', fontSize: '11.5px', color: '#A1A1AA' }}>
+            <span>Sesiones 1 a 1</span>
+            <span>·</span>
+            <span>Bloqueo automático de cancha oficial</span>
+          </div>
         </div>
       </div>
 
       {/* Coaches Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '24px' }}>
+      <div style={{ 
+        display: 'grid', 
+        gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 300px), 1fr))', 
+        gap: '14px' 
+      }}>
         {coaches.map(coach => {
           const defaultCourt = courts.find(c => c.id === coach.defaultCourtId);
 
@@ -98,53 +96,73 @@ export function BlackTeamView() {
               key={coach.id}
               className="card-obsidian"
               style={{
-                backgroundColor: '#121216',
+                backgroundColor: '#111113',
                 border: '1px solid rgba(255, 255, 255, 0.08)',
-                padding: '24px',
+                padding: '20px',
                 display: 'flex',
                 flexDirection: 'column',
-                justifyContent: 'space-between'
+                justifyContent: 'space-between',
+                borderRadius: '8px'
               }}
             >
               <div>
-                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '14px' }}>
-                  <div>
-                    <span className="status-pill blue" style={{ marginBottom: '8px' }}>
-                      {coach.role}
-                    </span>
-                    <h3 style={{ fontSize: '18px', fontWeight: 700, color: '#F4F4F6', marginTop: '4px' }}>
-                      {coach.name}
-                    </h3>
-                    <div style={{ fontSize: '12px', color: '#C5A880', fontWeight: 500, marginTop: '2px' }}>
-                      {coach.credentials}
-                    </div>
-                  </div>
-
-                  <div style={{ textAlign: 'right' }}>
-                    <div className="tracking-luxury">SESIÓN (90 MIN)</div>
-                    <div className="font-tabular" style={{ fontSize: '18px', fontWeight: 700, color: '#F4F4F6' }}>
-                      {formatGs(coach.rate)}
-                    </div>
+                <div style={{ 
+                  display: 'flex', 
+                  flexWrap: 'wrap', 
+                  alignItems: 'flex-start', 
+                  justifyContent: 'space-between', 
+                  gap: '8px', 
+                  marginBottom: '12px' 
+                }}>
+                  <span 
+                    className="status-pill blue" 
+                    style={{ 
+                      fontSize: '9.5px', 
+                      padding: '3px 8px', 
+                      lineHeight: '1.3',
+                      whiteSpace: 'normal',
+                      wordBreak: 'break-word',
+                      maxWidth: '100%'
+                    }}
+                  >
+                    {coach.role}
+                  </span>
+                  <div 
+                    className="font-tabular" 
+                    style={{ 
+                      fontSize: '15px', 
+                      fontWeight: 800, 
+                      color: '#FFFFFF',
+                      flexShrink: 0,
+                      marginLeft: 'auto'
+                    }}
+                  >
+                    {formatGs(coach.rate)} <span style={{ fontSize: '10px', color: '#71717A', fontWeight: 400 }}>/ hora</span>
                   </div>
                 </div>
 
-                <p style={{ fontSize: '13px', color: '#A1A1AA', lineHeight: 1.5, marginBottom: '18px' }}>
+                <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#FFFFFF', marginBottom: '2px' }}>
+                  {coach.name}
+                </h3>
+
+                <div style={{ fontSize: '11.5px', color: '#38BDF8', fontWeight: 600, marginBottom: '8px' }}>
+                  {coach.credentials}
+                </div>
+
+                <p style={{ fontSize: '12px', color: '#A1A1AA', lineHeight: 1.45, marginBottom: '14px' }}>
                   {coach.bio}
                 </p>
 
-                {/* Court assignment */}
                 <div style={{ 
-                  padding: '10px 12px', 
-                  backgroundColor: '#0D0D11', 
-                  border: '1px solid rgba(255,255,255,0.06)', 
-                  borderRadius: '4px',
-                  marginBottom: '16px',
-                  fontSize: '12px',
-                  display: 'flex',
-                  justifyContent: 'space-between'
+                  padding: '8px 12px', 
+                  backgroundColor: '#09090B', 
+                  borderRadius: '6px', 
+                  border: '1px solid rgba(255,255,255,0.04)',
+                  fontSize: '11px',
+                  color: '#71717A',
+                  marginBottom: '16px'
                 }}>
-                  <span style={{ color: '#71717A' }}>Pista Asignada:</span>
-                  <span style={{ color: '#F4F4F6', fontWeight: 500 }}>{defaultCourt ? defaultCourt.name : 'Pista Central'}</span>
+                  Cancha de Entrenamiento: <strong style={{ color: '#FFFFFF' }}>{defaultCourt ? defaultCourt.name : 'Cancha Central'}</strong>
                 </div>
               </div>
 
@@ -154,115 +172,111 @@ export function BlackTeamView() {
                   setSelectedSlot(coach.enabledSlots[0] || '');
                 }}
                 className="btn-primary"
-                style={{ width: '100%', padding: '12px' }}
+                style={{ width: '100%', minHeight: '42px' }}
               >
-                <span>AGENDAR SESIÓN PRIVADA</span>
-                <ChevronRight size={15} strokeWidth={1.5} />
+                <span>Agendar Clase</span>
+                <ChevronRight size={14} strokeWidth={2} />
               </button>
             </div>
           );
         })}
       </div>
 
-      {/* Slide-over Booking Drawer */}
+      {/* Booking Drawer / Bottom Sheet */}
       {activeCoach && (
         <div className="drawer-backdrop" onClick={closeDrawer}>
           <div className="drawer-panel" onClick={(e) => e.stopPropagation()}>
+            <div className="drawer-drag-handle"></div>
+
             <div style={{ 
-              padding: '20px 24px', 
+              padding: '16px 20px', 
               borderBottom: '1px solid rgba(255, 255, 255, 0.08)', 
               display: 'flex', 
               alignItems: 'center', 
               justifyContent: 'space-between',
-              backgroundColor: '#0D0D11'
+              backgroundColor: '#09090B'
             }}>
               <div>
-                <div className="tracking-luxury">BLACKTEAM · RESERVA DE CLASE</div>
-                <h3 style={{ fontSize: '17px', fontWeight: 700, color: '#F4F4F6' }}>
+                <div className="tracking-luxury">BLACKTEAM · CLASE PARTICULAR</div>
+                <h3 style={{ fontSize: '15px', fontWeight: 800, color: '#FFFFFF' }}>
                   {activeCoach.name}
                 </h3>
               </div>
-              <button onClick={closeDrawer} className="btn-ghost" style={{ width: '32px', height: '32px', padding: 0, justifyContent: 'center' }}>
+              <button onClick={closeDrawer} className="btn-ghost" style={{ width: '36px', height: '36px', padding: 0, justifyContent: 'center' }}>
                 <X size={18} strokeWidth={1.5} />
               </button>
             </div>
 
-            <div style={{ padding: '24px', flex: 1, overflowY: 'auto' }}>
+            <div style={{ padding: '20px', flex: 1, overflowY: 'auto' }}>
               {!confirmation ? (
-                <form onSubmit={handleBookLesson} style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
-                  {/* Summary info */}
-                  <div className="card-obsidian" style={{ padding: '16px', backgroundColor: '#131318' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '13px' }}>
-                      <span style={{ color: '#71717A' }}>Especialidad</span>
-                      <span style={{ fontWeight: 600 }}>{activeCoach.role}</span>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '13px' }}>
-                      <span style={{ color: '#71717A' }}>Tarifa Sesión</span>
-                      <span className="font-tabular" style={{ fontWeight: 700, color: '#C5A880' }}>
+                <form onSubmit={handleBookLesson} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <div className="card-obsidian" style={{ padding: '12px 14px', backgroundColor: '#131316' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                      <span style={{ fontSize: '11.5px', color: '#71717A' }}>Tarifa de Clase (1h):</span>
+                      <span className="font-tabular" style={{ fontSize: '13px', fontWeight: 800, color: '#FFFFFF' }}>
                         {formatGs(activeCoach.rate)}
                       </span>
                     </div>
-                    <div style={{ fontSize: '11.5px', color: '#38BDF8', marginTop: '6px' }}>
-                      Incluye bloqueo total de 90 minutos en la pista asignada.
+                    <div style={{ fontSize: '11px', color: '#71717A' }}>
+                      Incluye cancha oficial y tubos de pelotas de alta presión.
                     </div>
                   </div>
 
-                  {/* Slot Selection */}
                   <div>
-                    <label className="tracking-luxury" style={{ display: 'block', marginBottom: '8px' }}>
-                      SELECCIONAR BLOQUE HORARIO DISPONIBLE
+                    <label className="tracking-luxury" style={{ display: 'block', marginBottom: '6px' }}>
+                      HORARIOS HABILITADOS
                     </label>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                       {activeCoach.enabledSlots.map(slot => (
-                        <label
+                        <div
                           key={slot}
+                          onClick={() => setSelectedSlot(slot)}
                           style={{
+                            padding: '10px 12px',
+                            backgroundColor: selectedSlot === slot ? '#FFFFFF' : '#111113',
+                            border: selectedSlot === slot ? '1px solid #FFFFFF' : '1px solid rgba(255, 255, 255, 0.08)',
+                            borderRadius: '6px',
+                            cursor: 'pointer',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'space-between',
-                            padding: '12px 14px',
-                            backgroundColor: selectedSlot === slot ? 'rgba(56, 189, 248, 0.08)' : '#121216',
-                            border: selectedSlot === slot ? '1px solid #38BDF8' : '1px solid rgba(255, 255, 255, 0.08)',
-                            borderRadius: '4px',
-                            cursor: 'pointer'
+                            color: selectedSlot === slot ? '#09090B' : '#A1A1AA',
+                            transition: 'all 120ms ease'
                           }}
                         >
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <Clock size={14} strokeWidth={1.5} color={selectedSlot === slot ? '#38BDF8' : '#71717A'} />
-                            <span className="font-tabular" style={{ fontSize: '13.5px', fontWeight: 600 }}>
-                              {slot}
-                            </span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <Clock size={12} strokeWidth={1.5} color={selectedSlot === slot ? '#09090B' : '#71717A'} />
+                            <span className="font-tabular" style={{ fontSize: '12.5px', fontWeight: 700 }}>{slot}</span>
                           </div>
-                          <input
-                            type="radio"
-                            name="coachSlot"
-                            checked={selectedSlot === slot}
-                            onChange={() => setSelectedSlot(slot)}
-                            style={{ accentColor: '#38BDF8' }}
-                          />
-                        </label>
+                          {selectedSlot === slot && <Check size={14} color="#09090B" strokeWidth={2.5} />}
+                        </div>
                       ))}
                     </div>
                   </div>
 
-                  {/* Client Info */}
-                  <div>
-                    <label className="tracking-luxury" style={{ display: 'block', marginBottom: '8px' }}>
-                      DATOS DEL ALUMNO / JUGADOR
-                    </label>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '10.5px', fontWeight: 700, letterSpacing: '0.05em', color: '#A1A1AA', marginBottom: '4px', textTransform: 'uppercase' }}>
+                        Nombre del Jugador *
+                      </label>
                       <input
                         type="text"
                         required
-                        placeholder="Nombre y Apellido del alumno"
+                        placeholder="Ej. Rodrigo Giménez"
                         value={clientName}
                         onChange={(e) => setClientName(e.target.value)}
                         className="input-luxury"
                       />
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '10.5px', fontWeight: 700, letterSpacing: '0.05em', color: '#A1A1AA', marginBottom: '4px', textTransform: 'uppercase' }}>
+                        WhatsApp *
+                      </label>
                       <input
                         type="tel"
                         required
-                        placeholder="Teléfono móvil (+595 981 ...)"
+                        placeholder="+595 981 000 000"
                         value={clientPhone}
                         onChange={(e) => setClientPhone(e.target.value)}
                         className="input-luxury"
@@ -271,43 +285,53 @@ export function BlackTeamView() {
                   </div>
 
                   {errorMsg && (
-                    <div style={{ padding: '10px 14px', backgroundColor: 'rgba(244, 63, 94, 0.1)', border: '1px solid rgba(244, 63, 94, 0.3)', borderRadius: '4px', color: '#FDA4AF', fontSize: '12px' }}>
+                    <div style={{ fontSize: '12px', color: '#FB7185', textAlign: 'center' }}>
                       {errorMsg}
                     </div>
                   )}
 
-                  <button type="submit" className="btn-primary" style={{ width: '100%', padding: '14px' }}>
-                    <span>CONFIRMAR AGENDAMIENTO & BLOQUEO</span>
-                    <ChevronRight size={16} strokeWidth={1.5} />
+                  <button
+                    type="submit"
+                    className="btn-primary"
+                    style={{ width: '100%', minHeight: '46px', marginTop: '6px' }}
+                  >
+                    <UserCheck size={15} strokeWidth={2} />
+                    <span>Confirmar Sesión</span>
                   </button>
                 </form>
               ) : (
-                <div style={{ textAlign: 'center', padding: '30px 10px' }}>
+                <div style={{ textAlign: 'center', padding: '24px 10px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
                   <div style={{ 
-                    width: '48px', 
-                    height: '48px', 
+                    width: '44px', 
+                    height: '44px', 
                     borderRadius: '50%', 
-                    backgroundColor: 'rgba(56, 189, 248, 0.1)', 
-                    border: '1px solid #38BDF8',
+                    backgroundColor: 'rgba(16, 185, 129, 0.12)', 
+                    border: '1.5px solid #10B981', 
+                    color: '#10B981',
                     display: 'flex', 
                     alignItems: 'center', 
                     justifyContent: 'center',
-                    margin: '0 auto 16px'
+                    margin: '0 auto'
                   }}>
-                    <Check size={24} strokeWidth={2} color="#38BDF8" />
-                  </div>
-                  <h4 style={{ fontSize: '18px', fontWeight: 700, color: '#F4F4F6' }}>
-                    Clase Agendada con Éxito
-                  </h4>
-                  <p style={{ fontSize: '13px', color: '#A1A1AA', marginTop: '6px' }}>
-                    Se ha bloqueado la pista en la agenda general y abierto la cuenta en el sistema de recepción.
-                  </p>
-                  <div className="font-tabular" style={{ fontSize: '15px', color: '#C5A880', fontWeight: 700, marginTop: '12px' }}>
-                    Código: {confirmation.code}
+                    <Check size={22} strokeWidth={2.5} />
                   </div>
 
-                  <button onClick={closeDrawer} className="btn-secondary" style={{ width: '100%', marginTop: '24px' }}>
-                    <span>CERRAR</span>
+                  <div>
+                    <h3 style={{ fontSize: '17px', fontWeight: 800, color: '#FFFFFF' }}>
+                      Clase Agendada
+                    </h3>
+                    <p style={{ fontSize: '12px', color: '#A1A1AA', marginTop: '4px' }}>
+                      Cancha bloqueada en la agenda del club para el turno seleccionado.
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={closeDrawer}
+                    className="btn-primary"
+                    style={{ width: '100%', minHeight: '42px' }}
+                  >
+                    Listo
                   </button>
                 </div>
               )}

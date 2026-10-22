@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
 import {
   INITIAL_COURTS,
   INITIAL_COACHES,
@@ -11,10 +11,21 @@ import {
   TIME_SLOTS,
   getTodayDateString
 } from './initialData';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import {
+  fetchAllClubData,
+  dbCreateBookingAndTab,
+  dbUpdateBookingStatus,
+  dbAddTabItem,
+  dbUpdateTabEquipment,
+  dbSettleTab,
+  dbUpdateCourtRate,
+  dbUpdateMenuItem
+} from '../services/clubService';
 
 const ClubContext = createContext();
 
-const STORAGE_KEY = 'black_club_elite_store_v1';
+const STORAGE_KEY = 'black_club_elite_prod_v1';
 
 export function ClubProvider({ children }) {
   // Load state from localStorage or initial seed
@@ -42,8 +53,97 @@ export function ClubProvider({ children }) {
   });
 
   const [selectedDate, setSelectedDate] = useState(getTodayDateString());
+  const [isSupabaseLive, setIsSupabaseLive] = useState(false);
+  const [isLoadingDb, setIsLoadingDb] = useState(false);
+  const [user, setUser] = useState(null);
+  const [session, setSession] = useState(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
-  // Save to localStorage on change
+  // Initialize and subscribe to Supabase Auth state changes
+  useEffect(() => {
+    if (isSupabaseConfigured() && supabase) {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+      });
+
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+      });
+
+      return () => {
+        subscription.unsubscribe();
+      };
+    }
+  }, []);
+
+  const signInStaff = async (email, password) => {
+    if (!isSupabaseConfigured() || !supabase) {
+      throw new Error('Supabase no está configurado');
+    }
+
+    const { data: authData, error } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    setUser(authData.user);
+    setSession(authData.session);
+    return authData;
+  };
+
+  const signOutStaff = async () => {
+    if (supabase) {
+      await supabase.auth.signOut();
+    }
+    setUser(null);
+    setSession(null);
+  };
+
+  // Sync data from Supabase
+  const syncFromSupabase = useCallback(async () => {
+    if (!isSupabaseConfigured()) return;
+    setIsLoadingDb(true);
+    const dbData = await fetchAllClubData();
+    if (dbData) {
+      setData(prev => ({
+        ...prev,
+        ...dbData
+      }));
+      setIsSupabaseLive(true);
+    }
+    setIsLoadingDb(false);
+  }, []);
+
+  // Connect to Supabase & Realtime updates on mount
+  useEffect(() => {
+    if (isSupabaseConfigured()) {
+      syncFromSupabase();
+
+      // Subscribe to real-time changes on public schema
+      const channel = supabase
+        .channel('schema-db-changes')
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public' },
+          () => {
+            syncFromSupabase();
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }
+  }, [syncFromSupabase]);
+
+  // Save to localStorage on change as cache fallback
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
@@ -77,7 +177,7 @@ export function ClubProvider({ children }) {
   // Live KPIs Calculation
   const kpis = useMemo(() => {
     const todayBookings = data.bookings.filter(b => b.date === selectedDate);
-    const totalSlotsPossible = data.courts.length * TIME_SLOTS.length; // 3 * 11 = 33
+    const totalSlotsPossible = data.courts.length * TIME_SLOTS.length; // 3 * 17
     const activeBookingsCount = todayBookings.filter(b => b.status !== 'Cancelada').length;
     const occupancyRate = totalSlotsPossible > 0
       ? Math.round((activeBookingsCount / totalSlotsPossible) * 100)
@@ -97,17 +197,15 @@ export function ClubProvider({ children }) {
         courtRevenueToday += (courtBase + racketCharge + ballTubeCharge);
         barRevenueToday += itemsTotal;
       } else if (tab.status === 'open') {
-        // Collect deposits already paid into revenue
         totalRevenueToday += depositDeduction;
         courtRevenueToday += depositDeduction;
-        // Remaining uncollected
         openTabsTotal += netPending;
       }
     });
 
     const pendingDepositsCount = todayBookings.filter(b => b.status === 'Seña Pendiente').length;
     const barTableRequestsCount = todayBookings.filter(b => b.barTableRequested && b.status !== 'Cancelada').length;
-    const courtsInPlayCount = todayBookings.filter(b => b.status === 'En Pista').length;
+    const courtsInPlayCount = todayBookings.filter(b => b.status === 'En Cancha' || b.status === 'En Pista').length;
 
     return {
       totalRevenueToday,
@@ -156,7 +254,7 @@ export function ClubProvider({ children }) {
       id: newTabId,
       linkedBookingId: newBookingId,
       courtId: bookingData.courtId,
-      courtName: court ? court.name : 'Pista del Club',
+      courtName: court ? court.name : 'Cancha del Club',
       clientName: bookingData.clientName,
       courtAmount,
       depositPaid,
@@ -166,6 +264,7 @@ export function ClubProvider({ children }) {
       ballTubeUnitFee: 70000,
       items: [],
       status: 'open',
+      activityStatus: 'en_cancha',
       paymentMethod: null,
       barTableRequested: !!bookingData.barTableRequested,
       openedAt: newBooking.createdAt
@@ -199,12 +298,16 @@ export function ClubProvider({ children }) {
       });
     }
 
+    // Update optimistic local state
     setData(prev => ({
       ...prev,
       bookings: [newBooking, ...prev.bookings],
       tabs: [newTab, ...prev.tabs],
       players: updatedPlayers
     }));
+
+    // Persist to Supabase if live
+    dbCreateBookingAndTab(bookingData, newBooking, newTab);
 
     return newBooking;
   };
@@ -222,16 +325,11 @@ export function ClubProvider({ children }) {
         return b;
       });
 
-      // Synchronize linked tab
-      const targetBooking = updatedBookings.find(b => b.id === bookingId);
       const updatedTabs = prev.tabs.map(tab => {
         if (tab.linkedBookingId === bookingId) {
           const updatedTab = { ...tab };
           if (depositAmount !== undefined) {
             updatedTab.depositPaid = Number(depositAmount);
-          }
-          if (newStatus === 'Finalizada') {
-            // Can be settled or remain for settlement
           }
           return updatedTab;
         }
@@ -244,6 +342,8 @@ export function ClubProvider({ children }) {
         tabs: updatedTabs
       };
     });
+
+    dbUpdateBookingStatus(bookingId, newStatus, depositAmount);
   };
 
   const addItemToTab = (tabId, menuItem, qty = 1) => {
@@ -271,6 +371,8 @@ export function ClubProvider({ children }) {
       });
       return { ...prev, tabs: updatedTabs };
     });
+
+    dbAddTabItem(tabId, menuItem, qty);
   };
 
   const updateTabItemQty = (tabId, itemId, delta) => {
@@ -308,6 +410,8 @@ export function ClubProvider({ children }) {
       });
       return { ...prev, tabs: updatedTabs };
     });
+
+    dbUpdateTabEquipment(tabId, { racketCount, ballTubeCount });
   };
 
   const settleTab = (tabId, paymentMethod = 'Tarjeta') => {
@@ -321,6 +425,7 @@ export function ClubProvider({ children }) {
           return {
             ...tab,
             status: 'settled',
+            activityStatus: 'liquidada',
             paymentMethod,
             settledAt: nowTime
           };
@@ -341,6 +446,8 @@ export function ClubProvider({ children }) {
         bookings: updatedBookings
       };
     });
+
+    dbSettleTab(tabId, paymentMethod);
   };
 
   const bookCoachClass = ({ coachId, date, timeSlot, clientName, clientPhone }) => {
@@ -349,7 +456,6 @@ export function ClubProvider({ children }) {
 
     const courtId = coach.defaultCourtId || 'court-1';
 
-    // Create booking which blocks the court
     return createBooking({
       courtId,
       date: date || selectedDate,
@@ -422,6 +528,8 @@ export function ClubProvider({ children }) {
       ...prev,
       menuItems: prev.menuItems.map(item => item.id === updatedItem.id ? updatedItem : item)
     }));
+
+    dbUpdateMenuItem(updatedItem);
   };
 
   const updateCourtRate = (courtId, newRate) => {
@@ -429,6 +537,8 @@ export function ClubProvider({ children }) {
       ...prev,
       courts: prev.courts.map(c => c.id === courtId ? { ...c, rate: Number(newRate) } : c)
     }));
+
+    dbUpdateCourtRate(courtId, newRate);
   };
 
   const resetToSeedData = () => {
@@ -462,6 +572,15 @@ export function ClubProvider({ children }) {
         selectedDate,
         setSelectedDate,
         kpis,
+        isSupabaseLive,
+        isLoadingDb,
+        user,
+        session,
+        isStaffAuthenticated: Boolean(user),
+        showAuthModal,
+        setShowAuthModal,
+        signInStaff,
+        signOutStaff,
         calculateTabBalances,
         createBooking,
         updateBookingStatus,

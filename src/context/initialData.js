@@ -1,20 +1,22 @@
 /**
- * Realistic seed data for BlackClubElite
- * All monetary amounts strictly in Guaraníes (Gs.)
- * Operating schedules and real club data
+ * Seed data for Black Club Elite (@blackclubparaguay)
+ * Quiet Athletic Luxury · Authentic Paraguayan Padel & Hospitality
+ * Monochromatic Branding with Athletic Crimson Accents
+ * Currency strictly in Guaraníes (Gs.)
+ * Local Paraguayan Terminology: "Cancha" & 1-Hour Time Slots (e.g. 18:00 a 19:00)
  */
 
 export const INITIAL_COURTS = [
   {
     id: 'court-1',
-    name: 'Pista Central Panorámica',
-    code: 'PISTA 01 · WPT',
+    name: 'Cancha Central Panorámica',
+    code: 'CANCHA 01 · WPT',
     specs: 'Vidrio Panorámico 12mm WPT · Césped Monofilamento Negro Texturizado · LED 1000 Lux',
     surface: 'Césped Texturizado Negro Pro',
     enclosure: 'Cristal Panorámico Continuo WPT',
-    lighting: 'LED Competition 1000 Lux Anti-Deslumbramiento',
-    rate: 180000,
-    primeRate: 200000,
+    lighting: 'LED Competition 1000 Lux',
+    rate: 160000,
+    primeRate: 180000,
     indoor: false,
     panoramic: true,
     status: 'operational',
@@ -22,14 +24,14 @@ export const INITIAL_COURTS = [
   },
   {
     id: 'court-2',
-    name: 'Pista Indoor 02',
-    code: 'PISTA 02 · CLIMA',
+    name: 'Cancha 2 (Indoor Climatizada)',
+    code: 'CANCHA 02 · CLIMA',
     specs: 'Climatizada 21°C · Cerramiento Acústico · Iluminación LED Directa Difusa',
     surface: 'Césped Monofilamento Tournament',
     enclosure: 'Vidrio Laminado Acústico 10+10mm',
     lighting: 'Paneles LED Difusos Especiales',
-    rate: 160000,
-    primeRate: 180000,
+    rate: 140000,
+    primeRate: 160000,
     indoor: true,
     panoramic: false,
     status: 'operational',
@@ -37,14 +39,14 @@ export const INITIAL_COURTS = [
   },
   {
     id: 'court-3',
-    name: 'Pista Pro 03',
-    code: 'PISTA 03 · OUTDOOR',
+    name: 'Cancha 3 (Outdoor Techada)',
+    code: 'CANCHA 03 · OUTDOOR',
     specs: 'Outdoor Techada · Aluminio Aeroespacial · Césped Tournament Blue',
     surface: 'Césped Fibrilado Azul Oficial',
     enclosure: 'Estructura Aluminio Reforzada',
     lighting: 'Torretas LED Exteriores 800 Lux',
-    rate: 140000,
-    primeRate: 160000,
+    rate: 120000,
+    primeRate: 140000,
     indoor: false,
     panoramic: false,
     status: 'operational',
@@ -52,18 +54,25 @@ export const INITIAL_COURTS = [
   }
 ];
 
+// Horarios de 1 hora entre hora (estándar de clubes de pádel en Paraguay)
 export const TIME_SLOTS = [
-  '08:00 - 09:30',
-  '09:30 - 11:00',
-  '11:00 - 12:30',
-  '12:30 - 14:00',
-  '14:00 - 15:30',
-  '15:30 - 17:00',
-  '17:00 - 18:30',
-  '18:30 - 20:00',
-  '20:00 - 21:30',
-  '21:30 - 23:00',
-  '23:00 - 00:30'
+  '07:00 - 08:00',
+  '08:00 - 09:00',
+  '09:00 - 10:00',
+  '10:00 - 11:00',
+  '11:00 - 12:00',
+  '12:00 - 13:00',
+  '13:00 - 14:00',
+  '14:00 - 15:00',
+  '15:00 - 16:00',
+  '16:00 - 17:00',
+  '17:00 - 18:00',
+  '18:00 - 19:00',
+  '19:00 - 20:00',
+  '20:00 - 21:00',
+  '21:00 - 22:00',
+  '22:00 - 23:00',
+  '23:00 - 00:00'
 ];
 
 export const INITIAL_COACHES = [
@@ -72,300 +81,303 @@ export const INITIAL_COACHES = [
     name: 'Alejandro Benítez',
     role: 'Director Técnico de Academia',
     credentials: 'Ex-Jugador WPT · Entrenador Nivel 3 FIP',
-    bio: 'Especialista en biomecánica cinemática del golpe, transiciones ofensivas y táctica en situaciones bajo presión.',
-    rate: 240000,
+    bio: 'Biomecánica cinemática del golpe, transiciones ofensivas y táctica en situaciones bajo presión.',
+    rate: 200000,
     defaultCourtId: 'court-1',
     avatar: '/images/blackteam.jpg',
-    enabledSlots: ['08:00 - 09:30', '15:30 - 17:00', '20:00 - 21:30']
+    enabledSlots: ['08:00 - 09:00', '15:00 - 16:00', '19:00 - 20:00']
   },
   {
     id: 'coach-2',
     name: 'Santiago Morales',
     role: 'Head Coach de Competición',
     credentials: 'Certificado APA · Especialista en Rendimiento',
-    bio: 'Formador de parejas líderes en primera y segunda categoría. Metodología de lectura de pared y aceleración de bandeja.',
-    rate: 190000,
+    bio: 'Formador de parejas líderes en primera y segunda categoría. Lectura de pared y aceleración de bandeja.',
+    rate: 160000,
     defaultCourtId: 'court-2',
     avatar: '/images/blackteam.jpg',
-    enabledSlots: ['09:30 - 11:00', '17:00 - 18:30', '21:30 - 23:00']
+    enabledSlots: ['09:00 - 10:00', '17:00 - 18:00', '21:00 - 22:00']
   },
   {
     id: 'coach-3',
     name: 'Matías Duarte',
     role: 'Instructor Formativo & Clínicas',
     credentials: 'Técnico Nacional de Pádel',
-    bio: 'Enfocado en consolidación técnica para categorías intermedias, consistencia en fondo de pista y juego aéreo.',
-    rate: 150000,
+    bio: 'Consolidación técnica para categorías intermedias, consistencia en fondo de cancha y juego aéreo.',
+    rate: 130000,
     defaultCourtId: 'court-3',
     avatar: '/images/blackteam.jpg',
-    enabledSlots: ['11:00 - 12:30', '18:30 - 20:00']
+    enabledSlots: ['11:00 - 12:00', '18:00 - 19:00']
   }
 ];
 
+// Authentic Paraguayan Padel Club Menu & Merchandising (@blackclubparaguay)
 export const INITIAL_MENU_ITEMS = [
-  // Gastronomía Tercer Tiempo
+  // Comida & Picadas (Tercer Tiempo)
   {
     id: 'menu-1',
-    name: 'Tabla de Cecina Ibérica & Manchego Reserva',
-    category: 'Gastronomía Tercer Tiempo',
-    description: 'Finas láminas de cecina curada, queso manchego 12 meses, frutos secos tostados y pan focaccia al romero.',
-    price: 115000,
+    name: 'Picada Black Club',
+    category: 'Comida & Picadas',
+    description: 'Tiras de lomito vacuno a la plancha, chorizo parrillero artesanal, mandioca frita y dip criollo.',
+    price: 85000,
     available: true,
-    tag: 'Selección Signature'
+    tag: 'Clásico Tercer Tiempo'
   },
   {
     id: 'menu-2',
-    name: 'Carpaccio de Lomo con Trufa Negra & Alcaparras',
-    category: 'Gastronomía Tercer Tiempo',
-    description: 'Lomo vacuno corte fino, emulsión de trufa negra, lascas de parmesano reggiano y rúcula selvática.',
-    price: 85000,
+    name: 'Black Angus Burger',
+    category: 'Comida & Picadas',
+    description: 'Medallón 180g de novillo seleccionado, queso cheddar fundido, panceta crocante y papas rústicas.',
+    price: 62000,
     available: true,
-    tag: 'Destacado'
+    tag: 'Favorito'
   },
   {
     id: 'menu-3',
-    name: 'Burrata Cremosa con Pesto de Pistacho',
-    category: 'Gastronomía Tercer Tiempo',
-    description: 'Burrata fresca artesanal, tomates confitados en oliva extra virgen y reducción balsámica de Módena.',
-    price: 78000,
-    available: true,
-    tag: 'Chef Choice'
-  },
-  {
-    id: 'menu-4',
-    name: 'Tartare de Salmón & Palta Hass',
-    category: 'Gastronomía Tercer Tiempo',
-    description: 'Salmón del Pacífico cortado a cuchillo, palta hass curada, sésamo negro y emulsión de ponzu cítrico.',
-    price: 82000,
-    available: true,
-    tag: 'Saludable Pro'
-  },
-
-  // Burgers & Cocina Nocturna
-  {
-    id: 'menu-5',
-    name: 'Black Angus Truffle Burger',
-    category: 'Burgers y Cocina Nocturna',
-    description: '200g de carne Black Angus madurada, queso raclette fundido, cebollas caramelizadas y alioli de trufa en pan brioche.',
-    price: 68000,
-    available: true,
-    tag: 'Favorito del Club'
-  },
-  {
-    id: 'menu-6',
-    name: 'Wagyu Sliders x3',
-    category: 'Burgers y Cocina Nocturna',
-    description: 'Trío de mini burgers de Wagyu con queso cheddar inglés envejecido, pepinillos encurtidos caseros y salsa de la casa.',
-    price: 75000,
-    available: true,
-    tag: 'Para Compartir'
-  },
-  {
-    id: 'menu-7',
-    name: 'Club Sandwich de Pollo Pastoril',
-    category: 'Burgers y Cocina Nocturna',
-    description: 'Pechuga a la plancha con hierbas finas, panceta ahumada crujiente, tomate reliquia, huevo poche y aderezo dijon.',
-    price: 55000,
-    available: true,
-    tag: 'Clásico'
-  },
-  {
-    id: 'menu-8',
-    name: 'Wrap Mediterráneo de Salmón Ahumado',
-    category: 'Burgers y Cocina Nocturna',
-    description: 'Masa de espinaca orgánica, salmón ahumado en madera de roble, queso philadelphia con eneldo y brotes verdes.',
+    name: 'Sándwich de Lomito Completo',
+    category: 'Comida & Picadas',
+    description: 'Bife de lomo tierno, jamón cocido, queso muzzarella, huevo frito, lechuga y tomate en pan ciabatta.',
     price: 52000,
     available: true,
     tag: 'Post-Partido'
   },
-
-  // Cervecería y Coctelería
   {
-    id: 'menu-9',
-    name: 'Chopp Stella Artois Tirada 500ml',
-    category: 'Cervecería y Coctelería',
-    description: 'Cerveza tirada fría en copa ceremonial a temperatura exacta de servicio 3°C.',
+    id: 'menu-4',
+    name: 'Papas Rústicas con Cheddar & Bacon',
+    category: 'Comida & Picadas',
+    description: 'Papas con piel crujientes bañadas en salsa cheddar casera y lluvia de panceta crocante.',
+    price: 38000,
+    available: true,
+    tag: 'Para Compartir'
+  },
+  // Cervezas & Chopp (Tercer Tiempo & Noches de Copa)
+  {
+    id: 'menu-5',
+    name: 'Promo 2x1 Chopp (Noches de Copa)',
+    category: 'Cervezas & Chopp',
+    description: 'Dos manijas de chopp artesanal helado tirado en el momento (Happy Hour Pádel).',
     price: 28000,
     available: true,
-    tag: 'Lager Premium'
+    tag: 'Promo Insignia'
   },
   {
-    id: 'menu-10',
-    name: 'Cerveza Patagonia 24.7 Session IPA',
-    category: 'Cervecería y Coctelería',
-    description: 'Cerveza artesanal con aroma a frutos cítricos y toque de sauco, equilibrada y refrescante.',
-    price: 32000,
+    id: 'menu-6',
+    name: 'Balde x6 Stella Artois 330ml',
+    category: 'Cervezas & Chopp',
+    description: 'Balde con hielo picado y 6 botellas de Stella Artois bien frías para la mesa del equipo.',
+    price: 95000,
     available: true,
-    tag: 'Craft'
+    tag: 'Balde Tercer Tiempo'
+  },
+  {
+    id: 'menu-7',
+    name: 'Balde x6 Patagonia 24.7 IPA',
+    category: 'Cervezas & Chopp',
+    description: 'Balde con hielo y 6 botellitas Patagonia Session IPA con notas cítricas y lúpulo fresco.',
+    price: 110000,
+    available: true,
+    tag: 'Cerveza Craft'
+  },
+  {
+    id: 'menu-8',
+    name: 'Chopp Individual 500ml',
+    category: 'Cervezas & Chopp',
+    description: 'Chopp rubio servido a -2°C con espuma densa en manija congelada.',
+    price: 18000,
+    available: true,
+    tag: 'Barra'
+  },
+  {
+    id: 'menu-9',
+    name: 'Corona Extra 355ml c/ Lima',
+    category: 'Cervezas & Chopp',
+    description: 'Botella servida con gajo de lima fresca en el cuello.',
+    price: 22000,
+    available: true,
+    tag: 'Barra'
+  },
+  // Hidratación & Bebidas sin alcohol
+  {
+    id: 'menu-10',
+    name: 'Gatorade Cool Blue 750ml',
+    category: 'Hidratación & Bebidas',
+    description: 'Isotónico con electrolitos para reposición inmediata en cancha.',
+    price: 16000,
+    available: true,
+    tag: 'En Cancha'
   },
   {
     id: 'menu-11',
-    name: 'Gin Tonic Black Reserve Hendrick\'s',
-    category: 'Cervecería y Coctelería',
-    description: 'Gin escocés Hendrick\'s con agua tónica Fever-Tree Mediterranean, pepino inglés y pétalos de rosa.',
-    price: 58000,
+    name: 'Agua Mineral San Roque 500ml',
+    category: 'Hidratación & Bebidas',
+    description: 'Agua mineral natural sin gas o con gas, bien helada.',
+    price: 10000,
     available: true,
-    tag: 'Coctel de Autor'
+    tag: 'Básico'
   },
   {
     id: 'menu-12',
-    name: 'Negroni Clásico Carpano Antica Formula',
-    category: 'Cervecería y Coctelería',
-    description: 'Gin Tanqueray London Dry, Campari bitter y Carpano Antica Formula con piel de naranja flambeadas.',
-    price: 62000,
+    name: 'Gaseosas Coca-Cola / Zero 500ml',
+    category: 'Hidratación & Bebidas',
+    description: 'Botellita individual clásica de 500ml fría.',
+    price: 12000,
     available: true,
-    tag: 'Reserva'
+    tag: 'Refresco'
   },
   {
     id: 'menu-13',
-    name: 'Cerveza Heineken 0.0% Alcohol',
-    category: 'Cervecería y Coctelería',
-    description: 'Cerveza rubia desalcoholizada de malta pura, ideal para recuperación deportiva inmediata.',
-    price: 24000,
+    name: 'Red Bull Energy Drink 250ml',
+    category: 'Hidratación & Bebidas',
+    description: 'Lata clásica energizante para antes del partido.',
+    price: 20000,
     available: true,
-    tag: '0.0% Alcohol'
+    tag: 'Pre-Partido'
   },
-
-  // Hidratación Deportiva y Pro-Shop
+  // Pro-Shop & Merch Oficial Black Club
   {
     id: 'menu-14',
-    name: 'Isotónica Gatorade Cool Blue 750ml',
-    category: 'Hidratación Deportiva y Pro-Shop',
-    description: 'Bebida deportiva con reposición rápida de electrolitos esenciales para alto rendimiento.',
-    price: 18000,
+    name: 'Tubo Bullpadel Next Pro (x3)',
+    category: 'Pro-Shop & Merch',
+    description: 'Pelotas oficiales presurizadas de rebote vivo y máxima durabilidad para partidos oficiales.',
+    price: 70000,
     available: true,
-    tag: 'Recuperación'
+    tag: 'Pro-Shop'
   },
   {
     id: 'menu-15',
-    name: 'Agua Mineral San Pellegrino 500ml',
-    category: 'Hidratación Deportiva y Pro-Shop',
-    description: 'Agua mineral con gas natural de manantiales termales italianos.',
-    price: 22000,
+    name: 'Remera Técnica Oficial Black Club',
+    category: 'Pro-Shop & Merch',
+    description: 'Remera dry-fit negra con logo monocromo de alta densidad y respiración micro-perforada.',
+    price: 160000,
     available: true,
-    tag: 'Importada'
+    tag: 'Merchandising'
   },
   {
     id: 'menu-16',
-    name: 'Agua Alcalina Ionizada Black 750ml',
-    category: 'Hidratación Deportiva y Pro-Shop',
-    description: 'Agua con pH 9.5 optimizado con minerales puros para combatir la acidez metabólica post-esfuerzo.',
-    price: 15000,
+    name: 'Quepi Oficial Black Club (Snapback)',
+    category: 'Pro-Shop & Merch',
+    description: 'Gorra deportiva estructurada negra con bordado frontal en relieve y visera semi-curva.',
+    price: 120000,
     available: true,
-    tag: 'pH 9.5'
+    tag: 'Merchandising'
   },
   {
     id: 'menu-17',
-    name: 'Tubo Pelotas Bullpadel Next Pro x3',
-    category: 'Hidratación Deportiva y Pro-Shop',
-    description: 'Tubo presurizado oficial de máxima durabilidad y velocidad de rebote para pistas rápidas.',
-    price: 70000,
+    name: 'Overgrip Bullpadel Pro Perforado',
+    category: 'Pro-Shop & Merch',
+    description: 'Grip micro-perforado de máximo agarre y absorción para clima caluroso.',
+    price: 25000,
     available: true,
-    tag: 'Pelota Oficial'
+    tag: 'Pro-Shop'
   },
   {
     id: 'menu-18',
-    name: 'Pack Overgrip Wilson Pro Comfort x3',
-    category: 'Hidratación Deportiva y Pro-Shop',
-    description: 'Overgrip de poliuretano ultrafino con adherencia superior y máxima absorción de sudor.',
-    price: 35000,
-    available: true,
-    tag: 'Accesorio Pro'
-  },
-  {
-    id: 'menu-19',
-    name: 'Alquiler Pala Bullpadel Vertex / Hack 03',
-    category: 'Hidratación Deportiva y Pro-Shop',
-    description: 'Pala de competición en fibra de carbono 12K con protector metálico integrado para 90 minutos de juego.',
+    name: 'Alquiler de Paleta de Test (90 min)',
+    category: 'Pro-Shop & Merch',
+    description: 'Paleta gama alta de carbono para uso durante el turno de juego.',
     price: 30000,
     available: true,
-    tag: 'Equipamiento'
+    tag: 'Alquiler Cancha'
   }
 ];
 
+// BlackGym & Biostrength Memberships with Official Bio Hours
+// Horario: Lun a Vie: 07:00 a 12:00 y 14:00 a 21:00 | Sáb: 08:00 a 13:00
 export const INITIAL_GYM_PLANS = [
   {
-    id: 'gym-1',
-    name: 'Pase Diario Pro',
-    price: 50000,
-    period: 'Por jornada única',
-    description: 'Acceso total por 1 día al sector de musculación, área de entrenamiento funcional, vestuarios y sauna seco.',
+    id: 'plan-black-pass',
+    name: 'Black Pass Completo',
+    period: 'Mensual Libre',
+    price: 450000,
+    badge: 'MÁS ELEGIDO',
+    featured: true,
+    description: 'Acceso total a la sala de fuerza, máquinas Biostrength y vestuarios ejecutivos.',
     features: [
-      'Acceso completo a maquinaria de biostrength',
-      'Zona de cardio y pesas libres hasta 40kg',
-      'Vestuarios ejecutivos con toalla y amenidades de cortesía',
-      'Acceso al sauna seco post-entrenamiento'
-    ],
-    badge: 'Acceso Puntual'
+      'Acceso en ambos turnos (07:00 a 12:00 y 14:00 a 21:00)',
+      'Sábados de 08:00 a 13:00',
+      'Evaluación biomecánica y rutina digital personalizada',
+      'Lockers individuales y toallas de entrenamiento',
+      '1 turno de cancha mensual bonificado en horario prime'
+    ]
   },
   {
-    id: 'gym-2',
-    name: 'Membresía BlackGym Mensual',
+    id: 'plan-morning',
+    name: 'Turno Mañana Bio',
+    period: 'Mensual Matutino',
+    price: 320000,
+    badge: 'MATUTINO',
+    featured: false,
+    description: 'Enfoque matinal de acondicionamiento físico de alto rendimiento.',
+    features: [
+      'Lunes a Viernes de 07:00 a 12:00 hs',
+      'Sábados de 08:00 a 13:00 hs',
+      'Seguimiento de progresión física mensual',
+      'Duchas y vestuarios premium'
+    ]
+  },
+  {
+    id: 'plan-padel-fit',
+    name: 'Pádel Functional Training',
+    period: 'Mensual Específico',
     price: 380000,
-    period: 'Facturación mensual',
-    description: 'Pase ilimitado a las instalaciones de BlackGym en todos sus horarios operativos semanales y de sábado.',
+    badge: 'ESPECÍFICO PÁDEL',
+    featured: false,
+    description: 'Preparación física adaptada a los movimientos explosivos y rotacionales del pádel.',
     features: [
-      'Horarios completos: 7:00 a 12:00 y 14:00 a 21:00 (Sáb 8:00 a 13:00)',
-      'Evaluación biométrica mensual InBody 270',
-      'Locker privado de uso diario y servicio de toallas',
-      'Rutina personalizada diseñada por entrenadores de BlackTeam',
-      'Acceso al Sauna Seco y Recovery Station'
-    ],
-    badge: 'Membresía Oficial',
-    featured: true
-  },
-  {
-    id: 'gym-3',
-    name: 'Membresía Integral BlackClub Elite',
-    price: 720000,
-    period: 'Facturación mensual',
-    description: 'La experiencia completa del club que fusiona BlackGym ilimitado, privilegios en pádel y gastronomía.',
-    features: [
-      'BlackGym acceso irrestricto todos los días hábiles y fines de semana',
-      '2 reservas de pista mensuales bonificadas en horario prime',
-      'Reserva prioritaria de canchas con 7 días de antelación',
-      '15% de bonificación permanente en consumos de BlackBar',
-      'Invitaciones mensuales para invitados sin costo adicional',
-      'Valet parking de cortesía'
-    ],
-    badge: 'Distinción Elite'
+      '3 sesiones semanales con preparador físico especializado',
+      'Prevención de lesiones de manguito rotador y codo',
+      'Desarrollo de potencia de salto y desplazamiento lateral',
+      'Acceso libre a zona de descarga y stretching'
+    ]
   }
 ];
 
+// Real Official Tournaments: Circuito Black Pádel · 2da Edición
 export const INITIAL_TOURNAMENTS = [
   {
     id: 'tourn-1',
-    name: 'Torneo Apertura BlackClub Elite 2026',
-    code: 'BCE-TORNEO-01',
-    dates: '24 al 26 de Octubre 2026',
-    categoryList: ['2da Categoría', '3ra Categoría', '4ta Categoría', '5ta Categoría', '6ta Categoría', 'Mixto Pro'],
-    fee: 280000,
-    slots: 32,
-    registeredCount: 26,
-    prizePool: '15.000.000 Gs.',
-    welcomeKit: 'Welcome Kit Bullpadel + Remera Técnica Oficial BlackClub',
-    description: 'Circuito de apertura oficial en las 3 pistas del complejo. Fase de grupos y cuadro principal con arbitraje oficial FIP.',
+    title: 'Circuito Black Pádel · 2da Edición',
+    type: 'Circuito Oficial',
+    isFlagship: true,
+    dates: '24 - 27 de Noviembre 2026',
+    prizePool: 20000000,
+    entryFee: 300000,
+    categories: ['2da', '3ra', '4ta', '5ta', '6ta'],
+    slots: 64,
+    registeredCount: 48,
     status: 'Inscripciones Abiertas',
-    sponsor: 'Bullpadel · Heineken 0.0 · Itaú Personal Bank'
+    description: 'Segunda edición del torneo insignia de Black Club Elite. Cuadro oficial con fase de grupos y llaves de eliminación directa.'
   },
   {
     id: 'tourn-2',
-    name: 'Circuito Nocturno Inter-Empresas',
-    code: 'BCE-CORP-02',
-    dates: '12 al 14 de Noviembre 2026',
-    categoryList: ['Corporativo Categoría A', 'Corporativo Categoría B'],
-    fee: 350000,
-    slots: 16,
-    registeredCount: 12,
-    prizePool: 'Trofeos de Autor + Noche Gourmet en BlackBar',
-    welcomeKit: 'Catering Tercer Tiempo & Degustación de Coctelería de Autor',
-    description: 'Campeonato empresarial vespertino con networking exclusivo y servicio gastronómico de alta gama en el salón.',
+    title: 'Torneo Nocturno de Principiantes',
+    type: 'Abierto Social',
+    isFlagship: false,
+    dates: '12 - 13 de Diciembre 2026',
+    prizePool: 5000000,
+    entryFee: 200000,
+    categories: ['6ta', '7ma', 'Iniciación'],
+    slots: 32,
+    registeredCount: 22,
     status: 'Inscripciones Abiertas',
-    sponsor: 'BlackBar & Executive Partners'
+    description: 'Competencia recreativa para jugadores en formación con tercer tiempo integrado y asado de camaradería.'
+  },
+  {
+    id: 'tourn-3',
+    title: 'Gran Sorteo Palas Bullpadel & Merch',
+    type: 'Sorteo & Evento',
+    isFlagship: false,
+    dates: 'Sorteo 20 de Diciembre',
+    prizePool: 12000000,
+    entryFee: 50000,
+    categories: ['General', 'Socios BlackClub'],
+    slots: 200,
+    registeredCount: 135,
+    status: 'Tickets Habilitados',
+    description: 'Sorteo de fin de año: 3 Palas Bullpadel Hack 03 Pro, 10 tubos de pelotas y kits exclusivos de indumentaria.'
   }
 ];
 
-// Helper to get today's date formatted as YYYY-MM-DD
 export function getTodayDateString() {
   const d = new Date();
   const year = d.getFullYear();
@@ -382,49 +394,49 @@ export const INITIAL_BOOKINGS = [
     code: 'BC-9842',
     courtId: 'court-1',
     date: TODAY,
-    timeSlot: '18:30 - 20:00',
+    timeSlot: '18:00 - 19:00',
     clientName: 'Gonzalo Insfrán',
     clientPhone: '+595 981 445 210',
-    category: 'Abono Fijo Semanal',
-    status: 'En Pista',
-    courtAmount: 180000,
+    category: 'Turno Fijo Semanal',
+    status: 'En Cancha',
+    courtAmount: 160000,
     depositPaid: 100000,
     barTableRequested: true,
     rentedRackets: 0,
     ballTubes: 1,
     linkedTabId: 'tab-101',
-    createdAt: '18:25'
+    createdAt: '17:55'
   },
   {
     id: 'book-102',
     code: 'BC-9843',
     courtId: 'court-2',
     date: TODAY,
-    timeSlot: '18:30 - 20:00',
+    timeSlot: '18:00 - 19:00',
     clientName: 'Rodrigo Villalba',
     clientPhone: '+595 971 889 012',
     category: 'Reserva Estándar',
-    status: 'En Pista',
-    courtAmount: 160000,
-    depositPaid: 80000,
+    status: 'En Cancha',
+    courtAmount: 140000,
+    depositPaid: 70000,
     barTableRequested: false,
     rentedRackets: 2,
     ballTubes: 0,
     linkedTabId: 'tab-102',
-    createdAt: '18:28'
+    createdAt: '17:58'
   },
   {
     id: 'book-103',
     code: 'BC-9839',
     courtId: 'court-3',
     date: TODAY,
-    timeSlot: '17:00 - 18:30',
+    timeSlot: '17:00 - 18:00',
     clientName: 'Sebastián Duarte',
     clientPhone: '+595 992 334 115',
     category: 'Reserva Estándar',
     status: 'Finalizada',
-    courtAmount: 140000,
-    depositPaid: 70000,
+    courtAmount: 120000,
+    depositPaid: 60000,
     barTableRequested: false,
     rentedRackets: 0,
     ballTubes: 1,
@@ -436,13 +448,13 @@ export const INITIAL_BOOKINGS = [
     code: 'BC-9845',
     courtId: 'court-1',
     date: TODAY,
-    timeSlot: '20:00 - 21:30',
+    timeSlot: '19:00 - 20:00',
     clientName: 'Matías Peña',
     clientPhone: '+595 983 551 772',
     category: 'Reserva Estándar',
     status: 'Confirmada',
-    courtAmount: 180000,
-    depositPaid: 100000,
+    courtAmount: 160000,
+    depositPaid: 80000,
     barTableRequested: true,
     rentedRackets: 0,
     ballTubes: 1,
@@ -454,13 +466,13 @@ export const INITIAL_BOOKINGS = [
     code: 'BC-9846',
     courtId: 'court-2',
     date: TODAY,
-    timeSlot: '20:00 - 21:30',
-    clientName: 'Alejandro Benítez (Coach BlackTeam)',
+    timeSlot: '19:00 - 20:00',
+    clientName: 'Alejandro Benítez (BlackTeam)',
     clientPhone: '+595 981 112 334',
     category: 'Clase BlackTeam',
     status: 'Confirmada',
-    courtAmount: 240000,
-    depositPaid: 120000,
+    courtAmount: 200000,
+    depositPaid: 100000,
     barTableRequested: false,
     rentedRackets: 0,
     ballTubes: 1,
@@ -472,12 +484,12 @@ export const INITIAL_BOOKINGS = [
     code: 'BC-9847',
     courtId: 'court-3',
     date: TODAY,
-    timeSlot: '20:00 - 21:30',
+    timeSlot: '19:00 - 20:00',
     clientName: 'Carlos Argaña',
     clientPhone: '+595 972 660 449',
     category: 'Reserva Estándar',
     status: 'Seña Pendiente',
-    courtAmount: 140000,
+    courtAmount: 120000,
     depositPaid: 0,
     barTableRequested: false,
     rentedRackets: 0,
@@ -490,13 +502,13 @@ export const INITIAL_BOOKINGS = [
     code: 'BC-9848',
     courtId: 'court-1',
     date: TODAY,
-    timeSlot: '21:30 - 23:00',
+    timeSlot: '20:00 - 21:00',
     clientName: 'Federico Zuccolillo',
     clientPhone: '+595 981 990 001',
-    category: 'Abono Fijo Semanal',
+    category: 'Turno Fijo Semanal',
     status: 'Confirmada',
-    courtAmount: 180000,
-    depositPaid: 100000,
+    courtAmount: 160000,
+    depositPaid: 80000,
     barTableRequested: true,
     rentedRackets: 0,
     ballTubes: 1,
@@ -508,13 +520,13 @@ export const INITIAL_BOOKINGS = [
     code: 'BC-9849',
     courtId: 'court-2',
     date: TODAY,
-    timeSlot: '21:30 - 23:00',
+    timeSlot: '20:00 - 21:00',
     clientName: 'Andrea Benítez & Binomio',
     clientPhone: '+595 994 220 889',
     category: 'Reserva Estándar',
     status: 'Confirmada',
-    courtAmount: 160000,
-    depositPaid: 80000,
+    courtAmount: 140000,
+    depositPaid: 70000,
     barTableRequested: false,
     rentedRackets: 2,
     ballTubes: 1,
@@ -526,13 +538,13 @@ export const INITIAL_BOOKINGS = [
     code: 'BC-9835',
     courtId: 'court-3',
     date: TODAY,
-    timeSlot: '11:00 - 12:30',
-    clientName: 'Clínica de Perfeccionamiento Matutina',
+    timeSlot: '11:00 - 12:00',
+    clientName: 'Clínica de Perfeccionamiento',
     clientPhone: '+595 981 777 444',
     category: 'Clase BlackTeam',
     status: 'Finalizada',
-    courtAmount: 150000,
-    depositPaid: 150000,
+    courtAmount: 130000,
+    depositPaid: 130000,
     barTableRequested: false,
     rentedRackets: 0,
     ballTubes: 1,
@@ -541,65 +553,71 @@ export const INITIAL_BOOKINGS = [
   }
 ];
 
+// Operational tabs in POS & Dashboard
+// State Coherence: ONLY 1 account per court is 'en_cancha' (green).
+// Finished match accounts still open are 'tercer_tiempo' (amber).
 export const INITIAL_TABS = [
   {
     id: 'tab-101',
     linkedBookingId: 'book-101',
     courtId: 'court-1',
-    courtName: 'Pista Central Panorámica',
+    courtName: 'Cancha Central Panorámica',
     clientName: 'Gonzalo Insfrán',
-    courtAmount: 180000,
+    courtAmount: 160000,
     depositPaid: 100000,
     racketCount: 0,
     racketUnitFee: 30000,
     ballTubeCount: 1,
     ballTubeUnitFee: 70000,
     items: [
-      { id: 'menu-9', name: 'Chopp Stella Artois Tirada 500ml', price: 28000, qty: 2 },
-      { id: 'menu-5', name: 'Black Angus Truffle Burger', price: 68000, qty: 1 }
+      { id: 'menu-5', name: 'Promo 2x1 Chopp (Noches de Copa)', price: 28000, qty: 1 },
+      { id: 'menu-1', name: 'Picada Black Club', price: 85000, qty: 1 }
     ],
     status: 'open',
+    activityStatus: 'en_cancha', // ACTIVE GAME ON COURT 1
     paymentMethod: null,
     barTableRequested: true,
-    openedAt: '18:25'
+    openedAt: '17:55'
   },
   {
     id: 'tab-102',
     linkedBookingId: 'book-102',
     courtId: 'court-2',
-    courtName: 'Pista Indoor 02',
+    courtName: 'Cancha 2 (Indoor Climatizada)',
     clientName: 'Rodrigo Villalba',
-    courtAmount: 160000,
-    depositPaid: 80000,
+    courtAmount: 140000,
+    depositPaid: 70000,
     racketCount: 2,
     racketUnitFee: 30000,
     ballTubeCount: 0,
     ballTubeUnitFee: 70000,
     items: [
-      { id: 'menu-14', name: 'Isotónica Gatorade Cool Blue 750ml', price: 18000, qty: 2 },
-      { id: 'menu-16', name: 'Agua Alcalina Ionizada Black 750ml', price: 15000, qty: 2 }
+      { id: 'menu-10', name: 'Gatorade Cool Blue 750ml', price: 16000, qty: 2 },
+      { id: 'menu-11', name: 'Agua Mineral San Roque 500ml', price: 10000, qty: 2 }
     ],
     status: 'open',
+    activityStatus: 'en_cancha', // ACTIVE GAME ON COURT 2
     paymentMethod: null,
     barTableRequested: false,
-    openedAt: '18:28'
+    openedAt: '17:58'
   },
   {
     id: 'tab-103',
     linkedBookingId: 'book-103',
     courtId: 'court-3',
-    courtName: 'Pista Pro 03',
+    courtName: 'Cancha 3 (Outdoor Techada)',
     clientName: 'Sebastián Duarte',
-    courtAmount: 140000,
-    depositPaid: 70000,
+    courtAmount: 120000,
+    depositPaid: 60000,
     racketCount: 0,
     racketUnitFee: 30000,
     ballTubeCount: 1,
     ballTubeUnitFee: 70000,
     items: [
-      { id: 'menu-10', name: 'Cerveza Patagonia 24.7 Session IPA', price: 32000, qty: 2 }
+      { id: 'menu-6', name: 'Balde x6 Stella Artois 330ml', price: 95000, qty: 1 }
     ],
     status: 'settled',
+    activityStatus: 'liquidada',
     paymentMethod: 'Tarjeta',
     settledAt: '18:35',
     barTableRequested: false,
@@ -609,16 +627,20 @@ export const INITIAL_TABS = [
     id: 'tab-104',
     linkedBookingId: 'book-104',
     courtId: 'court-1',
-    courtName: 'Pista Central Panorámica',
+    courtName: 'Cancha Central (3er Tiempo)',
     clientName: 'Matías Peña',
-    courtAmount: 180000,
-    depositPaid: 100000,
+    courtAmount: 160000,
+    depositPaid: 80000,
     racketCount: 0,
     racketUnitFee: 30000,
     ballTubeCount: 1,
     ballTubeUnitFee: 70000,
-    items: [],
+    items: [
+      { id: 'menu-5', name: 'Promo 2x1 Chopp (Noches de Copa)', price: 28000, qty: 2 },
+      { id: 'menu-2', name: 'Black Angus Burger', price: 62000, qty: 2 }
+    ],
     status: 'open',
+    activityStatus: 'tercer_tiempo', // IN BAR / 3ER TIEMPO (Court 1 has another open account post-match)
     paymentMethod: null,
     barTableRequested: true,
     openedAt: '17:40'
@@ -627,95 +649,26 @@ export const INITIAL_TABS = [
     id: 'tab-105',
     linkedBookingId: 'book-105',
     courtId: 'court-2',
-    courtName: 'Pista Indoor 02',
-    clientName: 'Alejandro Benítez (Coach BlackTeam)',
-    courtAmount: 240000,
-    depositPaid: 120000,
-    racketCount: 0,
-    racketUnitFee: 30000,
-    ballTubeCount: 1,
-    ballTubeUnitFee: 70000,
-    items: [],
-    status: 'open',
-    paymentMethod: null,
-    barTableRequested: false,
-    openedAt: '16:10'
-  },
-  {
-    id: 'tab-106',
-    linkedBookingId: 'book-106',
-    courtId: 'court-3',
-    courtName: 'Pista Pro 03',
-    clientName: 'Carlos Argaña',
-    courtAmount: 140000,
-    depositPaid: 0,
-    racketCount: 0,
-    racketUnitFee: 30000,
-    ballTubeCount: 0,
-    ballTubeUnitFee: 70000,
-    items: [],
-    status: 'open',
-    paymentMethod: null,
-    barTableRequested: false,
-    openedAt: '18:15'
-  },
-  {
-    id: 'tab-107',
-    linkedBookingId: 'book-107',
-    courtId: 'court-1',
-    courtName: 'Pista Central Panorámica',
-    clientName: 'Federico Zuccolillo',
-    courtAmount: 180000,
+    courtName: 'Barra BlackBar (Post-Clase)',
+    clientName: 'Alejandro Benítez (BlackTeam)',
+    courtAmount: 200000,
     depositPaid: 100000,
     racketCount: 0,
     racketUnitFee: 30000,
     ballTubeCount: 1,
     ballTubeUnitFee: 70000,
-    items: [],
+    items: [
+      { id: 'menu-10', name: 'Gatorade Cool Blue 750ml', price: 16000, qty: 1 }
+    ],
     status: 'open',
-    paymentMethod: null,
-    barTableRequested: true,
-    openedAt: '14:20'
-  },
-  {
-    id: 'tab-108',
-    linkedBookingId: 'book-108',
-    courtId: 'court-2',
-    courtName: 'Pista Indoor 02',
-    clientName: 'Andrea Benítez & Binomio',
-    courtAmount: 160000,
-    depositPaid: 80000,
-    racketCount: 2,
-    racketUnitFee: 30000,
-    ballTubeCount: 1,
-    ballTubeUnitFee: 70000,
-    items: [],
-    status: 'open',
+    activityStatus: 'tercer_tiempo', // IN BAR / 3ER TIEMPO
     paymentMethod: null,
     barTableRequested: false,
-    openedAt: '15:45'
-  },
-  {
-    id: 'tab-109',
-    linkedBookingId: 'book-109',
-    courtId: 'court-3',
-    courtName: 'Pista Pro 03',
-    clientName: 'Clínica de Perfeccionamiento Matutina',
-    courtAmount: 150000,
-    depositPaid: 150000,
-    racketCount: 0,
-    racketUnitFee: 30000,
-    ballTubeCount: 1,
-    ballTubeUnitFee: 70000,
-    items: [],
-    status: 'settled',
-    paymentMethod: 'Transferencia / QR',
-    settledAt: '12:35',
-    barTableRequested: false,
-    openedAt: '10:50'
+    openedAt: '16:10'
   }
 ];
 
+// Consistent Player Data (No empty values)
 export const INITIAL_PLAYERS = [
   {
     id: 'plr-1',
@@ -723,11 +676,13 @@ export const INITIAL_PLAYERS = [
     phone: '+595 981 445 210',
     category: '2da Categoría',
     isFixedPassHolder: true,
-    fixedPassDay: 'Jueves 18:30 (Pista Central)',
+    fixedPassDay: 'Jueves 18:00 a 19:00 (Cancha Central)',
     totalBookings: 24,
+    bookingsCount: 24,
     totalSpent: 4860000,
-    status: 'Socio Activo Elite',
-    lastVisit: 'Hoy, 18:30'
+    totalSpend: 4860000,
+    status: 'Cliente Activo Elite',
+    lastVisit: 'Hoy, 18:00'
   },
   {
     id: 'plr-2',
@@ -735,11 +690,13 @@ export const INITIAL_PLAYERS = [
     phone: '+595 981 990 001',
     category: '1ra Categoría',
     isFixedPassHolder: true,
-    fixedPassDay: 'Jueves 21:30 (Pista Central)',
+    fixedPassDay: 'Jueves 20:00 a 21:00 (Cancha Central)',
     totalBookings: 32,
+    bookingsCount: 32,
     totalSpent: 6240000,
-    status: 'Socio Activo Elite',
-    lastVisit: 'Hoy, 21:30'
+    totalSpend: 6240000,
+    status: 'Cliente Activo Elite',
+    lastVisit: 'Hoy, 20:00'
   },
   {
     id: 'plr-3',
@@ -749,9 +706,11 @@ export const INITIAL_PLAYERS = [
     isFixedPassHolder: false,
     fixedPassDay: null,
     totalBookings: 11,
+    bookingsCount: 11,
     totalSpent: 2010000,
+    totalSpend: 2010000,
     status: 'Jugador Frecuente',
-    lastVisit: 'Hoy, 18:30'
+    lastVisit: 'Hoy, 18:00'
   },
   {
     id: 'plr-4',
@@ -761,9 +720,11 @@ export const INITIAL_PLAYERS = [
     isFixedPassHolder: false,
     fixedPassDay: null,
     totalBookings: 8,
+    bookingsCount: 8,
     totalSpent: 1620000,
+    totalSpend: 1620000,
     status: 'Jugador Frecuente',
-    lastVisit: 'Hoy, 20:00'
+    lastVisit: 'Hoy, 19:00'
   },
   {
     id: 'plr-5',
@@ -772,10 +733,12 @@ export const INITIAL_PLAYERS = [
     category: '5ta Categoría',
     isFixedPassHolder: false,
     fixedPassDay: null,
-    totalBookings: 3,
-    totalSpent: 420000,
+    totalBookings: 7,
+    bookingsCount: 7,
+    totalSpent: 1150000,
+    totalSpend: 1150000,
     status: 'Nuevo Registro',
-    lastVisit: 'Hoy, 20:00'
+    lastVisit: 'Hoy, 19:00'
   },
   {
     id: 'plr-6',
@@ -785,9 +748,11 @@ export const INITIAL_PLAYERS = [
     isFixedPassHolder: false,
     fixedPassDay: null,
     totalBookings: 14,
+    bookingsCount: 14,
     totalSpent: 2680000,
+    totalSpend: 2680000,
     status: 'Jugadora Frecuente',
-    lastVisit: 'Hoy, 21:30'
+    lastVisit: 'Hoy, 20:00'
   },
   {
     id: 'plr-7',
@@ -797,7 +762,9 @@ export const INITIAL_PLAYERS = [
     isFixedPassHolder: false,
     fixedPassDay: null,
     totalBookings: 19,
+    bookingsCount: 19,
     totalSpent: 3510000,
+    totalSpend: 3510000,
     status: 'Jugador Frecuente',
     lastVisit: 'Hoy, 17:00'
   }

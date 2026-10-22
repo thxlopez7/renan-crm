@@ -2,21 +2,7 @@ import React, { useState } from 'react';
 import { useClub } from '../../context/ClubContext';
 import { formatGs } from '../../utils/formatters';
 import { 
-  Receipt, 
-  CreditCard, 
-  QrCode, 
-  Banknote, 
-  Plus, 
-  Minus, 
-  Check, 
-  Users, 
-  UtensilsCrossed, 
-  Clock, 
-  ShieldCheck, 
-  Sparkles,
-  ChevronRight,
-  Flame,
-  CheckCircle2
+  Check 
 } from 'lucide-react';
 
 export function POSTerminalView({ highlightedTabId }) {
@@ -25,8 +11,6 @@ export function POSTerminalView({ highlightedTabId }) {
     menuItems, 
     calculateTabBalances, 
     addItemToTab, 
-    updateTabItemQty, 
-    updateTabEquipment, 
     settleTab 
   } = useClub();
 
@@ -47,14 +31,14 @@ export function POSTerminalView({ highlightedTabId }) {
   const currentBalances = currentTab ? calculateTabBalances(currentTab) : null;
   const splitAmount = currentBalances ? Math.round(currentBalances.netPending / splitCount) : 0;
 
-  // High-rotation items for the Quick-Add matrix
+  // Real Authentic Paraguayan Padel Club Items for Quick-Add Botonera
   const quickItems = [
-    menuItems.find(i => i.id === 'menu-9') || { id: 'menu-9', name: 'Chopp Stella Artois 500ml', price: 28000 },
-    menuItems.find(i => i.id === 'menu-10') || { id: 'menu-10', name: 'Patagonia 24.7 IPA', price: 32000 },
-    menuItems.find(i => i.id === 'menu-14') || { id: 'menu-14', name: 'Gatorade Cool Blue', price: 18000 },
-    menuItems.find(i => i.id === 'menu-16') || { id: 'menu-16', name: 'Agua Alcalina Black', price: 15000 },
-    menuItems.find(i => i.id === 'menu-5') || { id: 'menu-5', name: 'Black Angus Truffle Burger', price: 68000 },
-    menuItems.find(i => i.id === 'menu-17') || { id: 'menu-17', name: 'Tubo Bullpadel Next Pro', price: 70000 }
+    menuItems.find(i => i.id === 'menu-1') || { id: 'menu-1', name: 'Picada Black Club', price: 95000 },
+    menuItems.find(i => i.id === 'menu-4') || { id: 'menu-4', name: 'Promo 2x1 Chopp', price: 25000 },
+    menuItems.find(i => i.id === 'menu-5') || { id: 'menu-5', name: 'Balde x6 Stella Artois', price: 85000 },
+    menuItems.find(i => i.id === 'menu-2') || { id: 'menu-2', name: 'Black Angus Burger', price: 55000 },
+    menuItems.find(i => i.id === 'menu-8') || { id: 'menu-8', name: 'Gatorade Cool Blue', price: 15000 },
+    menuItems.find(i => i.id === 'menu-10') || { id: 'menu-10', name: 'Tubo Bullpadel Pro', price: 65000 }
   ];
 
   const handleSettle = () => {
@@ -67,475 +51,344 @@ export function POSTerminalView({ highlightedTabId }) {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
       {/* Header */}
       <div>
-        <div className="tracking-luxury" style={{ color: '#C5A880' }}>
-          TERMINAL PUNTO DE VENTA & LIQUIDACIÓN
+        <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em', color: '#A1A1AA', textTransform: 'uppercase' }}>
+          Terminal POS & Caja
         </div>
-        <h2 style={{ fontSize: '24px', fontWeight: 800, color: '#F4F4F6', letterSpacing: '-0.02em', marginTop: '2px' }}>
-          Gestión de Cuentas Corrientes & Split-Bill
+        <h2 style={{ fontSize: '20px', fontWeight: 800, color: '#FFFFFF', letterSpacing: '-0.02em', marginTop: '2px' }}>
+          Cuentas Corrientes & Liquidación
         </h2>
       </div>
 
-      {/* Settle feedback banner */}
+      {/* Settle Feedback Banner */}
       {settleSuccessMsg && (
         <div style={{
-          padding: '12px 18px',
-          backgroundColor: 'rgba(16, 185, 129, 0.1)',
+          padding: '12px 16px',
+          backgroundColor: 'rgba(16, 185, 129, 0.12)',
           border: '1px solid #10B981',
-          borderRadius: '4px',
+          borderRadius: '6px',
           color: '#34D399',
-          fontSize: '13px',
+          fontSize: '12.5px',
           display: 'flex',
           alignItems: 'center',
           gap: '8px'
         }}>
-          <Check size={16} strokeWidth={2} />
-          <span>Cuenta liquidada y conciliada exitosamente. Facturación diaria actualizada.</span>
+          <Check size={16} strokeWidth={2.5} />
+          <span>Cuenta liquidada exitosamente. Facturación diaria conciliada en caja.</span>
         </div>
       )}
 
-      {/* Dual Column Layout */}
-      <div style={{ 
-        display: 'grid', 
-        gridTemplateColumns: 'minmax(300px, 360px) 1fr', 
-        gap: '24px',
-        alignItems: 'start'
-      }}>
-        {/* LEFT COLUMN: Open and Settled Tabs List */}
-        <div className="card-obsidian" style={{ backgroundColor: '#0D0D11', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
-          {/* Subheader and Filter */}
-          <div style={{ padding: '16px 18px', borderBottom: '1px solid rgba(255, 255, 255, 0.06)' }}>
-            <div style={{ display: 'flex', gap: '6px' }}>
-              <button
-                onClick={() => setActiveTabFilter('open')}
-                style={{
-                  flex: 1,
-                  padding: '7px 10px',
-                  fontSize: '11.5px',
-                  fontWeight: 600,
-                  borderRadius: '4px',
-                  border: activeTabFilter === 'open' ? '1px solid #C5A880' : '1px solid rgba(255,255,255,0.06)',
-                  backgroundColor: activeTabFilter === 'open' ? 'rgba(197, 168, 128, 0.1)' : 'transparent',
-                  color: activeTabFilter === 'open' ? '#C5A880' : '#71717A',
-                  cursor: 'pointer'
-                }}
-              >
-                Cuentas Abiertas ({tabs.filter(t => t.status === 'open').length})
-              </button>
-
-              <button
-                onClick={() => setActiveTabFilter('settled')}
-                style={{
-                  flex: 1,
-                  padding: '7px 10px',
-                  fontSize: '11.5px',
-                  fontWeight: 600,
-                  borderRadius: '4px',
-                  border: activeTabFilter === 'settled' ? '1px solid #FFFFFF' : '1px solid rgba(255,255,255,0.06)',
-                  backgroundColor: activeTabFilter === 'settled' ? '#1E1E26' : 'transparent',
-                  color: activeTabFilter === 'settled' ? '#FFFFFF' : '#71717A',
-                  cursor: 'pointer'
-                }}
-              >
-                Liquidadas ({tabs.filter(t => t.status === 'settled').length})
-              </button>
-            </div>
-          </div>
-
-          {/* List of tabs */}
-          <div style={{ maxHeight: '680px', overflowY: 'auto' }}>
-            {displayedTabs.length === 0 ? (
-              <div style={{ padding: '40px 20px', textAlign: 'center', color: '#52525B', fontSize: '13px' }}>
-                No hay cuentas en este estado.
-              </div>
-            ) : (
-              displayedTabs.map(tab => {
-                const isSelected = currentTab && currentTab.id === tab.id;
-                const tabBalance = calculateTabBalances(tab);
-
-                return (
-                  <div
-                    key={tab.id}
-                    onClick={() => setSelectedTabId(tab.id)}
-                    style={{
-                      padding: '16px 18px',
-                      borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
-                      backgroundColor: isSelected ? 'rgba(255, 255, 255, 0.04)' : 'transparent',
-                      borderLeft: isSelected ? '3px solid #C5A880' : '3px solid transparent',
-                      cursor: 'pointer',
-                      transition: 'all 150ms ease'
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-                      <span style={{ fontSize: '12px', fontWeight: 600, color: isSelected ? '#C5A880' : '#A1A1AA' }}>
-                        {tab.courtName}
-                      </span>
-                      <span className="font-tabular" style={{ fontSize: '13.5px', fontWeight: 700, color: tab.status === 'open' ? '#F4F4F6' : '#71717A' }}>
-                        {formatGs(tabBalance.netPending)}
-                      </span>
-                    </div>
-
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <span style={{ fontSize: '13.5px', fontWeight: 600, color: '#F4F4F6' }}>
-                        {tab.clientName}
-                      </span>
-
-                      {tab.barTableRequested && (
-                        <span style={{ fontSize: '10px', color: '#C5A880', display: 'flex', alignItems: 'center', gap: '3px' }}>
-                          <UtensilsCrossed size={10} strokeWidth={1.5} />
-                          <span>Mesa Bar</span>
-                        </span>
-                      )}
-                    </div>
-
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', color: '#71717A', marginTop: '4px' }}>
-                      <Clock size={11} strokeWidth={1.5} />
-                      <span>{tab.status === 'open' ? `Abierta a las ${tab.openedAt}` : `Liquidada con ${tab.paymentMethod}`}</span>
-                    </div>
-                  </div>
-                );
-              })
-            )}
-          </div>
+      {/* Tabs Filter & Horizontal Selector */}
+      <div>
+        <div style={{ display: 'flex', gap: '6px', marginBottom: '8px' }}>
+          <button
+            onClick={() => setActiveTabFilter('open')}
+            style={{
+              padding: '6px 12px',
+              fontSize: '11px',
+              fontWeight: 600,
+              borderRadius: '4px',
+              border: activeTabFilter === 'open' ? '1px solid #FFFFFF' : '1px solid rgba(255,255,255,0.06)',
+              backgroundColor: activeTabFilter === 'open' ? '#FFFFFF' : 'transparent',
+              color: activeTabFilter === 'open' ? '#09090B' : '#71717A',
+              cursor: 'pointer',
+              transition: 'all 120ms ease'
+            }}
+          >
+            Abiertas ({tabs.filter(t => t.status === 'open').length})
+          </button>
+          <button
+            onClick={() => setActiveTabFilter('settled')}
+            style={{
+              padding: '6px 12px',
+              fontSize: '11px',
+              fontWeight: 600,
+              borderRadius: '4px',
+              border: activeTabFilter === 'settled' ? '1px solid #FFFFFF' : '1px solid rgba(255,255,255,0.06)',
+              backgroundColor: activeTabFilter === 'settled' ? '#FFFFFF' : 'transparent',
+              color: activeTabFilter === 'settled' ? '#09090B' : '#71717A',
+              cursor: 'pointer',
+              transition: 'all 120ms ease'
+            }}
+          >
+            Liquidadas ({tabs.filter(t => t.status === 'settled').length})
+          </button>
         </div>
 
-        {/* RIGHT COLUMN: Detail Statement, Quick-Add Matrix, Split-Bill & Settle */}
-        {currentTab && currentBalances ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            {/* Account Statement Card */}
-            <div className="card-obsidian" style={{ backgroundColor: '#111116', padding: '24px', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
-              {/* Header */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '16px', marginBottom: '20px' }}>
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span className="tracking-luxury" style={{ color: '#C5A880' }}>
-                      ESTADO DE CUENTA
+        {/* Tab Cards Carousel with En Cancha vs Tercer Tiempo badges */}
+        <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '6px', scrollbarWidth: 'none' }}>
+          {displayedTabs.map(tab => {
+            const isSelected = currentTab?.id === tab.id;
+            const b = calculateTabBalances(tab);
+            const isInPlay = tab.activityStatus === 'en_cancha' || tab.activityStatus === 'en_pista';
+
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setSelectedTabId(tab.id)}
+                style={{
+                  minWidth: '200px',
+                  padding: '12px 14px',
+                  backgroundColor: isSelected ? '#18181C' : '#111113',
+                  border: isSelected ? '1px solid #FFFFFF' : '1px solid rgba(255, 255, 255, 0.08)',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '4px',
+                  flexShrink: 0,
+                  transition: 'all 120ms ease'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                  <span style={{ fontSize: '12.5px', fontWeight: 700, color: '#FFFFFF' }}>
+                    {tab.courtName}
+                  </span>
+                  {tab.status === 'open' ? (
+                    <span style={{
+                      fontSize: '8.5px',
+                      fontWeight: 700,
+                      padding: '1px 5px',
+                      borderRadius: '3px',
+                      textTransform: 'uppercase',
+                      backgroundColor: isInPlay ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)',
+                      color: isInPlay ? '#10B981' : '#F59E0B',
+                      border: isInPlay ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(245, 158, 11, 0.3)'
+                    }}>
+                      {isInPlay ? 'En Cancha' : '3er Tiempo'}
                     </span>
-                    <span className={`status-pill ${currentTab.status === 'open' ? 'emerald' : 'amber'}`}>
-                      {currentTab.status === 'open' ? 'Cuenta Abierta' : 'Liquidada'}
-                    </span>
-                  </div>
-                  <h3 style={{ fontSize: '20px', fontWeight: 700, color: '#F4F4F6', marginTop: '4px' }}>
-                    {currentTab.clientName} · {currentTab.courtName}
-                  </h3>
-                </div>
-
-                <div style={{ textAlign: 'right' }}>
-                  <div className="tracking-luxury">SALDO NETO PENDIENTE</div>
-                  <div className="font-tabular" style={{ fontSize: '24px', fontWeight: 800, color: currentTab.status === 'open' ? '#F4F4F6' : '#71717A' }}>
-                    {formatGs(currentBalances.netPending)}
-                  </div>
-                </div>
-              </div>
-
-              {/* Itemized charges table */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '20px' }}>
-                {/* Court Fee */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13.5px' }}>
-                  <span style={{ color: '#D4D4D8' }}>Cargo base uso de pista (90 min)</span>
-                  <span className="font-tabular" style={{ fontWeight: 600 }}>{formatGs(currentBalances.courtBase)}</span>
-                </div>
-
-                {/* Deposit deduction */}
-                {currentBalances.depositDeduction > 0 && (
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13.5px', color: '#38BDF8' }}>
-                    <span>Deducción por seña entregada previa</span>
-                    <span className="font-tabular" style={{ fontWeight: 600 }}>-{formatGs(currentBalances.depositDeduction)}</span>
-                  </div>
-                )}
-
-                {/* Equipment Controls */}
-                <div style={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'space-between', 
-                  padding: '10px 12px', 
-                  backgroundColor: '#16161D', 
-                  borderRadius: '4px',
-                  border: '1px solid rgba(255,255,255,0.05)'
-                }}>
-                  <div>
-                    <div style={{ fontSize: '13px', fontWeight: 500 }}>Alquiler Paletas Pro ({formatGs(currentTab.racketUnitFee || 30000)} c/u)</div>
-                    <div className="font-tabular" style={{ fontSize: '12px', color: '#A1A1AA' }}>
-                      Subtotal: {formatGs(currentBalances.racketCharge)}
-                    </div>
-                  </div>
-                  {currentTab.status === 'open' && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <button
-                        onClick={() => updateTabEquipment(currentTab.id, { racketCount: Math.max(0, (currentTab.racketCount || 0) - 1) })}
-                        className="btn-secondary"
-                        style={{ width: '28px', height: '28px', padding: 0 }}
-                      >
-                        -
-                      </button>
-                      <span className="font-tabular" style={{ minWidth: '18px', textAlign: 'center', fontSize: '13px' }}>
-                        {currentTab.racketCount || 0}
-                      </span>
-                      <button
-                        onClick={() => updateTabEquipment(currentTab.id, { racketCount: (currentTab.racketCount || 0) + 1 })}
-                        className="btn-secondary"
-                        style={{ width: '28px', height: '28px', padding: 0 }}
-                      >
-                        +
-                      </button>
-                    </div>
+                  ) : (
+                    <span style={{ fontSize: '8.5px', color: '#71717A' }}>Conciliada</span>
                   )}
                 </div>
-
-                <div style={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'space-between', 
-                  padding: '10px 12px', 
-                  backgroundColor: '#16161D', 
-                  borderRadius: '4px',
-                  border: '1px solid rgba(255,255,255,0.05)'
-                }}>
-                  <div>
-                    <div style={{ fontSize: '13px', fontWeight: 500 }}>Tubo Pelotas Bullpadel Next Pro ({formatGs(currentTab.ballTubeUnitFee || 70000)} c/u)</div>
-                    <div className="font-tabular" style={{ fontSize: '12px', color: '#A1A1AA' }}>
-                      Subtotal: {formatGs(currentBalances.ballTubeCharge)}
-                    </div>
-                  </div>
-                  {currentTab.status === 'open' && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <button
-                        onClick={() => updateTabEquipment(currentTab.id, { ballTubeCount: Math.max(0, (currentTab.ballTubeCount || 0) - 1) })}
-                        className="btn-secondary"
-                        style={{ width: '28px', height: '28px', padding: 0 }}
-                      >
-                        -
-                      </button>
-                      <span className="font-tabular" style={{ minWidth: '18px', textAlign: 'center', fontSize: '13px' }}>
-                        {currentTab.ballTubeCount || 0}
-                      </span>
-                      <button
-                        onClick={() => updateTabEquipment(currentTab.id, { ballTubeCount: (currentTab.ballTubeCount || 0) + 1 })}
-                        className="btn-secondary"
-                        style={{ width: '28px', height: '28px', padding: 0 }}
-                      >
-                        +
-                      </button>
-                    </div>
-                  )}
+                <div style={{ fontSize: '11px', color: '#A1A1AA' }}>
+                  {tab.clientName}
                 </div>
+                <div className="font-tabular" style={{ fontSize: '13px', fontWeight: 800, color: '#FFFFFF', marginTop: '2px' }}>
+                  {formatGs(b.netPending)}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
-                {/* Gastronomy Items */}
-                {currentTab.items && currentTab.items.length > 0 && (
-                  <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '12px' }}>
-                    <div className="tracking-luxury" style={{ marginBottom: '8px' }}>CONSUMOS BLACKBAR</div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      {currentTab.items.map(item => (
-                        <div
-                          key={item.id}
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            fontSize: '13px'
-                          }}
-                        >
-                          <div>
-                            <span style={{ color: '#F4F4F6' }}>{item.name}</span>
-                            <span className="font-tabular" style={{ color: '#71717A', marginLeft: '8px' }}>
-                              ({formatGs(item.price)} c/u)
-                            </span>
-                          </div>
-
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                            <span className="font-tabular" style={{ fontWeight: 600 }}>
-                              {formatGs(item.price * item.qty)}
-                            </span>
-                            {currentTab.status === 'open' && (
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                <button
-                                  onClick={() => updateTabItemQty(currentTab.id, item.id, -1)}
-                                  className="btn-secondary"
-                                  style={{ width: '24px', height: '24px', padding: 0 }}
-                                >
-                                  -
-                                </button>
-                                <span className="font-tabular" style={{ minWidth: '16px', textAlign: 'center', fontSize: '12px' }}>
-                                  {item.qty}
-                                </span>
-                                <button
-                                  onClick={() => updateTabItemQty(currentTab.id, item.id, 1)}
-                                  className="btn-secondary"
-                                  style={{ width: '24px', height: '24px', padding: 0 }}
-                                >
-                                  +
-                                </button>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
+      {currentTab && currentBalances ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          {/* Quick-Add Botonera Matrix */}
+          {currentTab.status === 'open' && (
+            <div style={{ backgroundColor: '#111113', padding: '16px', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+              <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em', color: '#A1A1AA', textTransform: 'uppercase', marginBottom: '10px' }}>
+                Botonera Rápida de Comanda (1 Clic)
               </div>
 
-              {/* Botonera de Carga Rápida (Quick-Add Matrix) */}
-              {currentTab.status === 'open' && (
-                <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '16px', marginBottom: '20px' }}>
-                  <div className="tracking-luxury" style={{ color: '#C5A880', marginBottom: '10px' }}>
-                    BOTONERA DE CARGA RÁPIDA (UN SOLO CLIC)
-                  </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '8px' }}>
-                    {quickItems.map(item => (
-                      <button
-                        key={item.id}
-                        onClick={() => addItemToTab(currentTab.id, item, 1)}
-                        style={{
-                          padding: '10px 12px',
-                          backgroundColor: '#16161D',
-                          border: '1px solid rgba(255, 255, 255, 0.08)',
-                          borderRadius: '4px',
-                          textAlign: 'left',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: '2px',
-                          transition: 'all 120ms ease'
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.borderColor = '#C5A880';
-                          e.currentTarget.style.backgroundColor = '#1E1E28';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)';
-                          e.currentTarget.style.backgroundColor = '#16161D';
-                        }}
-                      >
-                        <span style={{ fontSize: '12px', fontWeight: 600, color: '#F4F4F6', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                          + {item.name}
-                        </span>
-                        <span className="font-tabular" style={{ fontSize: '11px', color: '#C5A880' }}>
-                          {formatGs(item.price)}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Calculadora Split-Bill Engine */}
               <div style={{ 
-                backgroundColor: '#16161D', 
-                border: '1px solid rgba(197, 168, 128, 0.25)', 
-                borderRadius: '6px', 
-                padding: '16px',
-                marginBottom: '20px'
+                display: 'grid', 
+                gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 150px), 1fr))', 
+                gap: '8px' 
               }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <Users size={16} strokeWidth={1.5} color="#C5A880" />
-                    <div>
-                      <div className="tracking-luxury" style={{ color: '#C5A880' }}>MOTOR SPLIT-BILL (DIVISIÓN EXACTA)</div>
-                      <div style={{ fontSize: '11.5px', color: '#A1A1AA' }}>Cálculo instantáneo por jugador en caja</div>
-                    </div>
-                  </div>
+                {quickItems.map(item => (
+                  <button
+                    key={item.id}
+                    onClick={() => addItemToTab(currentTab.id, item, 1)}
+                    style={{
+                      padding: '10px 12px',
+                      backgroundColor: '#161619',
+                      border: '1px solid rgba(255, 255, 255, 0.06)',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '3px',
+                      transition: 'all 120ms ease'
+                    }}
+                  >
+                    <span style={{ fontSize: '11.5px', fontWeight: 600, color: '#FFFFFF', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {item.name}
+                    </span>
+                    <span className="font-tabular" style={{ fontSize: '11.5px', fontWeight: 700, color: '#E4E4E7' }}>
+                      {formatGs(item.price)}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
-                  <div style={{ display: 'flex', gap: '6px' }}>
-                    {[1, 2, 3, 4].map(num => (
-                      <button
-                        key={num}
-                        onClick={() => setSplitCount(num)}
-                        style={{
-                          width: '32px',
-                          height: '32px',
-                          borderRadius: '4px',
-                          border: splitCount === num ? '1px solid #C5A880' : '1px solid rgba(255,255,255,0.1)',
-                          backgroundColor: splitCount === num ? '#C5A880' : '#121216',
-                          color: splitCount === num ? '#070709' : '#A1A1AA',
-                          fontSize: '12px',
-                          fontWeight: 700,
-                          cursor: 'pointer'
-                        }}
-                      >
-                        {num}x
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '12px' }}>
-                  <span style={{ fontSize: '13px', color: '#D4D4D8' }}>
-                    Monto individual ({splitCount} partes iguales):
-                  </span>
-                  <span className="font-tabular" style={{ fontSize: '20px', fontWeight: 800, color: '#F4F4F6' }}>
-                    {formatGs(splitAmount)} <span style={{ fontSize: '11px', color: '#A1A1AA', fontWeight: 400 }}>/ persona</span>
-                  </span>
+          {/* Tab Consumption Details Card */}
+          <div style={{ backgroundColor: '#111113', padding: '16px', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '10px' }}>
+              <div>
+                <span style={{ fontSize: '9px', fontWeight: 700, letterSpacing: '0.08em', color: '#71717A', textTransform: 'uppercase' }}>
+                  Cuenta Corriente
+                </span>
+                <div style={{ fontSize: '14.5px', fontWeight: 700, color: '#FFFFFF', marginTop: '1px' }}>
+                  {currentTab.courtName} · {currentTab.clientName}
                 </div>
               </div>
 
-              {/* Liquidación definitiva */}
               {currentTab.status === 'open' ? (
-                <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '16px' }}>
-                  <div className="tracking-luxury" style={{ marginBottom: '10px' }}>MEDIO DE PAGO PARA LIQUIDACIÓN</div>
-                  
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '16px' }}>
-                    {[
-                      { id: 'Tarjeta', label: 'Tarjeta Crédito/Débito', icon: CreditCard },
-                      { id: 'Transferencia / QR', label: 'Transferencia / QR', icon: QrCode },
-                      { id: 'Efectivo', label: 'Efectivo Guaraníes', icon: Banknote }
-                    ].map(method => {
-                      const Icon = method.icon;
-                      const isSelected = paymentMethod === method.id;
-
-                      return (
-                        <button
-                          key={method.id}
-                          onClick={() => setPaymentMethod(method.id)}
-                          style={{
-                            padding: '12px 10px',
-                            borderRadius: '4px',
-                            border: isSelected ? '1px solid #C5A880' : '1px solid rgba(255,255,255,0.08)',
-                            backgroundColor: isSelected ? 'rgba(197, 168, 128, 0.1)' : '#16161D',
-                            color: isSelected ? '#C5A880' : '#A1A1AA',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            gap: '6px'
-                          }}
-                        >
-                          <Icon size={16} strokeWidth={1.5} />
-                          <span style={{ fontSize: '11px', fontWeight: 600 }}>{method.label}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  <button
-                    onClick={handleSettle}
-                    className="btn-primary"
-                    style={{ width: '100%', padding: '16px', fontSize: '14px' }}
-                  >
-                    <span>LIQUIDAR CUENTA Y CERRAR PISTA ({formatGs(currentBalances.netPending)})</span>
-                    <ChevronRight size={16} strokeWidth={1.5} />
-                  </button>
-                </div>
-              ) : (
-                <div style={{ 
-                  padding: '16px', 
-                  backgroundColor: 'rgba(255, 255, 255, 0.03)', 
-                  border: '1px solid rgba(255, 255, 255, 0.08)', 
+                <span style={{
+                  fontSize: '9.5px',
+                  fontWeight: 700,
+                  padding: '2px 8px',
                   borderRadius: '4px',
-                  textAlign: 'center',
-                  fontSize: '13px',
-                  color: '#A1A1AA'
+                  textTransform: 'uppercase',
+                  backgroundColor: (currentTab.activityStatus === 'en_cancha' || currentTab.activityStatus === 'en_pista') ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)',
+                  color: (currentTab.activityStatus === 'en_cancha' || currentTab.activityStatus === 'en_pista') ? '#10B981' : '#F59E0B',
+                  border: (currentTab.activityStatus === 'en_cancha' || currentTab.activityStatus === 'en_pista') ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(245, 158, 11, 0.3)'
                 }}>
-                  Cuenta liquidada a las {currentTab.settledAt} con {currentTab.paymentMethod}. Saldo conciliado en tesorería.
-                </div>
+                  {(currentTab.activityStatus === 'en_cancha' || currentTab.activityStatus === 'en_pista') ? 'En Cancha' : 'En Barra · 3er Tiempo'}
+                </span>
+              ) : (
+                <span style={{ fontSize: '9.5px', color: '#71717A', padding: '2px 8px', borderRadius: '4px', backgroundColor: '#18181B' }}>
+                  Conciliada
+                </span>
               )}
             </div>
+
+            {/* Consumptions List */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '14px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px' }}>
+                <span style={{ color: '#A1A1AA' }}>Alquiler de Cancha (1h):</span>
+                <span className="font-tabular" style={{ fontWeight: 600, color: '#E4E4E7' }}>{formatGs(currentBalances.courtBase)}</span>
+              </div>
+
+              {currentBalances.depositDeduction > 0 && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#10B981' }}>
+                  <span>Seña Previa Acreditada:</span>
+                  <span className="font-tabular" style={{ fontWeight: 600 }}>- {formatGs(currentBalances.depositDeduction)}</span>
+                </div>
+              )}
+
+              {currentBalances.racketCharge > 0 && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px' }}>
+                  <span style={{ color: '#A1A1AA' }}>Alquiler Paletas ({currentTab.racketCount}):</span>
+                  <span className="font-tabular" style={{ fontWeight: 600, color: '#E4E4E7' }}>{formatGs(currentBalances.racketCharge)}</span>
+                </div>
+              )}
+
+              {currentBalances.ballTubeCharge > 0 && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px' }}>
+                  <span style={{ color: '#A1A1AA' }}>Tubos Pelotas ({currentTab.ballTubeCount}):</span>
+                  <span className="font-tabular" style={{ fontWeight: 600, color: '#E4E4E7' }}>{formatGs(currentBalances.ballTubeCharge)}</span>
+                </div>
+              )}
+
+              {currentTab.items?.map(item => (
+                <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px', borderTop: '1px solid rgba(255,255,255,0.04)', paddingTop: '6px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ color: '#FFFFFF' }}>{item.name}</span>
+                    <span style={{ color: '#71717A', fontSize: '10.5px' }}>x{item.qty}</span>
+                  </div>
+                  <span className="font-tabular" style={{ fontWeight: 600, color: '#E4E4E7' }}>
+                    {formatGs(item.price * item.qty)}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            {/* Balances Summary */}
+            <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em', color: '#A1A1AA', textTransform: 'uppercase' }}>
+                  Saldo Neto a Cobrar
+                </div>
+                <div style={{ fontSize: '11px', color: '#71717A' }}>Deduciendo seña de reserva</div>
+              </div>
+              <div className="font-tabular" style={{ fontSize: '22px', fontWeight: 800, color: '#FFFFFF' }}>
+                {formatGs(currentBalances.netPending)}
+              </div>
+            </div>
           </div>
-        ) : null}
-      </div>
+
+          {/* Split-Bill & Payment Action (If open) */}
+          {currentTab.status === 'open' && (
+            <div style={{ backgroundColor: '#111113', padding: '16px', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.08)', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              {/* Split count buttons */}
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                  <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em', color: '#A1A1AA', textTransform: 'uppercase' }}>
+                    División Split-Bill
+                  </div>
+                  <span className="font-tabular" style={{ fontSize: '13px', fontWeight: 800, color: '#FFFFFF' }}>
+                    {formatGs(splitAmount)} <span style={{ fontSize: '10.5px', color: '#71717A', fontWeight: 400 }}>/ jugador</span>
+                  </span>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px' }}>
+                  {[1, 2, 3, 4].map(num => (
+                    <button
+                      key={num}
+                      onClick={() => setSplitCount(num)}
+                      style={{
+                        padding: '10px 0',
+                        borderRadius: '6px',
+                        border: splitCount === num ? '1px solid #FFFFFF' : '1px solid rgba(255, 255, 255, 0.08)',
+                        backgroundColor: splitCount === num ? '#FFFFFF' : '#161619',
+                        color: splitCount === num ? '#09090B' : '#A1A1AA',
+                        fontSize: '12px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        transition: 'all 120ms ease'
+                      }}
+                    >
+                      {num} {num === 1 ? 'Jugador' : 'Jugadores'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Payment Method Selector */}
+              <div>
+                <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em', color: '#A1A1AA', textTransform: 'uppercase', marginBottom: '8px' }}>
+                  Método de Cobro
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' }}>
+                  {['Tarjeta', 'Efectivo', 'Transferencia Itaú'].map(m => (
+                    <button
+                      key={m}
+                      onClick={() => setPaymentMethod(m)}
+                      style={{
+                        padding: '10px 4px',
+                        borderRadius: '6px',
+                        border: paymentMethod === m ? '1px solid #FFFFFF' : '1px solid rgba(255, 255, 255, 0.08)',
+                        backgroundColor: paymentMethod === m ? '#1F1F24' : '#161619',
+                        color: paymentMethod === m ? '#FFFFFF' : '#71717A',
+                        fontSize: '11px',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        textAlign: 'center',
+                        transition: 'all 120ms ease'
+                      }}
+                    >
+                      {m}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Settle Action Button - Pure White High Contrast Button */}
+              <button
+                onClick={handleSettle}
+                className="btn-primary"
+                style={{ width: '100%', minHeight: '50px', fontSize: '13.5px', marginTop: '4px' }}
+              >
+                <Check size={16} strokeWidth={2.5} />
+                <span>Liquidar Cuenta ({formatGs(currentBalances.netPending)})</span>
+              </button>
+            </div>
+          )}
+        </div>
+      ) : (
+        <div style={{ padding: '40px 20px', textAlign: 'center', color: '#71717A' }}>
+          No hay cuentas en este filtro.
+        </div>
+      )}
     </div>
   );
 }

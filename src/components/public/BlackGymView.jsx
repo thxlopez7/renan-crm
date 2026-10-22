@@ -2,15 +2,11 @@ import React, { useState } from 'react';
 import { useClub } from '../../context/ClubContext';
 import { formatGs } from '../../utils/formatters';
 import { 
-  Dumbbell, 
   Clock, 
   Check, 
   X, 
   ChevronRight, 
-  ShieldCheck, 
-  Sparkles,
-  Calendar,
-  HeartPulse
+  Send
 } from 'lucide-react';
 
 export function BlackGymView() {
@@ -46,54 +42,48 @@ export function BlackGymView() {
 
   return (
     <div>
-      {/* Editorial Header */}
+      {/* Header Banner */}
       <div 
         className="card-obsidian"
         style={{
           position: 'relative',
-          padding: '40px 32px',
-          marginBottom: '32px',
-          backgroundImage: 'linear-gradient(to right, rgba(7, 7, 9, 0.95) 45%, rgba(7, 7, 9, 0.45) 100%), url(/images/blackgym.jpg)',
+          padding: '20px',
+          marginBottom: '20px',
+          backgroundImage: 'linear-gradient(to right, rgba(9, 9, 11, 0.95) 45%, rgba(9, 9, 11, 0.6) 100%), url(/images/blackgym.jpg)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          border: '1px solid rgba(255, 255, 255, 0.1)'
+          border: '1px solid rgba(255, 255, 255, 0.07)'
         }}
       >
         <div style={{ maxWidth: '640px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-            <span className="status-dot bronze"></span>
-            <span className="tracking-luxury" style={{ color: '#C5A880' }}>
-              BLACKGYM · FITNESS & RECOVERY CENTER
-            </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+            <span className="status-dot blue"></span>
+            <span className="tracking-luxury">BLACKGYM · CENTRO FITNESS & BIOSTRENGTH</span>
           </div>
 
-          <h2 style={{ fontSize: '28px', fontWeight: 800, color: '#F4F4F6', letterSpacing: '-0.02em', lineHeight: 1.2 }}>
+          <h2 className="title-section" style={{ color: '#FFFFFF' }}>
             Acondicionamiento Físico & Biomecánica
           </h2>
 
-          <p style={{ fontSize: '13.5px', color: '#A1A1AA', marginTop: '10px', lineHeight: 1.5 }}>
-            Centro de musculación, biostrength y recuperación física de alto nivel, adaptado a deportistas de élite y socios que priorizan la sobriedad y la exclusividad.
-          </p>
-
-          {/* Operating schedule info badge */}
+          {/* Operating schedule info badge (Real Instagram Bio Hours) */}
           <div style={{ 
             display: 'inline-flex', 
             flexWrap: 'wrap', 
-            gap: '14px', 
-            marginTop: '18px', 
-            padding: '10px 16px', 
+            gap: '12px', 
+            marginTop: '10px', 
+            padding: '6px 12px', 
             backgroundColor: 'rgba(255, 255, 255, 0.04)', 
-            border: '1px solid rgba(255, 255, 255, 0.08)',
-            borderRadius: '4px',
-            fontSize: '12px'
+            border: '1px solid rgba(255, 255, 255, 0.08)', 
+            borderRadius: '6px',
+            fontSize: '11px'
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Clock size={13} strokeWidth={1.5} color="#C5A880" />
-              <span style={{ color: '#F4F4F6', fontWeight: 600 }}>Lun a Vie:</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <Clock size={12} strokeWidth={1.5} color="#FFFFFF" />
+              <span style={{ color: '#FFFFFF', fontWeight: 700 }}>Lun a Vie:</span>
               <span className="font-tabular" style={{ color: '#A1A1AA' }}>07:00 a 12:00 y 14:00 a 21:00</span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', borderLeft: '1px solid rgba(255,255,255,0.1)', paddingLeft: '14px' }}>
-              <span style={{ color: '#F4F4F6', fontWeight: 600 }}>Sábados:</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <span style={{ color: '#FFFFFF', fontWeight: 700 }}>Sáb:</span>
               <span className="font-tabular" style={{ color: '#A1A1AA' }}>08:00 a 13:00</span>
             </div>
           </div>
@@ -101,27 +91,31 @@ export function BlackGymView() {
       </div>
 
       {/* Plans Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(330px, 1fr))', gap: '24px' }}>
+      <div style={{ 
+        display: 'grid', 
+        gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 300px), 1fr))', 
+        gap: '14px' 
+      }}>
         {gymPlans.map(plan => {
           const isFeatured = plan.featured;
-          const isElite = plan.id === 'gym-3';
 
           return (
             <div
               key={plan.id}
               className="card-obsidian"
               style={{
-                backgroundColor: isElite ? 'rgba(197, 168, 128, 0.04)' : '#121216',
-                border: isElite ? '1px solid #C5A880' : isFeatured ? '1px solid rgba(255, 255, 255, 0.2)' : '1px solid rgba(255, 255, 255, 0.08)',
-                padding: '28px 24px',
+                backgroundColor: '#111113',
+                border: isFeatured ? '1px solid rgba(255, 255, 255, 0.25)' : '1px solid rgba(255, 255, 255, 0.07)',
+                padding: '20px',
                 display: 'flex',
                 flexDirection: 'column',
-                justifyContent: 'space-between'
+                justifyContent: 'space-between',
+                borderRadius: '8px'
               }}
             >
               <div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
-                  <span className={`status-pill ${isElite ? 'bronze' : isFeatured ? 'blue' : 'emerald'}`}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                  <span className={`status-pill ${isFeatured ? 'emerald' : 'muted'}`}>
                     {plan.badge}
                   </span>
                   <span style={{ fontSize: '11px', color: '#71717A' }}>
@@ -129,23 +123,23 @@ export function BlackGymView() {
                   </span>
                 </div>
 
-                <h3 style={{ fontSize: '20px', fontWeight: 700, color: '#F4F4F6', marginBottom: '8px' }}>
+                <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#FFFFFF', marginBottom: '2px' }}>
                   {plan.name}
                 </h3>
 
-                <div className="font-tabular" style={{ fontSize: '26px', fontWeight: 800, color: '#F4F4F6', marginBottom: '16px' }}>
+                <div className="font-tabular" style={{ fontSize: '20px', fontWeight: 800, color: '#FFFFFF', marginBottom: '10px' }}>
                   {formatGs(plan.price)}
                 </div>
 
-                <p style={{ fontSize: '13px', color: '#A1A1AA', lineHeight: 1.5, marginBottom: '20px' }}>
+                <p style={{ fontSize: '12px', color: '#A1A1AA', lineHeight: 1.45, marginBottom: '14px' }}>
                   {plan.description}
                 </p>
 
                 {/* Features list */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '18px', marginBottom: '24px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '12px', marginBottom: '16px' }}>
                   {plan.features.map((feat, idx) => (
-                    <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', fontSize: '12.5px', color: '#D4D4D8' }}>
-                      <Check size={14} strokeWidth={2} color={isElite ? '#C5A880' : '#10B981'} style={{ flexShrink: 0, marginTop: '3px' }} />
+                    <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '6px', fontSize: '11.5px', color: '#D4D4D8' }}>
+                      <Check size={12} strokeWidth={2.5} color="#10B981" style={{ flexShrink: 0, marginTop: '2px' }} />
                       <span>{feat}</span>
                     </div>
                   ))}
@@ -154,65 +148,67 @@ export function BlackGymView() {
 
               <button
                 onClick={() => setSelectedPlan(plan)}
-                className={isElite ? 'btn-bronze' : 'btn-primary'}
-                style={{ width: '100%', padding: '12px' }}
+                className={isFeatured ? 'btn-primary' : 'btn-secondary'}
+                style={{ width: '100%', minHeight: '42px' }}
               >
-                <span>SOLICITAR ADMISIÓN</span>
-                <ChevronRight size={15} strokeWidth={1.5} />
+                <span>Solicitar Admisión</span>
+                <ChevronRight size={14} strokeWidth={2} />
               </button>
             </div>
           );
         })}
       </div>
 
-      {/* Slide-over Membership Application Drawer */}
+      {/* Slide-over / Mobile Bottom Sheet Membership Application Drawer */}
       {selectedPlan && (
         <div className="drawer-backdrop" onClick={closeDrawer}>
           <div className="drawer-panel" onClick={(e) => e.stopPropagation()}>
+            <div className="drawer-drag-handle"></div>
+
             <div style={{ 
-              padding: '20px 24px', 
-              borderBottom: '1px solid rgba(255, 255, 255, 0.08)', 
+              padding: '16px 20px', 
+              borderBottom: '1px solid rgba(255, 255, 255, 0.07)', 
               display: 'flex', 
               alignItems: 'center', 
               justifyContent: 'space-between',
-              backgroundColor: '#0D0D11'
+              backgroundColor: '#0E0E10'
             }}>
               <div>
-                <div className="tracking-luxury">SOLICITUD DE MEMBRESÍA · BLACKGYM</div>
-                <h3 style={{ fontSize: '17px', fontWeight: 700, color: '#F4F4F6' }}>
+                <div className="tracking-luxury">MEMBRESÍA · BLACKGYM</div>
+                <h3 style={{ fontSize: '15px', fontWeight: 800, color: '#FFFFFF' }}>
                   {selectedPlan.name}
                 </h3>
               </div>
-              <button onClick={closeDrawer} className="btn-ghost" style={{ width: '32px', height: '32px', padding: 0, justifyContent: 'center' }}>
+              <button onClick={closeDrawer} className="btn-ghost" style={{ width: '36px', height: '36px', padding: 0, justifyContent: 'center' }}>
                 <X size={18} strokeWidth={1.5} />
               </button>
             </div>
 
-            <div style={{ padding: '24px', flex: 1, overflowY: 'auto' }}>
+            <div style={{ padding: '20px', flex: 1, overflowY: 'auto' }}>
               {!successApp ? (
-                <form onSubmit={handleApply} style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
-                  <div className="card-obsidian" style={{ padding: '16px', backgroundColor: '#131318' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                      <span style={{ fontSize: '13px', color: '#71717A' }}>Plan Seleccionado</span>
-                      <span style={{ fontSize: '13px', fontWeight: 600 }}>{selectedPlan.name}</span>
+                <form onSubmit={handleApply} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <div className="card-obsidian" style={{ padding: '12px 14px', backgroundColor: '#131316' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
+                      <span style={{ fontSize: '11.5px', color: '#71717A' }}>Plan Seleccionado:</span>
+                      <span style={{ fontSize: '12px', fontWeight: 700, color: '#FFFFFF' }}>{selectedPlan.name}</span>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ fontSize: '13px', color: '#71717A' }}>Cuota Periódica</span>
-                      <span className="font-tabular" style={{ fontSize: '15px', fontWeight: 700, color: '#C5A880' }}>
+                      <span style={{ fontSize: '11.5px', color: '#71717A' }}>Cuota:</span>
+                      <span className="font-tabular" style={{ fontSize: '14px', fontWeight: 800, color: '#FFFFFF' }}>
                         {formatGs(selectedPlan.price)}
                       </span>
                     </div>
                   </div>
 
                   <div>
-                    <label className="tracking-luxury" style={{ display: 'block', marginBottom: '8px' }}>
-                      DATOS PERSONALES DEL SOLICITANTE
+                    <label className="tracking-luxury" style={{ display: 'block', marginBottom: '6px' }}>
+                      DATOS PERSONALES
                     </label>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                       <input
                         type="text"
                         required
-                        placeholder="Nombre y Apellido completo"
+                        placeholder="Nombre y Apellido *"
                         value={clientName}
                         onChange={(e) => setClientName(e.target.value)}
                         className="input-luxury"
@@ -220,14 +216,14 @@ export function BlackGymView() {
                       <input
                         type="tel"
                         required
-                        placeholder="Teléfono móvil (+595 981 ...)"
+                        placeholder="Teléfono / WhatsApp *"
                         value={clientPhone}
                         onChange={(e) => setClientPhone(e.target.value)}
                         className="input-luxury"
                       />
                       <input
                         type="email"
-                        placeholder="Correo electrónico corporativo"
+                        placeholder="Correo electrónico (Opcional)"
                         value={clientEmail}
                         onChange={(e) => setClientEmail(e.target.value)}
                         className="input-luxury"
@@ -235,34 +231,40 @@ export function BlackGymView() {
                     </div>
                   </div>
 
-                  <button type="submit" className="btn-primary" style={{ width: '100%', padding: '14px' }}>
-                    <span>ENVIAR SOLICITUD A ADMISIONES</span>
-                    <ChevronRight size={16} strokeWidth={1.5} />
+                  <button type="submit" className="btn-primary" style={{ width: '100%', minHeight: '46px', marginTop: '6px' }}>
+                    <Send size={14} strokeWidth={2} />
+                    <span>Enviar Solicitud a Admisiones</span>
                   </button>
                 </form>
               ) : (
-                <div style={{ textAlign: 'center', padding: '30px 10px' }}>
+                <div style={{ textAlign: 'center', padding: '28px 10px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
                   <div style={{ 
                     width: '48px', 
                     height: '48px', 
                     borderRadius: '50%', 
-                    backgroundColor: 'rgba(16, 185, 129, 0.1)', 
-                    border: '1px solid #10B981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.12)', 
+                    border: '1.5px solid #10B981', 
+                    color: '#10B981',
                     display: 'flex', 
                     alignItems: 'center', 
                     justifyContent: 'center',
-                    margin: '0 auto 16px'
+                    margin: '0 auto'
                   }}>
-                    <Check size={24} strokeWidth={2} color="#10B981" />
+                    <Check size={22} strokeWidth={2.5} />
                   </div>
-                  <h4 style={{ fontSize: '18px', fontWeight: 700, color: '#F4F4F6' }}>
-                    Solicitud Recibida por Recepción
-                  </h4>
-                  <p style={{ fontSize: '13px', color: '#A1A1AA', marginTop: '6px' }}>
-                    El equipo de concierge de BlackGym coordinará su sesión de evaluación biométrica inicial y la entrega de credenciales.
-                  </p>
-                  <button onClick={closeDrawer} className="btn-secondary" style={{ width: '100%', marginTop: '24px' }}>
-                    <span>FINALIZAR</span>
+                  <div>
+                    <span className="status-pill emerald" style={{ marginBottom: '6px' }}>
+                      SOLICITUD REGISTRADA
+                    </span>
+                    <h4 style={{ fontSize: '17px', fontWeight: 800, color: '#FFFFFF', marginTop: '4px' }}>
+                      Recepción Notificada
+                    </h4>
+                    <p style={{ fontSize: '12px', color: '#A1A1AA', marginTop: '2px' }}>
+                      Coordinaremos tu acceso y entrega de credenciales en el club.
+                    </p>
+                  </div>
+                  <button onClick={closeDrawer} className="btn-secondary" style={{ width: '100%', minHeight: '42px' }}>
+                    Finalizar
                   </button>
                 </div>
               )}
