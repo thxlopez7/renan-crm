@@ -26,5 +26,3 @@ dist-ssr
 *.sln
 *.sw?
 
-# Documentation requested local only
-DOCUMENTACION_COMPLETA.md
