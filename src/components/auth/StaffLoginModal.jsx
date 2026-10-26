@@ -8,7 +8,6 @@ import {
   AlertCircle, 
   X, 
   Loader2, 
-  ShieldCheck,
   ArrowLeft
 } from 'lucide-react';
 

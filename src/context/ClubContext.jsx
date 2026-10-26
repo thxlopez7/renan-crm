@@ -21,6 +21,7 @@ import {
   dbSettleTab,
   dbUpdateCourtRate,
   dbUpdateMenuItem,
+  dbAddMenuItem,
   fetchPricingConfig,
   fetchStaffRole,
   rpcCreatePublicBooking,
@@ -296,7 +297,7 @@ export function ClubProvider({ children }) {
   }, [data]);
 
   // Tab calculations helper using shared finance helper
-  const calculateTabBalances = (tab) => computeTabBalances(tab, pricingConfig);
+  const calculateTabBalances = useCallback((tab) => computeTabBalances(tab, pricingConfig), [pricingConfig]);
 
   // Live KPIs Calculation
   const kpis = useMemo(() => {
@@ -343,7 +344,7 @@ export function ClubProvider({ children }) {
       activeBookingsCount,
       totalSlotsPossible
     };
-  }, [data.bookings, data.tabs, data.courts, selectedDate]);
+  }, [data.bookings, data.tabs, data.courts, selectedDate, calculateTabBalances]);
 
   // Actions
   const createBooking = async (bookingData) => {
@@ -445,7 +446,7 @@ export function ClubProvider({ children }) {
       date: bookingData.date || selectedDate,
       timeSlot: bookingData.timeSlot,
       clientName: bookingData.clientName,
-      clientPhone: bookingData.clientPhone || '+595 981 000 000',
+      clientPhone: bookingData.clientPhone || '+595 983 573 396',
       category: bookingData.category || 'Reserva Estándar',
       status: depositPaid > 0 ? 'Confirmada' : 'Seña Pendiente',
       courtAmount,
@@ -494,7 +495,7 @@ export function ClubProvider({ children }) {
       updatedPlayers.push({
         id: `plr-${Date.now()}`,
         name: bookingData.clientName,
-        phone: bookingData.clientPhone || '+595 981 000 000',
+        phone: bookingData.clientPhone || '+595 983 573 396',
         category: '4ta Categoría',
         isFixedPassHolder: bookingData.category === 'Abono Fijo Semanal',
         fixedPassDay: bookingData.category === 'Abono Fijo Semanal' ? `${bookingData.timeSlot}` : null,
@@ -778,18 +779,50 @@ export function ClubProvider({ children }) {
     }
   };
 
-  const updateCourtRate = (courtId, newRate) => {
+  const addMenuItem = (newItem) => {
+    const itemWithId = {
+      id: newItem.id || `menu-${Date.now()}`,
+      name: newItem.name,
+      category: newItem.category || 'Hidratación & Bebidas',
+      description: newItem.description || '',
+      price: Number(newItem.price || 0),
+      stock: Number(newItem.stock !== undefined ? newItem.stock : 50),
+      available: Boolean(newItem.available !== false),
+      tag: newItem.tag || ''
+    };
+
     setData(prev => ({
       ...prev,
-      courts: prev.courts.map(c => c.id === courtId ? { ...c, rate: Number(newRate) } : c)
+      menuItems: [itemWithId, ...prev.menuItems]
     }));
 
     if (isSupabaseConfigured() && typeof navigator !== 'undefined' && navigator.onLine) {
-      dbUpdateCourtRate(courtId, newRate).catch(() => {
-        enqueueMutation({ type: 'UPDATE_COURT_RATE', courtId, newRate });
+      dbAddMenuItem(itemWithId).catch(() => {
+        enqueueMutation({ type: 'ADD_MENU_ITEM', newItem: itemWithId });
       });
     } else {
-      enqueueMutation({ type: 'UPDATE_COURT_RATE', courtId, newRate });
+      enqueueMutation({ type: 'ADD_MENU_ITEM', newItem: itemWithId });
+    }
+
+    return itemWithId;
+  };
+
+  const updateCourtRate = (courtId, newRate, newPrimeRate) => {
+    setData(prev => ({
+      ...prev,
+      courts: prev.courts.map(c => c.id === courtId ? {
+        ...c,
+        rate: Number(newRate),
+        primeRate: newPrimeRate !== undefined && newPrimeRate !== null ? Number(newPrimeRate) : c.primeRate
+      } : c)
+    }));
+
+    if (isSupabaseConfigured() && typeof navigator !== 'undefined' && navigator.onLine) {
+      dbUpdateCourtRate(courtId, newRate, newPrimeRate).catch(() => {
+        enqueueMutation({ type: 'UPDATE_COURT_RATE', courtId, newRate, newPrimeRate });
+      });
+    } else {
+      enqueueMutation({ type: 'UPDATE_COURT_RATE', courtId, newRate, newPrimeRate });
     }
   };
 
@@ -849,6 +882,7 @@ export function ClubProvider({ children }) {
         registerTournament,
         applyGymMembership,
         updateMenuItem,
+        addMenuItem,
         updateCourtRate,
         resetToSeedData
       }}

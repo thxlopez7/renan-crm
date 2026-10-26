@@ -1,9 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { useClub } from '../../context/ClubContext';
-import { formatGs, formatShortDate } from '../../utils/formatters';
-import { isSlotPast } from '../../utils/dateHelpers';
+import { formatGs } from '../../utils/formatters';
+import { isSlotPast, getNext7Days } from '../../utils/dateHelpers';
 import { ConciergeDrawer } from './ConciergeDrawer';
-import { Calendar } from 'lucide-react';
 
 export function CourtsBookingView() {
   const { courts, timeSlots, bookings, selectedDate, setSelectedDate } = useClub();
@@ -12,20 +11,7 @@ export function CourtsBookingView() {
   const [activeSlotData, setActiveSlotData] = useState(null);
 
   // Generate 7 consecutive days starting from today
-  const dateOptions = useMemo(() => {
-    return Array.from({ length: 7 }).map((_, i) => {
-      const d = new Date();
-      d.setDate(d.getDate() + i);
-      const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-      const days = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
-      return {
-        dateStr,
-        dayName: i === 0 ? 'Hoy' : days[d.getDay()],
-        dayNumber: d.getDate(),
-        formatted: formatShortDate(dateStr)
-      };
-    });
-  }, []);
+  const dateOptions = useMemo(() => getNext7Days(), []);
 
   const filteredCourts = selectedCourtFilter === 'all'
     ? courts

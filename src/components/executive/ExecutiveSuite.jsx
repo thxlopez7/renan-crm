@@ -17,11 +17,11 @@ export function ExecutiveSuite() {
   const [highlightedTabId, setHighlightedTabId] = useState(null);
 
   const sidebarItems = [
-    { id: 'dashboard', label: 'Dashboard', fullLabel: 'Dashboard Ejecutivo', icon: TrendingUp },
+    { id: 'dashboard', label: 'Panel', fullLabel: 'Panel de Control', icon: TrendingUp },
     { id: 'schedule', label: 'Agenda', fullLabel: 'Agenda de Canchas', icon: Calendar },
-    { id: 'pos', label: 'POS', fullLabel: 'Terminal POS (Cuentas)', icon: Receipt },
-    { id: 'players', label: 'Clientes CRM', fullLabel: 'Directorio de Clientes (CRM)', icon: Users },
-    { id: 'catalog', label: 'Catálogo', fullLabel: 'Catálogo & Tarifas', icon: Sliders }
+    { id: 'pos', label: 'Caja & Cuentas', fullLabel: 'Caja & Cuentas (Terminal)', icon: Receipt },
+    { id: 'players', label: 'Clientes', fullLabel: 'Directorio de Clientes', icon: Users },
+    { id: 'catalog', label: 'Tarifas & Stock', fullLabel: 'Tarifas & Inventario', icon: Sliders }
   ];
 
   const handleOpenPosTab = (tabId) => {

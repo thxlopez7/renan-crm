@@ -4,7 +4,6 @@ import { formatGs } from '../../utils/formatters';
 import { 
   Clock, 
   Check, 
-  X, 
   ChevronRight, 
   UserCheck,
   ArrowLeft
@@ -305,7 +304,7 @@ export function BlackTeamView() {
                       <input
                         type="tel"
                         required
-                        placeholder="+595 981 000 000"
+                        placeholder="+595 983 573 396"
                         value={clientPhone}
                         onChange={(e) => setClientPhone(e.target.value)}
                         className="input-luxury"

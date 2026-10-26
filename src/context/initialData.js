@@ -120,6 +120,7 @@ export const INITIAL_MENU_ITEMS = [
     category: 'Comida & Picadas',
     description: 'Tiras de lomito vacuno a la plancha, chorizo parrillero artesanal, mandioca frita y dip criollo.',
     price: 85000,
+    stock: 25,
     available: true,
     tag: 'Clásico Tercer Tiempo'
   },
@@ -129,6 +130,7 @@ export const INITIAL_MENU_ITEMS = [
     category: 'Comida & Picadas',
     description: 'Medallón 180g de novillo seleccionado, queso cheddar fundido, panceta crocante y papas rústicas.',
     price: 62000,
+    stock: 30,
     available: true,
     tag: 'Favorito'
   },
@@ -138,6 +140,7 @@ export const INITIAL_MENU_ITEMS = [
     category: 'Comida & Picadas',
     description: 'Bife de lomo tierno, jamón cocido, queso muzzarella, huevo frito, lechuga y tomate en pan ciabatta.',
     price: 52000,
+    stock: 20,
     available: true,
     tag: 'Post-Partido'
   },
@@ -147,6 +150,7 @@ export const INITIAL_MENU_ITEMS = [
     category: 'Comida & Picadas',
     description: 'Papas con piel crujientes bañadas en salsa cheddar casera y lluvia de panceta crocante.',
     price: 38000,
+    stock: 35,
     available: true,
     tag: 'Para Compartir'
   },
@@ -157,6 +161,7 @@ export const INITIAL_MENU_ITEMS = [
     category: 'Cervezas & Chopp',
     description: 'Dos manijas de chopp artesanal helado tirado en el momento (Happy Hour Pádel).',
     price: 28000,
+    stock: 60,
     available: true,
     tag: 'Promo Insignia'
   },
@@ -166,6 +171,7 @@ export const INITIAL_MENU_ITEMS = [
     category: 'Cervezas & Chopp',
     description: 'Balde con hielo picado y 6 botellas de Stella Artois bien frías para la mesa del equipo.',
     price: 95000,
+    stock: 18,
     available: true,
     tag: 'Balde Tercer Tiempo'
   },
@@ -175,6 +181,7 @@ export const INITIAL_MENU_ITEMS = [
     category: 'Cervezas & Chopp',
     description: 'Balde con hielo y 6 botellitas Patagonia Session IPA con notas cítricas y lúpulo fresco.',
     price: 110000,
+    stock: 15,
     available: true,
     tag: 'Cerveza Craft'
   },
@@ -184,6 +191,7 @@ export const INITIAL_MENU_ITEMS = [
     category: 'Cervezas & Chopp',
     description: 'Chopp rubio servido a -2°C con espuma densa en manija congelada.',
     price: 18000,
+    stock: 80,
     available: true,
     tag: 'Barra'
   },
@@ -193,6 +201,7 @@ export const INITIAL_MENU_ITEMS = [
     category: 'Cervezas & Chopp',
     description: 'Botella servida con gajo de lima fresca en el cuello.',
     price: 22000,
+    stock: 45,
     available: true,
     tag: 'Barra'
   },
@@ -203,6 +212,7 @@ export const INITIAL_MENU_ITEMS = [
     category: 'Hidratación & Bebidas',
     description: 'Isotónico con electrolitos para reposición inmediata en cancha.',
     price: 16000,
+    stock: 50,
     available: true,
     tag: 'En Cancha'
   },
@@ -212,6 +222,7 @@ export const INITIAL_MENU_ITEMS = [
     category: 'Hidratación & Bebidas',
     description: 'Agua mineral natural sin gas o con gas, bien helada.',
     price: 10000,
+    stock: 120,
     available: true,
     tag: 'Básico'
   },
@@ -221,6 +232,7 @@ export const INITIAL_MENU_ITEMS = [
     category: 'Hidratación & Bebidas',
     description: 'Botellita individual clásica de 500ml fría.',
     price: 12000,
+    stock: 70,
     available: true,
     tag: 'Refresco'
   },
@@ -230,6 +242,7 @@ export const INITIAL_MENU_ITEMS = [
     category: 'Hidratación & Bebidas',
     description: 'Lata clásica energizante para antes del partido.',
     price: 20000,
+    stock: 40,
     available: true,
     tag: 'Pre-Partido'
   },
@@ -240,6 +253,7 @@ export const INITIAL_MENU_ITEMS = [
     category: 'Pro-Shop & Merch',
     description: 'Pelotas oficiales presurizadas de rebote vivo y máxima durabilidad para partidos oficiales.',
     price: 70000,
+    stock: 30,
     available: true,
     tag: 'Pro-Shop'
   },
@@ -249,6 +263,7 @@ export const INITIAL_MENU_ITEMS = [
     category: 'Pro-Shop & Merch',
     description: 'Remera dry-fit negra con logo monocromo de alta densidad y respiración micro-perforada.',
     price: 160000,
+    stock: 15,
     available: true,
     tag: 'Merchandising'
   },
@@ -258,6 +273,7 @@ export const INITIAL_MENU_ITEMS = [
     category: 'Pro-Shop & Merch',
     description: 'Gorra deportiva estructurada negra con bordado frontal en relieve y visera semi-curva.',
     price: 120000,
+    stock: 18,
     available: true,
     tag: 'Merchandising'
   },
@@ -267,6 +283,7 @@ export const INITIAL_MENU_ITEMS = [
     category: 'Pro-Shop & Merch',
     description: 'Grip micro-perforado de máximo agarre y absorción para clima caluroso.',
     price: 25000,
+    stock: 50,
     available: true,
     tag: 'Pro-Shop'
   },
@@ -276,6 +293,7 @@ export const INITIAL_MENU_ITEMS = [
     category: 'Pro-Shop & Merch',
     description: 'Paleta gama alta de carbono para uso durante el turno de juego.',
     price: 30000,
+    stock: 8,
     available: true,
     tag: 'Alquiler Cancha'
   }

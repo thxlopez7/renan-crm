@@ -65,6 +65,7 @@ CREATE TABLE menu_items (
   category TEXT NOT NULL,           -- 'Comida & Picadas', 'Cervezas & Chopp', 'Hidratación & Bebidas', 'Pro-Shop & Merch'
   description TEXT,
   price INTEGER NOT NULL,           -- Precio unitario en Guaraníes (Gs.)
+  stock INTEGER NOT NULL DEFAULT 50, -- Stock/Inventario disponible
   available BOOLEAN NOT NULL DEFAULT TRUE,
   tag TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -258,6 +259,8 @@ CREATE POLICY "Allow all tournament_registrations" ON tournament_registrations F
 -- Políticas de edición de catálogo desde el CRM
 CREATE POLICY "Allow update courts" ON courts FOR UPDATE USING (true);
 CREATE POLICY "Allow update menu_items" ON menu_items FOR UPDATE USING (true);
+CREATE POLICY "Allow insert menu_items" ON menu_items FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow delete menu_items" ON menu_items FOR DELETE USING (true);
 
 -- ==============================================================================
 -- 6. HABILITAR SUPABASE REALTIME

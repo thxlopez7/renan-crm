@@ -35,6 +35,7 @@ export const mapMenuItemFromDb = (m) => ({
   category: m.category,
   description: m.description,
   price: Number(m.price),
+  stock: m.stock !== undefined && m.stock !== null ? Number(m.stock) : 50,
   available: Boolean(m.available),
   tag: m.tag
 });
@@ -326,11 +327,15 @@ export const dbSettleTab = async (tabId, paymentMethod) => {
   }
 };
 
-export const dbUpdateCourtRate = async (courtId, newRate) => {
+export const dbUpdateCourtRate = async (courtId, newRate, newPrimeRate) => {
   if (!isSupabaseConfigured()) return;
 
   try {
-    await supabase.from('courts').update({ rate: Number(newRate) }).eq('id', courtId);
+    const payload = { rate: Number(newRate) };
+    if (newPrimeRate !== undefined && newPrimeRate !== null) {
+      payload.prime_rate = Number(newPrimeRate);
+    }
+    await supabase.from('courts').update(payload).eq('id', courtId);
   } catch (err) {
     console.error('[Supabase] Error updating court rate:', err);
   }
@@ -341,11 +346,33 @@ export const dbUpdateMenuItem = async (updatedItem) => {
 
   try {
     await supabase.from('menu_items').update({
+      name: updatedItem.name,
+      category: updatedItem.category,
       price: Number(updatedItem.price),
+      stock: Number(updatedItem.stock !== undefined ? updatedItem.stock : 50),
       available: Boolean(updatedItem.available)
     }).eq('id', updatedItem.id);
   } catch (err) {
     console.error('[Supabase] Error updating menu item:', err);
+  }
+};
+
+export const dbAddMenuItem = async (newItem) => {
+  if (!isSupabaseConfigured()) return;
+
+  try {
+    await supabase.from('menu_items').insert([{
+      id: newItem.id,
+      name: newItem.name,
+      category: newItem.category,
+      description: newItem.description || '',
+      price: Number(newItem.price),
+      stock: Number(newItem.stock !== undefined ? newItem.stock : 50),
+      available: Boolean(newItem.available !== false),
+      tag: newItem.tag || ''
+    }]);
+  } catch (err) {
+    console.error('[Supabase] Error adding menu item:', err);
   }
 };
 

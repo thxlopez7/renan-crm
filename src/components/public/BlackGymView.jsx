@@ -4,7 +4,6 @@ import { formatGs } from '../../utils/formatters';
 import { 
   Clock, 
   Check, 
-  X, 
   ChevronRight, 
   Send,
   ArrowLeft

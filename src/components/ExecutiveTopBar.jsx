@@ -6,12 +6,10 @@ import {
   Smartphone, 
   MapPin, 
   Sliders,
-  X,
   TrendingUp,
   Calendar,
   Phone,
   Clock,
-  ShieldCheck,
   LogOut,
   UserCheck,
   ArrowLeft
@@ -20,7 +18,6 @@ import {
 export function ExecutiveTopBar({ viewMode, setViewMode }) {
   const { 
     kpis, 
-    isSupabaseLive, 
     user, 
     userRole, 
     syncStatus, 
@@ -127,7 +124,7 @@ export function ExecutiveTopBar({ viewMode, setViewMode }) {
             <>
               {/* Contacto Direct (Desktop only) */}
               <a
-                href="https://wa.me/595981000000"
+                href="https://wa.me/595983573396"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hide-mobile"
@@ -408,7 +405,7 @@ export function ExecutiveTopBar({ viewMode, setViewMode }) {
 
                 {/* Direct WhatsApp Contact */}
                 <a
-                  href="https://wa.me/595981000000"
+                  href="https://wa.me/595983573396"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="btn-athletic"

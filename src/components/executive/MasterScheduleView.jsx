@@ -1,14 +1,16 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useClub } from '../../context/ClubContext';
-import { formatGs, formatFullDate, formatShortDate } from '../../utils/formatters';
+import { formatGs, formatFullDate } from '../../utils/formatters';
+import { getNext7Days } from '../../utils/dateHelpers';
 import { 
   Check, 
   X, 
   UtensilsCrossed, 
   Plus, 
-  ExternalLink,
-  Phone,
-  ArrowLeft
+  ExternalLink, 
+  Phone, 
+  ArrowLeft, 
+  Bell 
 } from 'lucide-react';
 
 export function MasterScheduleView({ onOpenPosTab }) {
@@ -53,20 +55,7 @@ export function MasterScheduleView({ onOpenPosTab }) {
   const [editingDeposit, setEditingDeposit] = useState('');
 
   // 7 days options with stable generation
-  const dateOptions = useMemo(() => {
-    return Array.from({ length: 7 }).map((_, i) => {
-      const d = new Date();
-      d.setDate(d.getDate() + i);
-      const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-      const days = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
-      return {
-        dateStr,
-        dayName: i === 0 ? 'Hoy' : days[d.getDay()],
-        dayNumber: d.getDate(),
-        formatted: formatShortDate(dateStr)
-      };
-    });
-  }, []);
+  const dateOptions = useMemo(() => getNext7Days(), []);
 
   const handleOpenInspect = (booking) => {
     setInspectBooking(booking);
@@ -84,6 +73,21 @@ export function MasterScheduleView({ onOpenPosTab }) {
     }));
   };
 
+  const pendingRequests = useMemo(() => {
+    return bookings.filter(b => 
+      (b.status === 'Solicitud Pendiente' || b.status === 'Seña Pendiente') &&
+      b.status !== 'Cancelada'
+    );
+  }, [bookings]);
+
+  const handleConfirmAndBlock = (bookingId) => {
+    updateBookingStatus(bookingId, 'Confirmada', 0);
+  };
+
+  const handleRejectRequest = (bookingId) => {
+    updateBookingStatus(bookingId, 'Cancelada', 0);
+  };
+
   const handleCreateManual = (e) => {
     e.preventDefault();
     if (!newClientName.trim() || !createSlotData) return;
@@ -96,7 +100,7 @@ export function MasterScheduleView({ onOpenPosTab }) {
       date: selectedDate,
       timeSlot: createSlotData.slot,
       clientName: newClientName.trim(),
-      clientPhone: newClientPhone.trim() || '+595 981 000 000',
+      clientPhone: newClientPhone.trim() || '+595 983 573 396',
       category: isFixedPass ? 'Abono Fijo Semanal' : 'Reserva Estándar',
       courtAmount: court.rate,
       depositPaid: deposit,
@@ -203,6 +207,118 @@ export function MasterScheduleView({ onOpenPosTab }) {
           );
         })}
       </div>
+
+      {/* Tarjeta de Solicitudes Entrantes de Reserva (Alguien quiere reservar una cancha) */}
+      {pendingRequests.length > 0 && (
+        <div style={{
+          padding: '16px 18px',
+          borderRadius: '8px',
+          backgroundColor: '#161619',
+          border: '1px solid rgba(245, 158, 11, 0.4)',
+          boxShadow: '0 4px 20px rgba(245, 158, 11, 0.08)',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '12px'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Bell size={16} color="#F59E0B" />
+              <span style={{ fontSize: '13.5px', fontWeight: 800, color: '#F59E0B', letterSpacing: '0.02em' }}>
+                ¡Alguien quiere reservar una cancha! ({pendingRequests.length} solicitud{pendingRequests.length > 1 ? 'es' : ''})
+              </span>
+            </div>
+            <span style={{ fontSize: '11px', color: '#A1A1AA' }}>
+              Podés bloquear el turno o coordinar por WhatsApp
+            </span>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 320px), 1fr))', gap: '10px' }}>
+            {pendingRequests.map(req => {
+              const courtObj = courts.find(c => c.id === req.courtId);
+              const cleanPhone = (req.clientPhone || '').replace(/\D/g, '');
+              const waUrl = `https://wa.me/${cleanPhone || '595983573396'}?text=${encodeURIComponent(`Hola ${req.clientName}, te escribimos de Black Club Elite para confirmar tu reserva en la cancha ${courtObj?.name || ''} para el ${req.date} en el turno ${req.timeSlot}.`)}`;
+
+              return (
+                <div 
+                  key={req.id}
+                  style={{
+                    backgroundColor: '#0E0E10',
+                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                    borderRadius: '6px',
+                    padding: '14px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                    gap: '12px'
+                  }}
+                >
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '6px' }}>
+                      <span style={{ 
+                        fontSize: '9.5px', 
+                        fontWeight: 700, 
+                        backgroundColor: 'rgba(245, 158, 11, 0.15)', 
+                        color: '#F59E0B', 
+                        padding: '2px 7px', 
+                        borderRadius: '4px',
+                        textTransform: 'uppercase'
+                      }}>
+                        Solicitud Web
+                      </span>
+                      <span style={{ fontSize: '11px', color: '#A1A1AA' }}>
+                        {req.date} · {req.timeSlot}
+                      </span>
+                    </div>
+
+                    <h4 style={{ fontSize: '15px', fontWeight: 700, color: '#FFFFFF', margin: '4px 0 6px' }}>
+                      {req.clientName}
+                    </h4>
+
+                    <div style={{ fontSize: '12px', color: '#D4D4D8', marginBottom: '3px' }}>
+                      🎾 Cancha: <strong>{courtObj?.name || 'Cancha'}</strong>
+                    </div>
+
+                    <div style={{ fontSize: '11.5px', color: '#A1A1AA' }}>
+                      📱 Teléfono / WhatsApp: <strong style={{ color: '#FFFFFF' }}>{req.clientPhone}</strong>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '8px', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '10px' }}>
+                    <button
+                      onClick={() => handleConfirmAndBlock(req.id)}
+                      className="btn-primary"
+                      style={{ flex: 1, minHeight: '38px', fontSize: '12px', fontWeight: 700, gap: '6px' }}
+                    >
+                      <Check size={14} strokeWidth={2.5} />
+                      <span>Bloquear Reserva</span>
+                    </button>
+
+                    <a
+                      href={waUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn-secondary"
+                      title="Chatear por WhatsApp con el cliente"
+                      style={{ minHeight: '38px', padding: '0 12px', display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none' }}
+                    >
+                      <Phone size={13} strokeWidth={2} />
+                    </a>
+
+                    <button
+                      onClick={() => handleRejectRequest(req.id)}
+                      className="btn-ghost"
+                      title="Descartar solicitud"
+                      style={{ minHeight: '38px', padding: '0 10px', color: '#FB7185', fontSize: '12px' }}
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* 1. MOBILE / FOCUS CARDS VIEW MODE */}
       {scheduleViewMode === 'cards' && (
@@ -553,11 +669,22 @@ export function MasterScheduleView({ onOpenPosTab }) {
 
               {/* Status Change Selector */}
               <div>
+                {(inspectBooking.status === 'Solicitud Pendiente' || inspectBooking.status === 'Seña Pendiente') && (
+                  <button
+                    onClick={() => handleSaveStatus('Confirmada')}
+                    className="btn-primary"
+                    style={{ width: '100%', minHeight: '44px', gap: '8px', marginBottom: '12px', fontSize: '13px' }}
+                  >
+                    <Check size={16} strokeWidth={2.5} />
+                    <span>Bloquear y Confirmar Reserva</span>
+                  </button>
+                )}
+
                 <label style={{ display: 'block', fontSize: '10.5px', fontWeight: 700, letterSpacing: '0.06em', color: '#A1A1AA', marginBottom: '8px', textTransform: 'uppercase' }}>
                   Modificar Estado Operativo
                 </label>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                  {['Seña Pendiente', 'Confirmada', 'En Cancha', 'Finalizada'].map(st => {
+                  {['Solicitud Pendiente', 'Confirmada', 'En Cancha', 'Finalizada'].map(st => {
                     const isActive = inspectBooking.status === st;
                     return (
                       <button
@@ -683,7 +810,7 @@ export function MasterScheduleView({ onOpenPosTab }) {
                   </label>
                   <input
                     type="tel"
-                    placeholder="+595 981 000 000"
+                    placeholder="+595 983 573 396"
                     value={newClientPhone}
                     onChange={(e) => setNewClientPhone(e.target.value)}
                     className="input-luxury"

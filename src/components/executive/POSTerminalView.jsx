@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { useClub } from '../../context/ClubContext';
 import { formatGs } from '../../utils/formatters';
 import { 
-  Check 
+  Check,
+  Calculator
 } from 'lucide-react';
 
 export function POSTerminalView({ highlightedTabId }) {
@@ -21,7 +22,7 @@ export function POSTerminalView({ highlightedTabId }) {
     return firstOpen ? firstOpen.id : (tabs[0] ? tabs[0].id : null);
   });
 
-  const [splitCount, setSplitCount] = useState(4);
+  const [playerCount, setPlayerCount] = useState(4);
   const [paymentMethod, setPaymentMethod] = useState('Tarjeta');
   const [settleSuccessMsg, setSettleSuccessMsg] = useState(false);
 
@@ -29,7 +30,8 @@ export function POSTerminalView({ highlightedTabId }) {
   const currentTab = tabs.find(t => t.id === selectedTabId) || displayedTabs[0] || null;
 
   const currentBalances = currentTab ? calculateTabBalances(currentTab) : null;
-  const splitAmount = currentBalances ? Math.round(currentBalances.netPending / splitCount) : 0;
+  const courtPerPlayer = currentBalances ? Math.round(currentBalances.courtBase / playerCount) : 0;
+  const totalPerPlayer = currentBalances ? Math.round(currentBalances.netPending / playerCount) : 0;
 
   // Real Authentic Paraguayan Padel Club Items for Quick-Add Botonera
   const quickItems = [
@@ -59,10 +61,10 @@ export function POSTerminalView({ highlightedTabId }) {
       {/* Header */}
       <div>
         <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em', color: '#A1A1AA', textTransform: 'uppercase' }}>
-          Terminal POS & Caja
+          Terminal de Cobro & Caja
         </div>
         <h2 style={{ fontSize: '20px', fontWeight: 800, color: '#FFFFFF', letterSpacing: '-0.02em', marginTop: '2px' }}>
-          Cuentas Corrientes & Liquidación
+          Cuentas Corrientes & Liquidación de Canchas
         </h2>
       </div>
 
@@ -302,7 +304,7 @@ export function POSTerminalView({ highlightedTabId }) {
                 <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em', color: '#A1A1AA', textTransform: 'uppercase' }}>
                   Saldo Neto a Cobrar
                 </div>
-                <div style={{ fontSize: '11px', color: '#71717A' }}>Deduciendo seña de reserva</div>
+                <div style={{ fontSize: '11px', color: '#71717A' }}>Deduciendo seña previa si la hubiera</div>
               </div>
               <div className="font-tabular" style={{ fontSize: '22px', fontWeight: 800, color: '#FFFFFF' }}>
                 {formatGs(currentBalances.netPending)}
@@ -310,47 +312,124 @@ export function POSTerminalView({ highlightedTabId }) {
             </div>
           </div>
 
-          {/* Split-Bill & Payment Action (If open) */}
+          {/* Calculadora por Jugadores y Acción de Pago (si la cuenta está abierta) */}
           {currentTab.status === 'open' && (
             <div style={{ backgroundColor: '#111113', padding: '16px', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.08)', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              {/* Split count buttons */}
+              {/* Calculadora por Cantidad de Jugadores */}
               <div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                  <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em', color: '#A1A1AA', textTransform: 'uppercase' }}>
-                    División Split-Bill
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Calculator size={14} color="#FFFFFF" />
+                    <div style={{ fontSize: '10.5px', fontWeight: 700, letterSpacing: '0.06em', color: '#FFFFFF', textTransform: 'uppercase' }}>
+                      Calculadora de Pago por Jugadores
+                    </div>
                   </div>
-                  <span className="font-tabular" style={{ fontSize: '13px', fontWeight: 800, color: '#FFFFFF' }}>
-                    {formatGs(splitAmount)} <span style={{ fontSize: '10.5px', color: '#71717A', fontWeight: 400 }}>/ jugador</span>
+                  <span style={{ fontSize: '11px', color: '#A1A1AA' }}>
+                    {playerCount} {playerCount === 1 ? 'jugador' : 'jugadores'}
                   </span>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px' }}>
-                  {[1, 2, 3, 4].map(num => (
+                {/* Controles de selección de jugadores */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' }}>
+                  <span style={{ fontSize: '12px', color: '#D4D4D8', fontWeight: 600 }}>Jugaron:</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                     <button
-                      key={num}
-                      onClick={() => setSplitCount(num)}
-                      style={{
-                        padding: '10px 0',
-                        borderRadius: '6px',
-                        border: splitCount === num ? '1px solid #FFFFFF' : '1px solid rgba(255, 255, 255, 0.08)',
-                        backgroundColor: splitCount === num ? '#FFFFFF' : '#161619',
-                        color: splitCount === num ? '#09090B' : '#A1A1AA',
-                        fontSize: '12px',
-                        fontWeight: 700,
-                        cursor: 'pointer',
-                        transition: 'all 120ms ease'
-                      }}
+                      type="button"
+                      onClick={() => setPlayerCount(prev => Math.max(1, prev - 1))}
+                      className="btn-secondary"
+                      style={{ minHeight: '34px', width: '34px', padding: 0, justifyContent: 'center', fontSize: '16px', fontWeight: 700 }}
                     >
-                      {num} {num === 1 ? 'Jugador' : 'Jugadores'}
+                      -
                     </button>
-                  ))}
+                    <input
+                      type="number"
+                      min="1"
+                      max="30"
+                      value={playerCount}
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value, 10);
+                        setPlayerCount(isNaN(val) || val < 1 ? 1 : val);
+                      }}
+                      className="input-luxury font-tabular"
+                      style={{ width: '60px', textAlign: 'center', fontSize: '15px', fontWeight: 800, padding: '4px' }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setPlayerCount(prev => prev + 1)}
+                      className="btn-secondary"
+                      style={{ minHeight: '34px', width: '34px', padding: 0, justifyContent: 'center', fontSize: '16px', fontWeight: 700 }}
+                    >
+                      +
+                    </button>
+                  </div>
+
+                  {/* Botones rápidos (2, 4, 6, 8 jugadores) */}
+                  <div style={{ display: 'flex', gap: '4px', marginLeft: 'auto' }}>
+                    {[2, 4, 6, 8].map(num => (
+                      <button
+                        key={num}
+                        type="button"
+                        onClick={() => setPlayerCount(num)}
+                        style={{
+                          padding: '6px 10px',
+                          borderRadius: '4px',
+                          fontSize: '11.5px',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          border: playerCount === num ? '1px solid #FFFFFF' : '1px solid rgba(255, 255, 255, 0.08)',
+                          backgroundColor: playerCount === num ? '#FFFFFF' : '#161619',
+                          color: playerCount === num ? '#09090B' : '#A1A1AA',
+                          transition: 'all 120ms ease'
+                        }}
+                      >
+                        {num} jug.
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Resumen del cálculo por jugador */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 190px), 1fr))', gap: '8px' }}>
+                  <div style={{ 
+                    padding: '12px', 
+                    backgroundColor: '#161619', 
+                    borderRadius: '6px', 
+                    border: '1px solid rgba(255, 255, 255, 0.08)' 
+                  }}>
+                    <div style={{ fontSize: '10px', color: '#A1A1AA', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                      Solo Cancha ({formatGs(currentBalances.courtBase)})
+                    </div>
+                    <div className="font-tabular" style={{ fontSize: '16px', fontWeight: 800, color: '#FFFFFF', marginTop: '4px' }}>
+                      {formatGs(courtPerPlayer)}
+                    </div>
+                    <div style={{ fontSize: '10.5px', color: '#71717A', marginTop: '2px' }}>
+                      por cada jugador
+                    </div>
+                  </div>
+
+                  <div style={{ 
+                    padding: '12px', 
+                    backgroundColor: '#161619', 
+                    borderRadius: '6px', 
+                    border: '1px solid rgba(16, 185, 129, 0.35)' 
+                  }}>
+                    <div style={{ fontSize: '10px', color: '#34D399', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                      Total Cuenta ({formatGs(currentBalances.netPending)})
+                    </div>
+                    <div className="font-tabular" style={{ fontSize: '16px', fontWeight: 800, color: '#34D399', marginTop: '4px' }}>
+                      {formatGs(totalPerPlayer)}
+                    </div>
+                    <div style={{ fontSize: '10.5px', color: '#71717A', marginTop: '2px' }}>
+                      cancha + consumos por jugador
+                    </div>
+                  </div>
                 </div>
               </div>
 
               {/* Payment Method Selector */}
               <div>
                 <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em', color: '#A1A1AA', textTransform: 'uppercase', marginBottom: '8px' }}>
-                  Método de Cobro
+                  Método de Pago
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' }}>
                   {['Tarjeta', 'Efectivo', 'Transferencia Itaú'].map(m => (

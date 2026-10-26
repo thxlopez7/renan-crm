@@ -229,7 +229,7 @@ export function ExecutiveDashboard({ onNavigate }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <Receipt size={16} color="#FFFFFF" />
             <div>
-              <div style={{ fontSize: '13px', fontWeight: 700, color: '#FFFFFF' }}>Terminal POS</div>
+              <div style={{ fontSize: '13px', fontWeight: 700, color: '#FFFFFF' }}>Caja & Cuentas</div>
               <div style={{ fontSize: '11px', color: '#71717A' }}>{openTabs.length} cuentas pendientes</div>
             </div>
           </div>
@@ -253,7 +253,7 @@ export function ExecutiveDashboard({ onNavigate }) {
             className="btn-ghost"
             style={{ fontSize: '11.5px', color: '#FFFFFF', padding: '4px 10px' }}
           >
-            Ver en POS
+            Ver Cuentas
           </button>
         </div>
 

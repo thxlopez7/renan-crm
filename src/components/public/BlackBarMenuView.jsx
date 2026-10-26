@@ -1,14 +1,7 @@
 import React, { useState } from 'react';
 import { useClub } from '../../context/ClubContext';
 import { formatGs } from '../../utils/formatters';
-import { 
-  UtensilsCrossed, 
-  Beer, 
-  Wine, 
-  Package, 
-  Info,
-  Clock
-} from 'lucide-react';
+import { Clock } from 'lucide-react';
 
 export function BlackBarMenuView() {
   const { menuItems } = useClub();

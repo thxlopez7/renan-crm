@@ -1,65 +1,26 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useClub } from '../../context/ClubContext';
 import { formatGs } from '../../utils/formatters';
 import { 
   Calendar, 
-  Check, 
-  X, 
-  ChevronRight, 
   Trophy,
   Award,
-  ArrowLeft
+  Phone,
+  ArrowUpRight,
+  MessageCircle
 } from 'lucide-react';
 
+const TOURNAMENTS_WHATSAPP_NUMBER = '595983573396';
+const TOURNAMENTS_PHONE_DISPLAY = '+595 983 573 396';
+
 export function TournamentsView() {
-  const { tournaments, registerTournament } = useClub();
+  const { tournaments } = useClub();
 
-  const [selectedTournament, setSelectedTournament] = useState(null);
-  const [pairName, setPairName] = useState('');
-  const [player1, setPlayer1] = useState('');
-  const [player2, setPlayer2] = useState('');
-  const [phone, setPhone] = useState('');
-  const [category, setCategory] = useState('');
-  const [successReg, setSuccessReg] = useState(null);
-
-  // Lock background body scroll while drawer is open
-  useEffect(() => {
-    if (!selectedTournament) return;
-    const originalOverflow = document.body.style.overflow;
-    const originalTouchAction = document.body.style.touchAction;
-    document.body.style.overflow = 'hidden';
-    document.body.style.touchAction = 'none';
-
-    return () => {
-      document.body.style.overflow = originalOverflow;
-      document.body.style.touchAction = originalTouchAction;
-    };
-  }, [selectedTournament]);
-
-  const handleRegister = (e) => {
-    e.preventDefault();
-    if (!player1.trim() || !player2.trim() || !phone.trim() || !category) return;
-
-    const reg = registerTournament({
-      tournamentId: selectedTournament.id,
-      pairName: pairName.trim() || `${player1} / ${player2}`,
-      player1: player1.trim(),
-      player2: player2.trim(),
-      phone: phone.trim(),
-      category
-    });
-
-    setSuccessReg(reg);
-  };
-
-  const closeDrawer = () => {
-    setSelectedTournament(null);
-    setPairName('');
-    setPlayer1('');
-    setPlayer2('');
-    setPhone('');
-    setCategory('');
-    setSuccessReg(null);
+  const getWhatsAppLink = (tournamentTitle) => {
+    const text = tournamentTitle 
+      ? `Hola Black Club Elite, me gustaría recibir información y consultar sobre las inscripciones para el torneo: ${tournamentTitle}.`
+      : 'Hola Black Club Elite, me gustaría recibir información sobre los torneos y competencias.';
+    return `https://wa.me/${TOURNAMENTS_WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`;
   };
 
   return (
@@ -75,7 +36,7 @@ export function TournamentsView() {
           boxShadow: '0 10px 30px rgba(0, 0, 0, 0.4)'
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', flexWrap: 'wrap' }}>
           <span 
             style={{ 
               backgroundColor: '#E11D48', 
@@ -99,7 +60,7 @@ export function TournamentsView() {
           Circuito Black Pádel · 2da Edición
         </h2>
 
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', fontSize: '12px', color: '#D4D4D8', marginBottom: '16px' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', fontSize: '12px', color: '#D4D4D8', marginBottom: '20px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <Calendar size={14} color="#E11D48" />
             <span>24 al 27 de Noviembre 2026</span>
@@ -114,31 +75,99 @@ export function TournamentsView() {
           </div>
         </div>
 
-        <button
-          onClick={() => {
-            const flagship = tournaments.find(t => t.isFlagship) || tournaments[0];
-            setSelectedTournament(flagship);
-            setCategory(flagship.categories[0] || '');
-          }}
-          className="btn-primary"
+        <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+          <a
+            href={getWhatsAppLink('Circuito Black Pádel · 2da Edición')}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-primary"
+            style={{ 
+              backgroundColor: '#FFFFFF', 
+              color: '#09090B', 
+              minHeight: '44px', 
+              padding: '0 20px', 
+              fontWeight: 700,
+              textDecoration: 'none',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}
+          >
+            <Phone size={15} strokeWidth={2.2} />
+            <span>Contactar por WhatsApp</span>
+            <ArrowUpRight size={15} strokeWidth={2.5} />
+          </a>
+
+          <span style={{ fontSize: '12px', color: '#A1A1AA' }}>
+            WhatsApp Oficial: <strong style={{ color: '#FFFFFF' }}>{TOURNAMENTS_PHONE_DISPLAY}</strong>
+          </span>
+        </div>
+      </div>
+
+      {/* Official Tournaments Coordination Banner */}
+      <div 
+        style={{
+          padding: '16px 20px',
+          borderRadius: '8px',
+          backgroundColor: '#111113',
+          border: '1px solid rgba(255, 255, 255, 0.08)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '14px'
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{
+            width: '38px',
+            height: '38px',
+            borderRadius: '50%',
+            backgroundColor: 'rgba(16, 185, 129, 0.12)',
+            border: '1px solid rgba(16, 185, 129, 0.3)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: '#10B981',
+            flexShrink: 0
+          }}>
+            <MessageCircle size={18} strokeWidth={2} />
+          </div>
+          <div>
+            <div style={{ fontSize: '13px', fontWeight: 700, color: '#FFFFFF' }}>
+              Coordinación & Consultas de Torneos
+            </div>
+            <div style={{ fontSize: '11.5px', color: '#A1A1AA', marginTop: '2px' }}>
+              Para inscripción de parejas, reglamento y cuadros oficiales, contactá directamente a la organización.
+            </div>
+          </div>
+        </div>
+
+        <a
+          href={getWhatsAppLink()}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="btn-secondary"
           style={{ 
-            backgroundColor: '#FFFFFF', 
-            color: '#09090B', 
-            minHeight: '44px', 
-            padding: '0 20px', 
-            fontWeight: 700 
+            textDecoration: 'none', 
+            padding: '8px 16px', 
+            fontSize: '12px', 
+            display: 'inline-flex', 
+            alignItems: 'center', 
+            gap: '6px' 
           }}
         >
-          <span>Inscribir Pareja Titular</span>
-          <ChevronRight size={15} strokeWidth={2.5} />
-        </button>
+          <Phone size={13} strokeWidth={2} />
+          <span>{TOURNAMENTS_PHONE_DISPLAY}</span>
+          <ArrowUpRight size={13} />
+        </a>
       </div>
 
       {/* Grid of All Tournaments & Events */}
       <div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
           <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#F4F4F6' }}>
-            Calendario de Competencias & Sorteos
+            Calendario de Competencias & Eventos
           </h3>
           <span style={{ fontSize: '11.5px', color: '#71717A' }}>
             {tournaments.length} eventos habilitados
@@ -193,10 +222,16 @@ export function TournamentsView() {
                     {tournament.title}
                   </h4>
 
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#A1A1AA', marginBottom: '14px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#A1A1AA', marginBottom: '12px' }}>
                     <Calendar size={13} strokeWidth={1.5} />
                     <span>{tournament.dates}</span>
                   </div>
+
+                  {tournament.description && (
+                    <p style={{ fontSize: '12px', color: '#8E8E93', lineHeight: 1.45, marginBottom: '14px' }}>
+                      {tournament.description}
+                    </p>
+                  )}
 
                   <div style={{ 
                     padding: '12px', 
@@ -226,192 +261,31 @@ export function TournamentsView() {
                   </div>
                 </div>
 
-                <button
-                  onClick={() => {
-                    setSelectedTournament(tournament);
-                    setCategory(tournament.categories[0] || '');
-                  }}
+                <a
+                  href={getWhatsAppLink(tournament.title)}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="btn-primary"
-                  style={{ width: '100%', minHeight: '42px', fontSize: '12.5px' }}
+                  style={{ 
+                    width: '100%', 
+                    minHeight: '42px', 
+                    fontSize: '12.5px',
+                    textDecoration: 'none',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px'
+                  }}
                 >
-                  <span>Inscribir Pareja</span>
-                  <ChevronRight size={14} />
-                </button>
+                  <Phone size={14} strokeWidth={2} />
+                  <span>Contactar por WhatsApp</span>
+                  <ArrowUpRight size={14} strokeWidth={2} />
+                </a>
               </div>
             );
           })}
         </div>
       </div>
-
-      {/* Registration Bottom Sheet Drawer */}
-      {selectedTournament && (
-        <div className="drawer-backdrop" onClick={closeDrawer}>
-          <div 
-            className="drawer-panel" 
-            role="dialog"
-            aria-modal="true"
-            aria-label="Inscripción al Torneo Oficial"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="drawer-drag-container" onClick={closeDrawer} title="Cerrar">
-              <div className="drawer-drag-handle"></div>
-            </div>
-
-            <div style={{ 
-              padding: '16px 20px', 
-              borderBottom: '1px solid rgba(255, 255, 255, 0.08)', 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'space-between',
-              backgroundColor: '#09090B'
-            }}>
-              <div>
-                <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em', color: '#A1A1AA', textTransform: 'uppercase' }}>
-                  Inscripción Oficial
-                </div>
-                <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#FFFFFF', marginTop: '2px' }}>
-                  {selectedTournament.title}
-                </h3>
-              </div>
-              <button 
-                onClick={closeDrawer} 
-                className="btn-secondary" 
-                style={{ padding: '6px 12px', minHeight: '34px', fontSize: '11.5px', gap: '6px', borderRadius: '4px' }}
-                aria-label="Volver a torneos"
-              >
-                <ArrowLeft size={13} strokeWidth={2} />
-                <span>Volver</span>
-              </button>
-            </div>
-
-            <div style={{ padding: '20px', flex: 1, overflowY: 'auto' }}>
-              {!successReg ? (
-                <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                  <div style={{ padding: '12px 14px', backgroundColor: '#14141A', borderRadius: '6px', border: '1px solid rgba(255, 255, 255, 0.06)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
-                      <span style={{ fontSize: '12px', color: '#71717A' }}>Tarifa de Inscripción:</span>
-                      <span className="font-tabular" style={{ fontSize: '13px', fontWeight: 800, color: '#FFFFFF' }}>
-                        {formatGs(selectedTournament.entryFee)}
-                      </span>
-                    </div>
-                    <div style={{ fontSize: '11px', color: '#71717A' }}>
-                      Mínimo 2 partidos garantizados y Welcome Pack oficial.
-                    </div>
-                  </div>
-
-                  <div>
-                    <label style={{ display: 'block', fontSize: '10.5px', fontWeight: 700, letterSpacing: '0.06em', color: '#A1A1AA', marginBottom: '6px', textTransform: 'uppercase' }}>
-                      Categoría
-                    </label>
-                    <select
-                      value={category}
-                      onChange={(e) => setCategory(e.target.value)}
-                      className="select-luxury"
-                    >
-                      {selectedTournament.categories.map(cat => (
-                        <option key={cat} value={cat}>Categoría {cat}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    <div>
-                      <label style={{ display: 'block', fontSize: '10.5px', fontWeight: 700, letterSpacing: '0.05em', color: '#A1A1AA', marginBottom: '4px', textTransform: 'uppercase' }}>
-                        Jugador 1 *
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        placeholder="Nombre y Apellido"
-                        value={player1}
-                        onChange={(e) => setPlayer1(e.target.value)}
-                        className="input-luxury"
-                      />
-                    </div>
-
-                    <div>
-                      <label style={{ display: 'block', fontSize: '10.5px', fontWeight: 700, letterSpacing: '0.05em', color: '#A1A1AA', marginBottom: '4px', textTransform: 'uppercase' }}>
-                        Jugador 2 *
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        placeholder="Nombre y Apellido"
-                        value={player2}
-                        onChange={(e) => setPlayer2(e.target.value)}
-                        className="input-luxury"
-                      />
-                    </div>
-
-                    <div>
-                      <label style={{ display: 'block', fontSize: '10.5px', fontWeight: 700, letterSpacing: '0.05em', color: '#A1A1AA', marginBottom: '4px', textTransform: 'uppercase' }}>
-                        WhatsApp de Contacto *
-                      </label>
-                      <input
-                        type="tel"
-                        required
-                        placeholder="+595 981 000 000"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                        className="input-luxury"
-                      />
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '6px' }}>
-                    <button type="submit" className="btn-primary" style={{ width: '100%', minHeight: '46px' }}>
-                      <span>Confirmar Inscripción</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={closeDrawer}
-                      className="btn-ghost"
-                      style={{ width: '100%', minHeight: '38px', fontSize: '12px', color: '#A1A1AA', gap: '6px' }}
-                    >
-                      <ArrowLeft size={13} />
-                      <span>Volver a Torneos</span>
-                    </button>
-                  </div>
-                </form>
-              ) : (
-                <div style={{ textAlign: 'center', padding: '24px 10px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                  <div style={{ 
-                    width: '44px', 
-                    height: '44px', 
-                    borderRadius: '50%', 
-                    backgroundColor: 'rgba(16, 185, 129, 0.1)', 
-                    border: '1px solid #10B981', 
-                    color: '#10B981', 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'center', 
-                    margin: '0 auto' 
-                  }}>
-                    <Check size={22} strokeWidth={2.5} />
-                  </div>
-                  <div>
-                    <h4 style={{ fontSize: '17px', fontWeight: 700, color: '#FFFFFF' }}>
-                      Inscripción Registrada
-                    </h4>
-                    <p style={{ fontSize: '12.5px', color: '#A1A1AA', marginTop: '4px' }}>
-                      Binomio: <strong>{successReg.pairName}</strong> (Categoría {successReg.category})
-                    </p>
-                  </div>
-                  <button 
-                    onClick={closeDrawer} 
-                    className="btn-primary" 
-                    style={{ width: '100%', minHeight: '44px', gap: '8px' }}
-                  >
-                    <ArrowLeft size={14} />
-                    <span>Volver a Torneos</span>
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

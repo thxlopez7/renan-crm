@@ -2,15 +2,12 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useClub } from '../../context/ClubContext';
 import { formatGs, formatFullDate, formatShortDate } from '../../utils/formatters';
 import { 
-  X, 
   Check, 
   ShieldCheck, 
   UtensilsCrossed, 
-  CreditCard, 
   Share2, 
   Clock, 
   Calendar,
-  Copy,
   Plus,
   Minus,
   ArrowLeft
@@ -26,7 +23,6 @@ export function ConciergeDrawer({ slotData, onClose }) {
   const [barTableRequested, setBarTableRequested] = useState(false);
   const [confirmedBooking, setConfirmedBooking] = useState(null);
   const [errorMsg, setErrorMsg] = useState('');
-  const [copiedBankData, setCopiedBankData] = useState(false);
 
   // Swipe-to-dismiss gesture state
   const [dragY, setDragY] = useState(0);
@@ -81,14 +77,6 @@ export function ConciergeDrawer({ slotData, onClose }) {
   const baseRate = court.rate;
   const equipmentTotal = (rentedRackets * RACKET_PRICE) + (ballTubes * BALL_TUBE_PRICE);
   const totalAmount = baseRate + equipmentTotal;
-  const requiredDeposit = Math.round(baseRate * 0.5);
-
-  const handleCopyBank = () => {
-    const text = `BLACK CLUB ELITE · DATOS BANCARIOS (ITAÚ PARAGUAY)\nBanco: Banco Itaú Paraguay S.A.\nCuenta Corriente: 720049182\nTitular: Black Club Elite S.A.\nRUC: 80112948-2\nConcepto: Seña Cancha ${court.name} ${date} ${timeSlot}`;
-    navigator.clipboard?.writeText(text);
-    setCopiedBankData(true);
-    setTimeout(() => setCopiedBankData(false), 2000);
-  };
 
   const handleConfirm = async (e) => {
     e.preventDefault();
@@ -110,12 +98,20 @@ export function ConciergeDrawer({ slotData, onClose }) {
         clientPhone: clientPhone.trim(),
         category: 'Reserva Estándar',
         courtAmount: baseRate,
-        depositPaid: requiredDeposit,
+        depositPaid: 0,
+        status: 'Solicitud Pendiente',
         barTableRequested,
         rentedRackets,
         ballTubes
       });
       setConfirmedBooking(newBooking);
+
+      // Redirección directa e inmediata a WhatsApp oficial
+      const waMsg = `Hola Black Club Elite, acabo de solicitar la reserva de la cancha ${court.name} para el día ${date} en el turno ${timeSlot} a nombre de ${clientName.trim()} (Tel: ${clientPhone.trim()}). Aguardo confirmación del operador para el bloqueo oficial de mi turno.`;
+      const waUrl = `https://wa.me/595983573396?text=${encodeURIComponent(waMsg)}`;
+      if (typeof window !== 'undefined') {
+        window.open(waUrl, '_blank');
+      }
     } catch (err) {
       if (err.message && (err.message.includes('SLOT_ALREADY_BOOKED') || err.message.includes('23505') || err.code === '23505' || err.code === 'P0001')) {
         setErrorMsg('Este turno acaba de ser reservado por otro cliente. Por favor elegí otro horario.');
@@ -359,61 +355,24 @@ export function ConciergeDrawer({ slotData, onClose }) {
                 </div>
               </div>
 
-              {/* Bank Transfer Instructions */}
+              {/* Direct WhatsApp Confirmation Callout (No Advance Deposit) */}
               <div style={{ 
-                padding: '12px 14px', 
+                padding: '14px', 
                 backgroundColor: '#111113', 
-                border: '1px solid rgba(255, 255, 255, 0.06)', 
-                borderRadius: '6px' 
+                border: '1px solid rgba(16, 185, 129, 0.25)', 
+                borderRadius: '8px' 
               }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <CreditCard size={13} strokeWidth={1.5} color="#FFFFFF" />
-                    <span className="tracking-luxury" style={{ fontSize: '9px' }}>SEÑA BANCARIA (50%)</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleCopyBank}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                      background: 'transparent',
-                      border: 'none',
-                      color: copiedBankData ? '#34D399' : '#FFFFFF',
-                      fontSize: '11px',
-                      cursor: 'pointer',
-                      fontWeight: 700
-                    }}
-                  >
-                    <Copy size={11} />
-                    <span>{copiedBankData ? 'Copiado!' : 'Copiar Cuenta'}</span>
-                  </button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                  <span className="status-dot emerald"></span>
+                  <span className="tracking-luxury" style={{ fontSize: '9px', color: '#34D399' }}>CONFIRMACIÓN DIRECTA VÍA WHATSAPP</span>
                 </div>
 
-                <div className="font-tabular" style={{ fontSize: '14.5px', fontWeight: 800, color: '#FFFFFF', marginBottom: '4px' }}>
-                  {formatGs(requiredDeposit)} <span style={{ fontSize: '11px', fontWeight: 400, color: '#A1A1AA' }}>para confirmar</span>
+                <div style={{ fontSize: '13px', fontWeight: 700, color: '#FFFFFF', marginBottom: '4px' }}>
+                  Sin seña bancaria previa
                 </div>
 
-                <div style={{ fontSize: '11px', color: '#71717A', lineHeight: 1.4 }}>
-                  Banco Itaú Paraguay · Cta Cte: <strong>720049182</strong> · Black Club Elite S.A.
-                </div>
-
-                {/* Clear Validation Feedback Callout */}
-                <div style={{ 
-                  marginTop: '10px',
-                  padding: '9px 12px', 
-                  backgroundColor: 'rgba(255, 255, 255, 0.03)', 
-                  borderRadius: '6px',
-                  border: '1px dashed rgba(255, 255, 255, 0.12)',
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  gap: '8px'
-                }}>
-                  <span style={{ fontSize: '13px', lineHeight: 1.2 }}>📲</span>
-                  <div style={{ fontSize: '11px', color: '#A1A1AA', lineHeight: 1.4 }}>
-                    <strong style={{ color: '#FFFFFF' }}>Validación Inmediata:</strong> Al confirmar, serás redirigido a WhatsApp con el resumen de la reserva para enviar tu comprobante de transferencia y validar tu reserva con recepción.
-                  </div>
+                <div style={{ fontSize: '11.5px', color: '#A1A1AA', lineHeight: 1.45 }}>
+                  Al presionar el botón serás redirigido a nuestro WhatsApp oficial (<strong>+595 983 573 396</strong>) y tu solicitud ingresará instantáneamente en la agenda del CRM para que el operador bloquee tu cancha.
                 </div>
               </div>
 
@@ -423,7 +382,7 @@ export function ConciergeDrawer({ slotData, onClose }) {
                 </div>
               )}
 
-              {/* Sticky Confirmation Action Bar */}
+              {/* Action Bar */}
               <div style={{ 
                 borderTop: '1px solid rgba(255, 255, 255, 0.08)', 
                 paddingTop: '12px',
@@ -433,15 +392,15 @@ export function ConciergeDrawer({ slotData, onClose }) {
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <div>
-                    <div style={{ fontSize: '10.5px', color: '#71717A' }}>Total Reserva</div>
+                    <div style={{ fontSize: '10.5px', color: '#71717A' }}>Total Cancha & Extras</div>
                     <div className="font-tabular" style={{ fontSize: '17px', fontWeight: 800, color: '#FFFFFF' }}>
                       {formatGs(totalAmount)}
                     </div>
                   </div>
                   <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: '10.5px', color: '#A1A1AA' }}>Seña Requerida (50%)</div>
-                    <div className="font-tabular" style={{ fontSize: '14px', fontWeight: 800, color: '#FFFFFF' }}>
-                      {formatGs(requiredDeposit)}
+                    <div style={{ fontSize: '10.5px', color: '#10B981' }}>Pago en Recepción</div>
+                    <div style={{ fontSize: '12px', fontWeight: 600, color: '#E4E4E7' }}>
+                      Al llegar al club
                     </div>
                   </div>
                 </div>
@@ -453,7 +412,7 @@ export function ConciergeDrawer({ slotData, onClose }) {
                     style={{ width: '100%', minHeight: '46px', fontSize: '13.5px' }}
                   >
                     <ShieldCheck size={16} strokeWidth={2} />
-                    <span>Confirmar & Emitir Reserva</span>
+                    <span>Solicitar Reserva & Confirmar por WhatsApp</span>
                   </button>
                 </div>
               </div>
@@ -515,9 +474,9 @@ export function ConciergeDrawer({ slotData, onClose }) {
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '6px' }}>
-                  <span style={{ fontSize: '11.5px', color: '#A1A1AA' }}>Seña Registrada:</span>
-                  <span className="font-tabular" style={{ fontSize: '13px', fontWeight: 800, color: '#34D399' }}>
-                    {formatGs(confirmedBooking.depositPaid)}
+                  <span style={{ fontSize: '11.5px', color: '#A1A1AA' }}>Estado Solicitud:</span>
+                  <span style={{ fontSize: '12px', fontWeight: 800, color: '#38BDF8' }}>
+                    Pendiente en Recepción
                   </span>
                 </div>
               </div>
@@ -525,21 +484,21 @@ export function ConciergeDrawer({ slotData, onClose }) {
               {/* Action Buttons */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <a
-                  href={`https://wa.me/595981000000?text=${encodeURIComponent(`Hola Black Club Elite, acabo de registrar la reserva ${confirmedBooking.id} a nombre de ${confirmedBooking.clientName} para ${court.name} el ${date} en el turno ${timeSlot}.`)}`}
+                  href={`https://wa.me/595983573396?text=${encodeURIComponent(`Hola Black Club Elite, acabo de solicitar la reserva de la cancha ${court.name} para el ${date} en el turno ${timeSlot} a nombre de ${confirmedBooking.clientName}. Aguardo confirmación.`)}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="btn-secondary"
-                  style={{ textDecoration: 'none', minHeight: '42px', gap: '8px' }}
+                  className="btn-primary"
+                  style={{ textDecoration: 'none', minHeight: '44px', gap: '8px' }}
                 >
-                  <Share2 size={13} />
-                  <span>Enviar Comprobante por WhatsApp</span>
+                  <Share2 size={14} />
+                  <span>Abrir WhatsApp (+595 983 573 396)</span>
                 </a>
 
                 <button
                   type="button"
                   onClick={onClose}
-                  className="btn-primary"
-                  style={{ minHeight: '44px', gap: '8px' }}
+                  className="btn-secondary"
+                  style={{ minHeight: '42px', gap: '8px' }}
                 >
                   <ArrowLeft size={14} />
                   <span>Volver a la Grilla de Turnos</span>
