@@ -1,322 +1,133 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { ArrowRight, Check, Loader2, X } from 'lucide-react';
 import { useClub } from '../../context/ClubContext';
 import { formatGs } from '../../utils/formatters';
-import { 
-  Clock, 
-  Check, 
-  ChevronRight, 
-  Send,
-  ArrowLeft
-} from 'lucide-react';
+import { formatPyPhone, normalizePyPhone } from '../../utils/phone';
+import '../../styles/booking.css';
 
-export function BlackGymView() {
-  const { gymPlans, applyGymMembership } = useClub();
+function ApplySheet({ plan, onClose }) {
+  const { applyGymMembership } = useClub();
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
+  const [error, setError] = useState('');
+  const [sent, setSent] = useState(false);
+  const [saving, setSaving] = useState(false);
 
-  const [selectedPlan, setSelectedPlan] = useState(null);
-  const [clientName, setClientName] = useState('');
-  const [clientPhone, setClientPhone] = useState('');
-  const [clientEmail, setClientEmail] = useState('');
-  const [successApp, setSuccessApp] = useState(null);
-
-  // Lock background body scroll while drawer is open
   useEffect(() => {
-    if (!selectedPlan) return;
-    const originalOverflow = document.body.style.overflow;
-    const originalTouchAction = document.body.style.touchAction;
+    const previous = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
-    document.body.style.touchAction = 'none';
+    return () => { document.body.style.overflow = previous; };
+  }, []);
 
-    return () => {
-      document.body.style.overflow = originalOverflow;
-      document.body.style.touchAction = originalTouchAction;
-    };
-  }, [selectedPlan]);
-
-  const handleApply = (e) => {
+  const submit = (e) => {
     e.preventDefault();
-    if (!clientName.trim() || !clientPhone.trim()) return;
-
-    const newApp = applyGymMembership({
-      planId: selectedPlan.id,
-      clientName: clientName.trim(),
-      clientPhone: clientPhone.trim(),
-      email: clientEmail.trim()
-    });
-
-    setSuccessApp(newApp);
-  };
-
-  const closeDrawer = () => {
-    setSelectedPlan(null);
-    setClientName('');
-    setClientPhone('');
-    setClientEmail('');
-    setSuccessApp(null);
+    setError('');
+    if (name.trim().length < 2) return setError('Ingresá tu nombre.');
+    if (!normalizePyPhone(phone)) return setError('Ingresá un celular válido, por ejemplo 0981 123 456.');
+    setSaving(true);
+    applyGymMembership({ planId: plan.id, clientName: name.trim(), clientPhone: normalizePyPhone(phone), email: email.trim() });
+    setSaving(false);
+    setSent(true);
   };
 
   return (
-    <div>
-      {/* Header Banner */}
-      <div 
-        className="card-obsidian"
-        style={{
-          position: 'relative',
-          padding: '20px',
-          marginBottom: '20px',
-          backgroundImage: 'linear-gradient(to right, rgba(9, 9, 11, 0.95) 45%, rgba(9, 9, 11, 0.6) 100%), url(/images/blackgym.jpg)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          border: '1px solid rgba(255, 255, 255, 0.07)'
-        }}
-      >
-        <div style={{ maxWidth: '640px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-            <span className="status-dot blue"></span>
-            <span className="tracking-luxury">BLACKGYM · CENTRO FITNESS & BIOSTRENGTH</span>
+    <div className="bk-sheet-backdrop" onClick={onClose}>
+      <div className="bk-sheet" role="dialog" aria-modal="true" aria-labelledby="gym-title" onClick={(e) => e.stopPropagation()}>
+        <div className="bk-sheet-handle" />
+        {sent ? (
+          <div className="bk-success">
+            <div className="bk-success-icon"><Check size={28} strokeWidth={2.5} /></div>
+            <h3 id="gym-title" className="bk-sheet-title">Solicitud enviada</h3>
+            <p className="bk-subtitle" style={{ margin: '8px 0 18px' }}>
+              Te escribimos por WhatsApp para coordinar tu evaluación inicial y el alta en {plan.name}.
+            </p>
+            <button type="button" className="bk-primary" onClick={onClose}>Listo</button>
           </div>
-
-          <h2 className="title-section" style={{ color: '#FFFFFF' }}>
-            Acondicionamiento Físico & Biomecánica
-          </h2>
-
-          {/* Operating schedule info badge (Real Instagram Bio Hours) */}
-          <div style={{ 
-            display: 'inline-flex', 
-            flexWrap: 'wrap', 
-            gap: '12px', 
-            marginTop: '10px', 
-            padding: '6px 12px', 
-            backgroundColor: 'rgba(255, 255, 255, 0.04)', 
-            border: '1px solid rgba(255, 255, 255, 0.08)', 
-            borderRadius: '6px',
-            fontSize: '11px'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-              <Clock size={12} strokeWidth={1.5} color="#FFFFFF" />
-              <span style={{ color: '#FFFFFF', fontWeight: 700 }}>Lun a Vie:</span>
-              <span className="font-tabular" style={{ color: '#A1A1AA' }}>07:00 a 12:00 y 14:00 a 21:00</span>
+        ) : (
+          <form onSubmit={submit} noValidate>
+            <div className="bk-sheet-head">
+              <div>
+                <span className="eyebrow">BlackGym</span>
+                <h3 id="gym-title" className="bk-sheet-title">{plan.name}</h3>
+              </div>
+              <button type="button" className="bk-icon-btn" aria-label="Cerrar" onClick={onClose}><X size={18} /></button>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-              <span style={{ color: '#FFFFFF', fontWeight: 700 }}>Sáb:</span>
-              <span className="font-tabular" style={{ color: '#A1A1AA' }}>08:00 a 13:00</span>
+            <div className="bk-summary">
+              <div className="bk-summary-row"><span>{plan.period}</span><strong>{formatGs(plan.price)}</strong></div>
             </div>
+            <div className="bk-field">
+              <label htmlFor="gym-name">Nombre y apellido</label>
+              <input id="gym-name" autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} />
+            </div>
+            <div className="bk-field">
+              <label htmlFor="gym-phone">Celular (WhatsApp)</label>
+              <input
+                id="gym-phone"
+                type="tel"
+                inputMode="tel"
+                autoComplete="tel"
+                placeholder="0981 123 456"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                onBlur={() => normalizePyPhone(phone) && setPhone(formatPyPhone(phone))}
+              />
+            </div>
+            <div className="bk-field">
+              <label htmlFor="gym-email">Email (opcional)</label>
+              <input id="gym-email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+            </div>
+            {error && <div className="bk-error" role="alert">{error}</div>}
+            <button type="submit" className="bk-primary" disabled={saving}>
+              {saving ? <Loader2 size={18} className="animate-spin" /> : 'Solicitar alta'}
+            </button>
+            <p className="bk-hint" style={{ textAlign: 'center', marginTop: 10 }}>Sin compromiso. El pago se hace en el club.</p>
+          </form>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export function BlackGymView() {
+  const { gymPlans } = useClub();
+  const [selectedPlan, setSelectedPlan] = useState(null);
+
+  return (
+    <div className="sec">
+      <div className="sec-banner" style={{ backgroundImage: 'url(/images/blackgym.jpg)' }}>
+        <div className="sec-head">
+          <span className="eyebrow">BlackGym · Biostrength</span>
+          <h2 className="sec-title">Fuerza para jugar mejor</h2>
+          <p className="sec-lead">Sala de fuerza con equipamiento Biostrength, evaluación biomecánica y rutinas pensadas para el pádel.</p>
+          <div className="sec-meta">
+            <span><strong>Lun a Vie</strong> 07:00–12:00 · 14:00–21:00</span>
+            <span><strong>Sábados</strong> 08:00–13:00</span>
           </div>
         </div>
       </div>
 
-      {/* Plans Grid */}
-      <div style={{ 
-        display: 'grid', 
-        gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 300px), 1fr))', 
-        gap: '14px' 
-      }}>
-        {gymPlans.map(plan => {
-          const isFeatured = plan.featured;
-
-          return (
-            <div
-              key={plan.id}
-              className="card-obsidian"
-              style={{
-                backgroundColor: '#111113',
-                border: isFeatured ? '1px solid rgba(255, 255, 255, 0.25)' : '1px solid rgba(255, 255, 255, 0.07)',
-                padding: '20px',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-                borderRadius: '8px'
-              }}
-            >
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                  <span className={`status-pill ${isFeatured ? 'emerald' : 'muted'}`}>
-                    {plan.badge}
-                  </span>
-                  <span style={{ fontSize: '11px', color: '#71717A' }}>
-                    {plan.period}
-                  </span>
-                </div>
-
-                <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#FFFFFF', marginBottom: '2px' }}>
-                  {plan.name}
-                </h3>
-
-                <div className="font-tabular" style={{ fontSize: '20px', fontWeight: 800, color: '#FFFFFF', marginBottom: '10px' }}>
-                  {formatGs(plan.price)}
-                </div>
-
-                <p style={{ fontSize: '12px', color: '#A1A1AA', lineHeight: 1.45, marginBottom: '14px' }}>
-                  {plan.description}
-                </p>
-
-                {/* Features list */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '12px', marginBottom: '16px' }}>
-                  {plan.features.map((feat, idx) => (
-                    <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '6px', fontSize: '11.5px', color: '#D4D4D8' }}>
-                      <Check size={12} strokeWidth={2.5} color="#10B981" style={{ flexShrink: 0, marginTop: '2px' }} />
-                      <span>{feat}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <button
-                onClick={() => setSelectedPlan(plan)}
-                className={isFeatured ? 'btn-primary' : 'btn-secondary'}
-                style={{ width: '100%', minHeight: '42px' }}
-              >
-                <span>Solicitar Admisión</span>
-                <ChevronRight size={14} strokeWidth={2} />
-              </button>
+      <div className="grid-cards is-3">
+        {gymPlans.map(plan => (
+          <article key={plan.id} className={`card ${plan.featured ? 'is-featured' : ''}`}>
+            <span className={`card-tag ${plan.featured ? '' : 'is-muted'}`}>{plan.badge}</span>
+            <div>
+              <h3 className="card-title">{plan.name}</h3>
+              <div className="card-sub" style={{ marginTop: 6 }}>{plan.period}</div>
             </div>
-          );
-        })}
+            <div className="card-price"><strong>{formatGs(plan.price).replace(' Gs.', '')}</strong><span>Gs. / mes</span></div>
+            <p className="card-text">{plan.description}</p>
+            <ul className="card-list">
+              {plan.features.map(f => <li key={f}><Check size={15} strokeWidth={2.2} />{f}</li>)}
+            </ul>
+            <button type="button" className={`lux-btn ${plan.featured ? 'is-solid' : ''}`} onClick={() => setSelectedPlan(plan)}>
+              Quiero este plan <ArrowRight size={16} />
+            </button>
+          </article>
+        ))}
       </div>
 
-      {/* Slide-over / Mobile Bottom Sheet Membership Application Drawer */}
-      {selectedPlan && (
-        <div className="drawer-backdrop" onClick={closeDrawer}>
-          <div 
-            className="drawer-panel" 
-            role="dialog"
-            aria-modal="true"
-            aria-label="Solicitud de Membresía BlackGym"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="drawer-drag-container" onClick={closeDrawer} title="Cerrar">
-              <div className="drawer-drag-handle"></div>
-            </div>
-
-            <div style={{ 
-              padding: '16px 20px', 
-              borderBottom: '1px solid rgba(255, 255, 255, 0.07)', 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'space-between',
-              backgroundColor: '#0E0E10'
-            }}>
-              <div>
-                <div className="tracking-luxury">MEMBRESÍA · BLACKGYM</div>
-                <h3 style={{ fontSize: '15px', fontWeight: 800, color: '#FFFFFF', marginTop: '2px' }}>
-                  {selectedPlan.name}
-                </h3>
-              </div>
-              <button 
-                onClick={closeDrawer} 
-                className="btn-secondary" 
-                style={{ padding: '6px 12px', minHeight: '34px', fontSize: '11.5px', gap: '6px', borderRadius: '4px' }}
-                aria-label="Volver a planes"
-              >
-                <ArrowLeft size={13} strokeWidth={2} />
-                <span>Volver</span>
-              </button>
-            </div>
-
-            <div style={{ padding: '20px', flex: 1, overflowY: 'auto' }}>
-              {!successApp ? (
-                <form onSubmit={handleApply} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  <div className="card-obsidian" style={{ padding: '12px 14px', backgroundColor: '#131316' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
-                      <span style={{ fontSize: '11.5px', color: '#71717A' }}>Plan Seleccionado:</span>
-                      <span style={{ fontSize: '12px', fontWeight: 700, color: '#FFFFFF' }}>{selectedPlan.name}</span>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ fontSize: '11.5px', color: '#71717A' }}>Cuota:</span>
-                      <span className="font-tabular" style={{ fontSize: '14px', fontWeight: 800, color: '#FFFFFF' }}>
-                        {formatGs(selectedPlan.price)}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="tracking-luxury" style={{ display: 'block', marginBottom: '6px' }}>
-                      DATOS PERSONALES
-                    </label>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      <input
-                        type="text"
-                        required
-                        placeholder="Nombre y Apellido *"
-                        value={clientName}
-                        onChange={(e) => setClientName(e.target.value)}
-                        className="input-luxury"
-                      />
-                      <input
-                        type="tel"
-                        required
-                        placeholder="Teléfono / WhatsApp *"
-                        value={clientPhone}
-                        onChange={(e) => setClientPhone(e.target.value)}
-                        className="input-luxury"
-                      />
-                      <input
-                        type="email"
-                        placeholder="Correo electrónico (Opcional)"
-                        value={clientEmail}
-                        onChange={(e) => setClientEmail(e.target.value)}
-                        className="input-luxury"
-                      />
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '6px' }}>
-                    <button type="submit" className="btn-primary" style={{ width: '100%', minHeight: '46px' }}>
-                      <Send size={14} strokeWidth={2} />
-                      <span>Enviar Solicitud a Admisiones</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={closeDrawer}
-                      className="btn-ghost"
-                      style={{ width: '100%', minHeight: '38px', fontSize: '12px', color: '#A1A1AA', gap: '6px' }}
-                    >
-                      <ArrowLeft size={13} />
-                      <span>Volver a Planes</span>
-                    </button>
-                  </div>
-                </form>
-              ) : (
-                <div style={{ textAlign: 'center', padding: '28px 10px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                  <div style={{ 
-                    width: '48px', 
-                    height: '48px', 
-                    borderRadius: '50%', 
-                    backgroundColor: 'rgba(16, 185, 129, 0.12)', 
-                    border: '1.5px solid #10B981', 
-                    color: '#10B981', 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'center', 
-                    margin: '0 auto' 
-                  }}>
-                    <Check size={22} strokeWidth={2.5} />
-                  </div>
-                  <div>
-                    <span className="status-pill emerald" style={{ marginBottom: '6px' }}>
-                      SOLICITUD REGISTRADA
-                    </span>
-                    <h4 style={{ fontSize: '17px', fontWeight: 800, color: '#FFFFFF', marginTop: '4px' }}>
-                      Recepción Notificada
-                    </h4>
-                    <p style={{ fontSize: '12px', color: '#A1A1AA', marginTop: '2px' }}>
-                      Coordinaremos tu acceso y entrega de credenciales en el club.
-                    </p>
-                  </div>
-                  <button 
-                    onClick={closeDrawer} 
-                    className="btn-primary" 
-                    style={{ width: '100%', minHeight: '44px', gap: '8px' }}
-                  >
-                    <ArrowLeft size={14} />
-                    <span>Volver a BlackGym</span>
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+      {selectedPlan && <ApplySheet plan={selectedPlan} onClose={() => setSelectedPlan(null)} />}
     </div>
   );
 }

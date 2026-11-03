@@ -363,7 +363,7 @@ export const INITIAL_TOURNAMENTS = [
     categories: ['2da', '3ra', '4ta', '5ta', '6ta'],
     slots: 64,
     registeredCount: 48,
-    status: 'Inscripciones Abiertas',
+    status: 'Finalizado',
     description: 'Segunda edición del torneo insignia de Black Club Elite. Cuadro oficial con fase de grupos y llaves de eliminación directa.'
   },
   {

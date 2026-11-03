@@ -104,7 +104,9 @@ export function BookingFlow({ onOpenMyBooking }) {
     if (startTime && (!selectedSlot || selectedSlot.freeCount === 0)) setStartTime(null);
   }, [selectedSlot, startTime]);
 
+  const pickedByUser = useRef(false);
   const pickDate = (value) => {
+    pickedByUser.current = true;
     setDate(value);
     setStartTime(null);
   };
@@ -123,6 +125,11 @@ export function BookingFlow({ onOpenMyBooking }) {
   const priceFor = (court) => Math.round(court.rate * duration / 60);
   const visibleSlots = slots.filter(s => !s.past);
   const hasAnyFree = visibleSlots.some(s => s.freeCount > 0);
+
+  // Late at night today is already full or over: open on tomorrow instead of an empty day
+  useEffect(() => {
+    if (!loading && !pickedByUser.current && date === today && !hasAnyFree) setDate(addDays(today, 1));
+  }, [loading, hasAnyFree, date, today]);
 
   return (
     <div className="bk">
@@ -232,6 +239,8 @@ export function BookingFlow({ onOpenMyBooking }) {
               const free = isCourtFree(busy, court.id, startTime, duration);
               return (
                 <article key={court.id} className={`bk-court ${free ? '' : 'is-busy'}`}>
+                  <div className="bk-court-media" style={{ backgroundImage: `url(${court.image || '/images/court_panoramic.jpg'})` }} />
+                  <div className="bk-court-body">
                   <div className="bk-court-top">
                     <div>
                       <div className="bk-court-name">{court.name}</div>
@@ -250,6 +259,7 @@ export function BookingFlow({ onOpenMyBooking }) {
                   >
                     {free ? <><CalendarCheck size={17} /> Reservar</> : 'Ocupada a esa hora'}
                   </button>
+                  </div>
                 </article>
               );
             })}

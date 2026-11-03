@@ -535,3 +535,46 @@
 .dash-client strong { display: block; font-size: 13.5px; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .dash-client small { font-size: 11.5px; color: var(--text-muted); }
 .dash-rank { width: 26px; height: 26px; border-radius: 999px; background: var(--surface-active); color: var(--text-secondary); font-size: 12px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+/* ---- Luxury theme layer ---- */
+.ag-date-label { font-family: var(--font-display); font-size: 22px; font-weight: 600; }
+.ag-date-label small { font-family: var(--font-sans); color: var(--gold); letter-spacing: 0.18em; text-transform: uppercase; font-size: 10px; }
+.ag-stat, .set-card, .dash-tile, .cash-tab, .ag-board, .cash-register, .cash-search { border-color: var(--border-subtle); border-radius: 16px; }
+.ag-stat strong, .dash-tile strong { font-family: var(--font-display); font-weight: 600; font-size: 26px; letter-spacing: 0; }
+.dash-tile.is-hero strong { font-size: 38px; }
+.dash-tile span, .ag-stat span { letter-spacing: 0.04em; }
+.set-head h3 { font-family: var(--font-display); font-size: 22px; font-weight: 600; }
+.ag-section-title { font-family: var(--font-display); font-size: 20px; font-weight: 600; }
+.ag-count, .crm-badge { background: var(--gold); color: #141007; }
+.ag-chip { border-radius: 999px; }
+.ag-chip.is-active { background: var(--text-primary); border-color: var(--text-primary); color: #0A0A0A; }
+.ag-btn { border-radius: 999px; }
+.ag-btn.is-primary { background: var(--text-primary); color: #0A0A0A; }
+.ag-fab { background: var(--text-primary); color: #0A0A0A; box-shadow: 0 16px 40px rgba(0,0,0,0.6), 0 0 0 1px var(--gold-line); }
+.ag-request { border-color: var(--gold-line); background: linear-gradient(180deg, var(--gold-soft), var(--surface-base)); border-radius: 18px; }
+.ag-timer { color: var(--gold); }
+.dash-bar-fill { background: var(--gold); }
+.crm-nav-item.is-active { background: var(--surface-elevated); box-shadow: inset 2px 0 0 var(--gold); }
+.crm-tab.is-active { color: var(--gold); }
+.crm-sidebar-title strong { font-family: var(--font-display); font-size: 22px; font-weight: 600; }
+.cash-tab-name { font-size: 15px; }
+.cash-tab-amount { font-family: var(--font-display); font-size: 20px; font-weight: 600; }
+.cash-register.is-open { border-color: rgba(143, 191, 159, 0.35); background: rgba(143, 191, 159, 0.05); }
+.cash-register { border-color: var(--gold-line); background: var(--gold-soft); }
+.ag {
+  --ag-pending: #C8B08A;
+  --ag-pending-bg: rgba(200, 176, 138, 0.16);
+  --ag-confirmed: #E8E4DC;
+  --ag-confirmed-bg: rgba(232, 228, 220, 0.09);
+  --ag-playing: #8FBF9F;
+  --ag-playing-bg: rgba(143, 191, 159, 0.16);
+}
+.ag-event { border-radius: 10px; }
+.ag-event-name { font-size: 12.5px; }
+.ag-now { border-top-color: var(--gold); }
+.ag-now::before { background: var(--gold); }
+.ag-board-head div { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-secondary); }
+.ag-btn.is-success { background: #8FBF9F; border-color: #8FBF9F; color: #0B1A10; }
+.ag-btn.is-whatsapp { background: transparent; color: #8FBF9F; border-color: rgba(143, 191, 159, 0.4); }
+.ag-btn.is-danger { color: #E8A0A0; border-color: rgba(232, 160, 160, 0.35); }
+.ag-stat strong { font-variant-numeric: lining-nums tabular-nums; }

@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
+import { ArrowDown, Award, Calendar, Dumbbell, MapPin, Search, Trophy, UtensilsCrossed } from 'lucide-react';
 import { useClub } from '../../context/ClubContext';
 import { BookingFlow } from './BookingFlow';
 import { MyBookingView } from './MyBookingView';
@@ -6,86 +7,30 @@ import { BlackBarMenuView } from './BlackBarMenuView';
 import { BlackTeamView } from './BlackTeamView';
 import { BlackGymView } from './BlackGymView';
 import { TournamentsView } from './TournamentsView';
-import { 
-  Calendar, 
-  UtensilsCrossed, 
-  Award, 
-  Dumbbell, 
-  Trophy, 
-  MapPin, 
-  Phone,
-  ExternalLink 
-} from 'lucide-react';
-import { CLUB_WHATSAPP_URL } from '../../config/contact';
+import { CLUB_PHONE_DISPLAY, CLUB_WHATSAPP_URL } from '../../config/contact';
+import { clubNow, weekdayOf } from '../../utils/clubTime';
+import '../../styles/lux.css';
 
-function getPadelStatus(courts) {
-  const totalCourts = courts?.filter(c => c.status === 'operational').length || 0;
-  return {
-    title: `${totalCourts} Canchas Habilitadas`,
-    subtitle: 'Turnos de 1 h, 1 h 30 o 2 h',
-    dotClass: 'emerald'
-  };
-}
+const SECTIONS = [
+  { id: 'courts', label: 'Pádel', fullLabel: 'Reservar', icon: Calendar },
+  { id: 'gym', label: 'Gym', fullLabel: 'BlackGym', icon: Dumbbell },
+  { id: 'team', label: 'Clases', fullLabel: 'Academia', icon: Award },
+  { id: 'tournaments', label: 'Torneos', fullLabel: 'Torneos', icon: Trophy },
+  { id: 'bar', label: 'Bar', fullLabel: 'Bar & Lounge', icon: UtensilsCrossed }
+];
 
-function getGymStatus() {
-  const now = new Date();
-  const currentHour = now.getHours();
-  const currentMinute = now.getMinutes();
-  const dayOfWeek = now.getDay(); // 0 is Sunday
-  const timeDec = currentHour + currentMinute / 60;
-
-  if (dayOfWeek === 0) {
-    if (timeDec >= 8 && timeDec < 13) {
-      return {
-        title: 'BlackGym Abierto',
-        subtitle: 'Domingo · Cierra 13:00 hs',
-        dotClass: 'emerald'
-      };
-    }
-    return {
-      title: 'BlackGym Cerrado',
-      subtitle: 'Abre Lun a las 06:00 hs',
-      dotClass: 'muted'
-    };
-  }
-
-  if (timeDec >= 6 && timeDec < 12) {
-    return {
-      title: 'BlackGym Abierto',
-      subtitle: 'Mañana · Cierra 12:00',
-      dotClass: 'emerald'
-    };
-  } else if (timeDec >= 12 && timeDec < 14) {
-    return {
-      title: 'BlackGym en Pausa',
-      subtitle: 'Pausa Almuerzo · Abre 14:00',
-      dotClass: 'amber'
-    };
-  } else if (timeDec >= 14 && timeDec < 22) {
-    return {
-      title: 'BlackGym Abierto',
-      subtitle: 'Tarde · Cierra 22:00',
-      dotClass: 'emerald'
-    };
-  } else {
-    return {
-      title: 'BlackGym Cerrado',
-      subtitle: 'Abre hoy a las 06:00 hs',
-      dotClass: 'muted'
-    };
-  }
-}
-
-function getBarStatus() {
-  const now = new Date();
-  const hour = now.getHours();
-  const isOpen = hour >= 17 || hour === 0;
-
-  return {
-    title: isOpen ? 'Bar & Lounge Abierto' : 'Bar & Lounge',
-    subtitle: isOpen ? 'Cocina & Tragos hasta 00:00' : 'Abre hoy a las 17:00 hs',
-    dotClass: isOpen ? 'amber' : 'muted'
-  };
+// Opening hours in club time. Gym: Mon-Fri 07-12 / 14-21, Sat 08-13. Bar: every day 17-00.
+function venueStatus() {
+  const now = clubNow();
+  const day = weekdayOf(now.date);
+  const h = now.minutes / 60;
+  const gymOpen = (day >= 1 && day <= 5 && ((h >= 7 && h < 12) || (h >= 14 && h < 21))) || (day === 6 && h >= 8 && h < 13);
+  const barOpen = h >= 17;
+  return [
+    { label: 'Canchas', value: 'Hasta medianoche', open: h >= 7 },
+    { label: 'BlackGym', value: gymOpen ? 'Abierto ahora' : 'Cerrado', open: gymOpen },
+    { label: 'Bar & Lounge', value: barOpen ? 'Abierto hasta 00:00' : 'Abre 17:00', open: barOpen }
+  ];
 }
 
 export function PublicPortal() {
@@ -93,12 +38,20 @@ export function PublicPortal() {
   const [activeTab, setActiveTab] = useState('courts');
   // "#mi-reserva" opens the self-service view (shareable link)
   const [showMyBooking, setShowMyBooking] = useState(() => typeof window !== 'undefined' && window.location.hash === '#mi-reserva');
+  const openCourts = courts.filter(c => c.status === 'operational').length;
+
+  const goTo = (id) => {
+    setActiveTab(id);
+    setShowMyBooking(false);
+    if (window.location.hash) window.history.replaceState(null, '', window.location.pathname);
+    document.getElementById('contenido')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 
   const openMyBooking = () => {
     setActiveTab('courts');
     setShowMyBooking(true);
     window.history.replaceState(null, '', '#mi-reserva');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    document.getElementById('contenido')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
   const closeMyBooking = () => {
@@ -106,216 +59,54 @@ export function PublicPortal() {
     window.history.replaceState(null, '', window.location.pathname);
   };
 
-  // Real-time dynamic operational calculations
-  const padelRealtime = useMemo(() => getPadelStatus(courts), [courts]);
-  const gymRealtime = useMemo(() => getGymStatus(), []);
-  const barRealtime = useMemo(() => getBarStatus(), []);
-
-  // Business units aligned with @blackclubparaguay
-  const navItems = [
-    { id: 'courts', label: 'Pádel', fullLabel: 'Reservar Cancha', icon: Calendar },
-    { id: 'gym', label: 'BlackGym', fullLabel: 'BlackGym', icon: Dumbbell },
-    { id: 'team', label: 'BlackTeam', fullLabel: 'BlackTeam', icon: Award },
-    { id: 'tournaments', label: 'Circuito', fullLabel: 'Circuito & Torneos', icon: Trophy, isHighlight: true },
-    { id: 'bar', label: 'Bar & Merch', fullLabel: 'Bar & Merch', icon: UtensilsCrossed }
-  ];
-
   return (
-    <div style={{ maxWidth: '1240px', margin: '0 auto', padding: '0 16px 100px', width: '100%' }}>
-      {/* Quiet Athletic Header */}
-      <section style={{ padding: '20px 0 16px', borderBottom: '1px solid rgba(255, 255, 255, 0.07)' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
-            <div>
-              <h1 className="title-hero" style={{ color: '#FFFFFF', letterSpacing: '-0.03em' }}>
-                BLACK CLUB
-              </h1>
-            </div>
-
-            <a
-              href={CLUB_WHATSAPP_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ 
-                display: 'inline-flex', 
-                alignItems: 'center', 
-                gap: '6px', 
-                padding: '7px 14px',
-                backgroundColor: '#18181B',
-                border: '1px solid rgba(255, 255, 255, 0.12)',
-                borderRadius: '20px',
-                color: '#FFFFFF', 
-                fontSize: '11.5px', 
-                fontWeight: 600, 
-                textDecoration: 'none',
-                transition: 'all 120ms ease'
-              }}
-            >
-              <Phone size={12} strokeWidth={1.5} />
-              <span>Contacto</span>
-            </a>
-          </div>
-
-          {/* Clean Real-Time Operational Indicators (Horizontal Scrollable Mobile-First) */}
-          <div style={{ 
-            display: 'flex', 
-            gap: '10px', 
-            overflowX: 'auto', 
-            paddingBottom: '6px',
-            WebkitOverflowScrolling: 'touch',
-            scrollbarWidth: 'none',
-            msOverflowStyle: 'none'
-          }}>
-            {/* Padel Status */}
-            <div style={{ 
-              backgroundColor: 'rgba(17, 17, 19, 0.88)', 
-              backdropFilter: 'blur(12px)',
-              border: '1px solid rgba(255, 255, 255, 0.08)', 
-              borderRadius: '6px', 
-              padding: '8px 14px',
-              minWidth: '170px',
-              flexShrink: 0
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                <span className={`status-dot ${padelRealtime.dotClass}`}></span>
-                <span style={{ fontSize: '12px', fontWeight: 700, color: '#FFFFFF' }}>{padelRealtime.title}</span>
-              </div>
-              <div className="font-tabular" style={{ fontSize: '11px', color: '#A1A1AA', marginTop: '2px' }}>
-                {padelRealtime.subtitle}
-              </div>
-            </div>
-
-            {/* BlackGym Status */}
-            <div style={{ 
-              backgroundColor: 'rgba(17, 17, 19, 0.88)', 
-              backdropFilter: 'blur(12px)',
-              border: '1px solid rgba(255, 255, 255, 0.08)', 
-              borderRadius: '6px', 
-              padding: '8px 14px',
-              minWidth: '175px',
-              flexShrink: 0
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                <span className={`status-dot ${gymRealtime.dotClass}`}></span>
-                <span style={{ fontSize: '12px', fontWeight: 700, color: '#FFFFFF' }}>{gymRealtime.title}</span>
-              </div>
-              <div className="font-tabular" style={{ fontSize: '11px', color: '#A1A1AA', marginTop: '2px' }}>
-                {gymRealtime.subtitle}
-              </div>
-            </div>
-
-            {/* Bar & Merch Status */}
-            <div style={{ 
-              backgroundColor: 'rgba(17, 17, 19, 0.88)', 
-              backdropFilter: 'blur(12px)',
-              border: '1px solid rgba(255, 255, 255, 0.08)', 
-              borderRadius: '6px', 
-              padding: '8px 14px',
-              minWidth: '170px',
-              flexShrink: 0
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                <span className={`status-dot ${barRealtime.dotClass}`}></span>
-                <span style={{ fontSize: '12px', fontWeight: 700, color: '#FFFFFF' }}>{barRealtime.title}</span>
-              </div>
-              <div className="font-tabular" style={{ fontSize: '11px', color: '#A1A1AA', marginTop: '2px' }}>
-                {barRealtime.subtitle}
-              </div>
-            </div>
-
-            {/* Direct Google Maps Button */}
-            <a
-              href="https://maps.google.com/?q=Black+Club+Padel+Paraguay"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ 
-                backgroundColor: 'rgba(17, 17, 19, 0.88)', 
-                backdropFilter: 'blur(12px)',
-                border: '1px solid rgba(255, 255, 255, 0.12)', 
-                borderRadius: '6px', 
-                padding: '8px 14px',
-                minWidth: '190px',
-                flexShrink: 0,
-                textDecoration: 'none',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                transition: 'all 120ms ease',
-                cursor: 'pointer'
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                  <MapPin size={12} strokeWidth={2} color="#FFFFFF" />
-                  <span style={{ fontSize: '12px', fontWeight: 700, color: '#FFFFFF' }}>Cómo Llegar</span>
-                </div>
-                <ExternalLink size={11} strokeWidth={1.5} color="#A1A1AA" />
-              </div>
-              <div style={{ fontSize: '11px', color: '#A1A1AA', marginTop: '2px' }}>
-                Abrir en Google Maps
-              </div>
-            </a>
-          </div>
-        </div>
-      </section>
-
-      {/* Desktop Navigation Tabs (Screens > 768px) */}
-      <nav className="hide-mobile" style={{ 
-        gap: '6px', 
-        borderBottom: '1px solid rgba(255, 255, 255, 0.07)', 
-        margin: '18px 0 24px',
-        overflowX: 'auto',
-        paddingBottom: '2px'
-      }}>
-        {navItems.map(item => {
-          const Icon = item.icon;
-          const isActive = activeTab === item.id;
-
-          return (
-            <button
-              key={item.id}
-              onClick={() => { setActiveTab(item.id); setShowMyBooking(false); }}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '11px 16px',
-                fontSize: '13px',
-                fontWeight: isActive ? 700 : 500,
-                color: isActive ? '#FFFFFF' : '#71717A',
-                backgroundColor: 'transparent',
-                border: 'none',
-                borderBottom: isActive ? '2px solid #FFFFFF' : '2px solid transparent',
-                cursor: 'pointer',
-                whiteSpace: 'nowrap',
-                transition: 'all 120ms ease'
-              }}
-            >
-              <Icon 
-                size={14} 
-                strokeWidth={isActive ? 2 : 1.5} 
-                color={item.isHighlight && !isActive ? '#FB7185' : isActive ? '#FFFFFF' : '#71717A'} 
-              />
-              <span>{item.fullLabel}</span>
-              {item.isHighlight && (
-                <span style={{ 
-                  fontSize: '9px', 
-                  fontWeight: 700, 
-                  backgroundColor: 'rgba(225, 29, 72, 0.2)', 
-                  color: '#FB7185', 
-                  padding: '1px 5px', 
-                  borderRadius: '3px' 
-                }}>
-                  2da Ed.
-                </span>
-              )}
+    <div className="lux">
+      <header className="lux-hero">
+        <div className="lux-hero-media" />
+        <div className="lux-hero-inner">
+          <span className="eyebrow">Asunción · Paraguay</span>
+          <h1 className="display lux-hero-title">
+            Black Club
+            <em>pádel, cuerpo y sobremesa.</em>
+          </h1>
+          <p className="lux-hero-copy">
+            {openCourts} canchas de nivel profesional, gimnasio Biostrength y un lounge para el tercer tiempo.
+            Reservá en segundos, sin seña.
+          </p>
+          <div className="lux-hero-actions">
+            <button type="button" className="lux-btn is-solid" onClick={() => goTo('courts')}>
+              Reservar cancha <ArrowDown size={16} />
             </button>
-          );
-        })}
+            <button type="button" className="lux-btn" onClick={openMyBooking}>
+              <Search size={15} /> Mi reserva
+            </button>
+          </div>
+          <dl className="lux-status">
+            {venueStatus().map(s => (
+              <div key={s.label}>
+                <dt><span className={`lux-dot ${s.open ? 'is-open' : ''}`} />{s.label}</dt>
+                <dd>{s.value}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      </header>
+
+      <nav className="lux-tabs hide-mobile" aria-label="Secciones">
+        {SECTIONS.map(item => (
+          <button
+            key={item.id}
+            type="button"
+            className={activeTab === item.id ? 'is-active' : ''}
+            aria-current={activeTab === item.id ? 'page' : undefined}
+            onClick={() => goTo(item.id)}
+          >
+            {item.fullLabel}
+          </button>
+        ))}
       </nav>
 
-      {/* Main Content Modules */}
-      <main style={{ marginTop: '16px' }}>
+      <main id="contenido" className="lux-main">
         {activeTab === 'courts' && (showMyBooking
           ? <MyBookingView onBack={closeMyBooking} />
           : <BookingFlow onOpenMyBooking={openMyBooking} />)}
@@ -325,79 +116,35 @@ export function PublicPortal() {
         {activeTab === 'bar' && <BlackBarMenuView />}
       </main>
 
-      {/* Institutional Minimal Footer */}
-      <footer style={{ 
-        marginTop: '60px', 
-        paddingTop: '24px', 
-        borderTop: '1px solid rgba(255, 255, 255, 0.07)',
-        display: 'flex',
-        flexWrap: 'wrap',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        gap: '16px',
-        color: '#71717A',
-        fontSize: '11.5px'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ fontWeight: 700, color: '#FFFFFF' }}>BLACK CLUB</span>
-          <span>·</span>
-          <span>A 2 cuadras de la ruta principal · Paraguay</span>
+      <footer className="lux-footer">
+        <div>
+          <div className="display lux-footer-brand">Black Club</div>
+          <p>Pádel · BlackGym · Academia · Bar & Lounge</p>
         </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <a 
-            href="https://instagram.com/blackclubparaguay" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#A1A1AA', textDecoration: 'none' }}
-          >
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <rect width="20" height="20" x="2" y="2" rx="5" ry="5"/>
-              <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
-              <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>
-            </svg>
-            <span>@blackclubparaguay</span>
+        <div className="lux-footer-links">
+          <a href="https://maps.google.com/?q=Black+Club+Padel+Paraguay" target="_blank" rel="noopener noreferrer">
+            <MapPin size={14} /> Cómo llegar
           </a>
-
-          <a 
-            href={CLUB_WHATSAPP_URL} 
-            target="_blank" 
-            rel="noopener noreferrer"
-            style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#FFFFFF', textDecoration: 'none', fontWeight: 600 }}
-          >
-            <Phone size={12} strokeWidth={1.5} />
-            <span>WhatsApp</span>
-          </a>
+          <a href="https://instagram.com/blackclubparaguay" target="_blank" rel="noopener noreferrer">Instagram</a>
+          <a href={CLUB_WHATSAPP_URL} target="_blank" rel="noopener noreferrer">WhatsApp {CLUB_PHONE_DISPLAY}</a>
         </div>
+        <small>© {new Date().getFullYear()} Black Club Paraguay</small>
       </footer>
 
-      {/* Mobile Bottom Navigation Bar (Quiet Monochromatic with Athletic Touch) */}
-      <nav className="mobile-bottom-nav">
-        {navItems.map(item => {
+      <nav className="lux-bottom-nav show-mobile-flex" aria-label="Secciones">
+        {SECTIONS.map(item => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
-
           return (
             <button
               key={item.id}
-              onClick={() => { setActiveTab(item.id); setShowMyBooking(false); }}
-              className={`mobile-nav-item ${isActive ? 'active' : ''}`}
-              aria-label={item.fullLabel}
+              type="button"
+              className={isActive ? 'is-active' : ''}
+              aria-current={isActive ? 'page' : undefined}
+              onClick={() => goTo(item.id)}
             >
-              {isActive && <div className="nav-icon-indicator" />}
-              <Icon 
-                size={17} 
-                strokeWidth={isActive ? 2.2 : 1.5} 
-                color={isActive ? '#FFFFFF' : item.isHighlight ? '#FB7185' : '#71717A'} 
-              />
-              <span style={{ 
-                fontSize: '9.5px', 
-                fontWeight: isActive ? 700 : 500,
-                color: isActive ? '#FFFFFF' : '#71717A',
-                letterSpacing: '0.01em'
-              }}>
-                {item.label}
-              </span>
+              <Icon size={20} strokeWidth={isActive ? 2 : 1.5} />
+              <span>{item.label}</span>
             </button>
           );
         })}

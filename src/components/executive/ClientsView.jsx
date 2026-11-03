@@ -129,7 +129,7 @@ export function ClientsView() {
   return (
     <div className="ag">
       <div>
-        <h2 className="bk-title" style={{ fontSize: 22 }}>Clientes</h2>
+        <h2 className="bk-title" style={{ fontSize: 34 }}>Clientes</h2>
         <p className="bk-subtitle">{clients.length} jugadores · se agregan solos al reservar</p>
       </div>
 

@@ -229,7 +229,7 @@ export function SettingsView() {
   return (
     <div className="ag set-view">
       <div>
-        <h2 className="bk-title" style={{ fontSize: 22 }}>Ajustes del club</h2>
+        <h2 className="bk-title" style={{ fontSize: 34 }}>Ajustes del club</h2>
         <p className="bk-subtitle">Los cambios se aplican al instante en la web y en la agenda.</p>
       </div>
       <ClubSection />

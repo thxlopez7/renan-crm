@@ -137,7 +137,7 @@ export function OwnerDashboard() {
     <div className="ag dash">
       <div className="dash-head">
         <div>
-          <h2 className="bk-title" style={{ fontSize: 22 }}>Panel del dueño</h2>
+          <h2 className="bk-title" style={{ fontSize: 34 }}>Panel del dueño</h2>
           <p className="bk-subtitle">{range === 1 ? 'Hoy' : `Últimos ${range} días`}</p>
         </div>
         <div className="ag-chips">
