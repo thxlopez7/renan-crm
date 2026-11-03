@@ -86,7 +86,7 @@ function ClassSheet({ coach, onClose }) {
         >
           <MessageCircle size={18} /> Pedir la clase por WhatsApp
         </a>
-        <p className="bk-hint" style={{ textAlign: 'center', marginTop: 10 }}>El coach te confirma y el club reserva la cancha.</p>
+        <p className="bk-hint" style={{ textAlign: 'center', marginTop: 10 }}>El profesor te confirma y el club reserva la cancha.</p>
       </div>
     </div>
   );
@@ -99,9 +99,9 @@ export function BlackTeamView() {
   return (
     <div className="sec">
       <div className="sec-head">
-        <span className="eyebrow">Academia BlackTeam</span>
+        <span className="eyebrow">Clases BlackTeam</span>
         <h2 className="sec-title">Aprendé con los que compiten</h2>
-        <p className="sec-lead">Clases particulares y clínicas para todos los niveles, de la iniciación a la competencia.</p>
+        <p className="sec-lead">Clases particulares y grupales para todos los niveles, desde los que recién empiezan hasta los que compiten.</p>
       </div>
 
       <div className="grid-cards is-3">

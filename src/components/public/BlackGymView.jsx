@@ -48,7 +48,7 @@ function ApplySheet({ plan, onClose }) {
           <form onSubmit={submit} noValidate>
             <div className="bk-sheet-head">
               <div>
-                <span className="eyebrow">BlackGym</span>
+                <span className="eyebrow">Gimnasio BlackGym</span>
                 <h3 id="gym-title" className="bk-sheet-title">{plan.name}</h3>
               </div>
               <button type="button" className="bk-icon-btn" aria-label="Cerrar" onClick={onClose}><X size={18} /></button>
@@ -74,7 +74,7 @@ function ApplySheet({ plan, onClose }) {
               />
             </div>
             <div className="bk-field">
-              <label htmlFor="gym-email">Email (opcional)</label>
+              <label htmlFor="gym-email">Correo electrónico (opcional)</label>
               <input id="gym-email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
             </div>
             {error && <div className="bk-error" role="alert">{error}</div>}
@@ -97,9 +97,9 @@ export function BlackGymView() {
     <div className="sec">
       <div className="sec-banner" style={{ backgroundImage: 'url(/images/gym-rack.jpg)' }}>
         <div className="sec-head">
-          <span className="eyebrow">BlackGym · Biostrength</span>
+          <span className="eyebrow">Gimnasio BlackGym</span>
           <h2 className="sec-title">Fuerza para jugar mejor</h2>
-          <p className="sec-lead">Sala de fuerza con equipamiento Biostrength, evaluación biomecánica y rutinas pensadas para el pádel.</p>
+          <p className="sec-lead">Sala de musculación con máquinas de última generación, evaluación física y rutinas pensadas para el pádel.</p>
           <div className="sec-meta">
             <span><strong>Lun a Vie</strong> 07:00–12:00 · 14:00–21:00</span>
             <span><strong>Sábados</strong> 08:00–13:00</span>

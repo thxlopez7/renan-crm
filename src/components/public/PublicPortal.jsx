@@ -7,16 +7,16 @@ import { BlackBarMenuView } from './BlackBarMenuView';
 import { BlackTeamView } from './BlackTeamView';
 import { BlackGymView } from './BlackGymView';
 import { TournamentsView } from './TournamentsView';
-import { CLUB_PHONE_DISPLAY, CLUB_WHATSAPP_URL } from '../../config/contact';
+import { CLUB_ADDRESS, CLUB_MAPS_URL, CLUB_PHONE_DISPLAY, CLUB_WHATSAPP_URL } from '../../config/contact';
 import { clubNow, weekdayOf } from '../../utils/clubTime';
 import '../../styles/lux.css';
 
 const SECTIONS = [
   { id: 'courts', label: 'Pádel', fullLabel: 'Reservar', icon: Calendar },
-  { id: 'gym', label: 'Gym', fullLabel: 'BlackGym', icon: Dumbbell },
-  { id: 'team', label: 'Clases', fullLabel: 'Academia', icon: Award },
+  { id: 'gym', label: 'Gimnasio', fullLabel: 'Gimnasio', icon: Dumbbell },
+  { id: 'team', label: 'Clases', fullLabel: 'Clases', icon: Award },
   { id: 'tournaments', label: 'Torneos', fullLabel: 'Torneos', icon: Trophy },
-  { id: 'bar', label: 'Bar', fullLabel: 'Bar & Lounge', icon: UtensilsCrossed }
+  { id: 'bar', label: 'Bar', fullLabel: 'Bar', icon: UtensilsCrossed }
 ];
 
 // Opening hours in club time. Gym: Mon-Fri 07-12 / 14-21, Sat 08-13. Bar: every day 17-00.
@@ -34,8 +34,8 @@ function venueStatus({ openHour, closeHour }) {
         : `Abren ${String(openHour).padStart(2, '0')}:00`,
       open: h >= openHour && h < closeHour
     },
-    { label: 'BlackGym', value: gymOpen ? 'Abierto ahora' : 'Cerrado', open: gymOpen },
-    { label: 'Bar & Lounge', value: barOpen ? 'Abierto hasta 00:00' : 'Abre 17:00', open: barOpen }
+    { label: 'Gimnasio', value: gymOpen ? 'Abierto ahora' : 'Cerrado', open: gymOpen },
+    { label: 'Bar', value: barOpen ? 'Abierto hasta 00:00' : 'Abre 17:00', open: barOpen }
   ];
 }
 
@@ -70,14 +70,14 @@ export function PublicPortal() {
       <header className="lux-hero">
         <div className="lux-hero-media" />
         <div className="lux-hero-inner">
-          <span className="eyebrow">Asunción · Paraguay</span>
+          <span className="eyebrow">{CLUB_ADDRESS} · Paraguay</span>
           <h1 className="display lux-hero-title">
             Black Club
-            <em>Pádel · Gym · Bar</em>
+            <em>Pádel · Gimnasio · Bar</em>
           </h1>
           <p className="lux-hero-copy">
-            {openCourts} canchas de nivel profesional, gimnasio Biostrength y un lounge para el tercer tiempo.
-            Reservá en segundos, sin seña.
+            {openCourts} canchas de pádel, gimnasio y bar para después del partido.
+            Reservá tu turno en segundos, sin pagar seña.
           </p>
           <div className="lux-hero-actions">
             <button type="button" className="lux-btn is-solid" onClick={() => goTo('courts')}>
@@ -125,10 +125,10 @@ export function PublicPortal() {
       <footer className="lux-footer">
         <div>
           <div className="display lux-footer-brand">Black Club</div>
-          <p>Pádel · BlackGym · Academia · Bar & Lounge</p>
+          <p>Pádel · Gimnasio BlackGym · Clases BlackTeam · Bar</p>
         </div>
         <div className="lux-footer-links">
-          <a href="https://maps.google.com/?q=Black+Club+Padel+Paraguay" target="_blank" rel="noopener noreferrer">
+          <a href={CLUB_MAPS_URL} target="_blank" rel="noopener noreferrer">
             <MapPin size={14} /> Cómo llegar
           </a>
           <a href="https://instagram.com/blackclubparaguay" target="_blank" rel="noopener noreferrer">Instagram</a>

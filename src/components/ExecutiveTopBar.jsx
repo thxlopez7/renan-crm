@@ -44,7 +44,7 @@ export function ExecutiveTopBar({ viewMode, setViewMode }) {
         {isPublic ? (
           <button type="button" className="topbar-btn" onClick={goToCrm}>
             {user ? <LayoutGrid size={15} /> : <UserRound size={15} />}
-            <span>{user ? 'Ir al CRM' : 'Staff'}</span>
+            <span>{user ? 'Panel del club' : 'Personal'}</span>
           </button>
         ) : (
           <>

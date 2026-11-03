@@ -15,7 +15,7 @@ export function BlackBarMenuView() {
     <div className="sec">
       <div className="sec-banner" style={{ backgroundImage: 'url(/images/bar-tercer-tiempo.jpg)' }}>
         <div className="sec-head">
-          <span className="eyebrow">Bar & Lounge · Todos los días de 17:00 a 00:00</span>
+          <span className="eyebrow">Bar · Todos los días de 17:00 a 00:00</span>
           <h2 className="sec-title">El tercer tiempo</h2>
           <p className="sec-lead">Picadas, chopp bien frío y la mesa lista para después del partido. Pedí en la barra o reservá mesa al reservar cancha.</p>
         </div>

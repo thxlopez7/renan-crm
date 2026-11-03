@@ -63,7 +63,7 @@ export function StaffLoginModal({ isOpen, onClose, onSuccess }) {
         className="card-obsidian"
         role="dialog"
         aria-modal="true"
-        aria-label="Acceso Exclusivo Staff y Dirección"
+        aria-label="Acceso para el personal del club"
         onClick={(e) => e.stopPropagation()}
         style={{
           width: '100%',
@@ -130,19 +130,19 @@ export function StaffLoginModal({ isOpen, onClose, onSuccess }) {
           }}>
             <img 
               src="/images/logo_black_club.png" 
-              alt="Black Club Elite" 
+              alt="Black Club" 
               style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '4px' }}
             />
           </div>
 
           <div className="tracking-luxury" style={{ fontSize: '9px', marginBottom: '4px' }}>
-            SUITE ADMINISTRATIVA
+            PANEL DEL CLUB
           </div>
           <h2 style={{ fontSize: '18px', fontWeight: 800, color: '#FFFFFF', letterSpacing: '-0.02em' }}>
-            Acceso para Staff & Recepción
+            Acceso para el personal del club
           </h2>
           <p style={{ fontSize: '12px', color: '#71717A', marginTop: '4px' }}>
-            Ingresa con tu cuenta oficial para gestionar canchas, caja y socios.
+            Ingresá con tu correo y contraseña para manejar reservas, caja y clientes.
           </p>
         </div>
 
@@ -179,7 +179,7 @@ export function StaffLoginModal({ isOpen, onClose, onSuccess }) {
                 type="email"
                 required
                 autoFocus
-                placeholder="staff@blackclub.com.py"
+                placeholder="tucorreo@ejemplo.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 style={{
@@ -262,10 +262,10 @@ export function StaffLoginModal({ isOpen, onClose, onSuccess }) {
               {loading ? (
                 <>
                   <Loader2 size={16} className="animate-spin" />
-                  <span>Verificando credenciales...</span>
+                  <span>Ingresando…</span>
                 </>
               ) : (
-                <span>Ingresar al CRM</span>
+                <span>Ingresar</span>
               )}
             </button>
 
@@ -276,7 +276,7 @@ export function StaffLoginModal({ isOpen, onClose, onSuccess }) {
               style={{ width: '100%', minHeight: '38px', fontSize: '12px', color: '#A1A1AA', gap: '6px' }}
             >
               <ArrowLeft size={13} />
-              <span>Volver al Portal Público</span>
+              <span>Volver a la web</span>
             </button>
           </div>
         </form>
