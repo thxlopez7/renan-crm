@@ -8,8 +8,7 @@ import {
   INITIAL_BOOKINGS,
   INITIAL_TABS,
   INITIAL_PLAYERS,
-  TIME_SLOTS,
-  getTodayDateString
+  TIME_SLOTS
 } from './initialData';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import {
@@ -23,12 +22,14 @@ import {
   dbAddMenuItem,
   fetchPricingConfig,
   fetchStaffRole,
-  rpcCreatePublicBooking,
+  requestBooking,
   rpcSettleTab,
   isRetryableError,
   describeServerError
 } from '../services/clubService';
 import { calculateTabBalances as computeTabBalances } from '../utils/financeHelpers';
+import { clubNow, toMinutes, fromMinutes } from '../utils/clubTime';
+import { normalizePyPhone } from '../utils/phone';
 
 const ClubContext = createContext();
 
@@ -69,7 +70,7 @@ export function ClubProvider({ children }) {
     };
   });
 
-  const [selectedDate, setSelectedDate] = useState(getTodayDateString());
+  const [selectedDate, setSelectedDate] = useState(() => clubNow().date);
   const [isSupabaseLive, setIsSupabaseLive] = useState(false);
   const [isLoadingDb, setIsLoadingDb] = useState(false);
   const [user, setUser] = useState(null);
@@ -79,14 +80,17 @@ export function ClubProvider({ children }) {
   const [pendingQueue, setPendingQueue] = useState(getInitialPendingQueue);
   const [syncError, setSyncError] = useState(null);
   const [syncStatus, setSyncStatus] = useState(typeof navigator !== 'undefined' && navigator.onLine ? 'synced' : 'offline');
+  // Club settings; defaults mirror pricing_config and are replaced by the server values
   const [pricingConfig, setPricingConfig] = useState({
-    dayRateDefault: 160000,
-    primeRateDefault: 200000,
-    primeStartHour: '17:00:00',
     racketRentalFee: 30000,
     ballTubeFee: 70000,
-    bookingDepositPercent: 50,
-    holdExpiresMinutes: 30
+    bookingDepositPercent: 0,
+    holdExpiresMinutes: 60,
+    openHour: 7,
+    closeHour: 24,
+    slotStepMinutes: 30,
+    bookingWindowDays: 14,
+    cancelNoticeHours: 3
   });
 
   // Fetch Pricing Config on startup
@@ -227,7 +231,7 @@ export function ClubProvider({ children }) {
     for (const item of currentQueue) {
       try {
         if (item.type === 'CREATE_BOOKING') {
-          await dbCreateBookingAndTab(item.bookingData, item.newBooking, item.newTab);
+          await dbCreateBookingAndTab(item.newBooking, item.newTab);
         } else if (item.type === 'UPDATE_STATUS') {
           await dbUpdateBookingStatus(item.bookingId, item.newStatus, item.depositAmount);
         } else if (item.type === 'ADJUST_TAB_ITEM') {
@@ -392,183 +396,111 @@ export function ClubProvider({ children }) {
   }, [data.bookings, data.tabs, data.courts, selectedDate, calculateTabBalances]);
 
   // Actions
+  // Accepts { startTime, durationMinutes } or a legacy "HH:MM - HH:MM" timeSlot
+  const resolveSchedule = (bookingData) => {
+    if (bookingData.startTime && bookingData.durationMinutes) {
+      return { startTime: bookingData.startTime, durationMinutes: Number(bookingData.durationMinutes) };
+    }
+    const [start, end] = String(bookingData.timeSlot || '').split(' - ');
+    let duration = toMinutes(end) - toMinutes(start);
+    if (duration <= 0) duration += 24 * 60;
+    return { startTime: start, durationMinutes: duration || 60 };
+  };
+
   const createBooking = async (bookingData) => {
-    const isPublicUser = !user;
+    const date = bookingData.date || selectedDate;
+    const { startTime, durationMinutes } = resolveSchedule(bookingData);
 
-    const court = data.courts.find(c => c.id === bookingData.courtId);
-    const courtAmount = bookingData.courtAmount || (court ? court.rate : 160000);
-    const depositPercent = pricingConfig.bookingDepositPercent ?? 0;
-    const depositPaid = bookingData.depositPaid !== undefined 
-      ? bookingData.depositPaid 
-      : Math.round(courtAmount * (depositPercent / 100));
-
-    // If public user and online Supabase is available, call transactional RPC
-    if (isPublicUser && isSupabaseConfigured() && typeof navigator !== 'undefined' && navigator.onLine) {
+    // Public visitors: the server validates hours, price and overlaps
+    if (!user) {
+      if (!isSupabaseConfigured()) {
+        throw new Error('Las reservas online no están disponibles en este momento.');
+      }
+      if (typeof navigator !== 'undefined' && !navigator.onLine) {
+        throw new Error('Sin conexión a internet. Revisá tu conexión e intentá de nuevo.');
+      }
       try {
-        const rpcResult = await rpcCreatePublicBooking({
+        return await requestBooking({
           courtId: bookingData.courtId,
-          date: bookingData.date || selectedDate,
-          timeSlot: bookingData.timeSlot,
+          date,
+          startTime,
+          durationMinutes,
           clientName: bookingData.clientName,
           clientPhone: bookingData.clientPhone,
-          barTableRequested: Boolean(bookingData.barTableRequested),
           rentedRackets: Number(bookingData.rentedRackets) || 0,
-          ballTubes: Number(bookingData.ballTubes) || 0
+          ballTubes: Number(bookingData.ballTubes) || 0,
+          barTableRequested: Boolean(bookingData.barTableRequested)
         });
-
-        const newBooking = {
-          id: rpcResult.id,
-          code: rpcResult.code,
-          courtId: rpcResult.courtId,
-          date: rpcResult.date,
-          timeSlot: rpcResult.timeSlot,
-          clientName: rpcResult.clientName,
-          clientPhone: rpcResult.clientPhone,
-          category: rpcResult.category || 'Reserva Estándar',
-          status: rpcResult.status || 'Seña Pendiente',
-          courtAmount: Number(rpcResult.courtAmount),
-          depositPaid: Number(rpcResult.depositPaid),
-          barTableRequested: Boolean(rpcResult.barTableRequested),
-          rentedRackets: Number(rpcResult.rentedRackets),
-          ballTubes: Number(rpcResult.ballTubes),
-          linkedTabId: rpcResult.linkedTabId,
-          createdAt: rpcResult.createdAt || new Date().toLocaleTimeString('es-PY', { hour: '2-digit', minute: '2-digit' })
-        };
-
-        const newTab = {
-          id: rpcResult.linkedTabId,
-          linkedBookingId: rpcResult.id,
-          courtId: rpcResult.courtId,
-          courtName: court ? court.name : 'Cancha del Club',
-          clientName: rpcResult.clientName,
-          courtAmount: Number(rpcResult.courtAmount),
-          depositPaid: Number(rpcResult.depositPaid),
-          racketCount: Number(rpcResult.rentedRackets),
-          racketUnitFee: pricingConfig.racketRentalFee || 30000,
-          ballTubeCount: Number(rpcResult.ballTubes),
-          ballTubeUnitFee: pricingConfig.ballTubeFee || 70000,
-          items: [],
-          status: 'open',
-          activityStatus: 'en_cancha',
-          paymentMethod: null,
-          barTableRequested: Boolean(rpcResult.barTableRequested),
-          openedAt: newBooking.createdAt
-        };
-
-        // Update local state immediately
-        setData(prev => ({
-          ...prev,
-          bookings: [newBooking, ...prev.bookings],
-          tabs: [newTab, ...prev.tabs]
-        }));
-
-        return newBooking;
       } catch (err) {
-        console.error('[Public Booking RPC Error]', err);
-        if (err.message && (err.message.includes('SLOT_ALREADY_BOOKED') || err.message.includes('23505') || err.code === '23505' || err.code === 'P0001')) {
-          syncFromSupabase();
-          throw new Error('Este turno acaba de ser reservado por otro cliente. Por favor elegí otro horario.');
-        }
-        if (err.message && err.message.includes('MAX_PENDING_REACHED')) {
-          throw new Error('Has alcanzado el límite máximo de reservas pendientes de confirmación.');
-        }
-        if (err.message && err.message.includes('SLOT_PAST')) {
-          throw new Error('No es posible reservar un turno en un horario que ya ha transcurrido.');
-        }
-        throw err;
+        throw new Error(describeServerError(err));
       }
     }
 
-    // Public bookings must be validated by the server; never queue them offline
-    if (isPublicUser && isSupabaseConfigured()) {
-      throw new Error('Sin conexión a internet. Revisá tu conexión e intentá de nuevo.');
-    }
-
-    // Staff flow (also demo mode without Supabase)
-    const bookingCode = `BC-${Math.floor(1000 + Math.random() * 9000)}`;
-    const newBookingId = `book-${Date.now()}`;
-    const newTabId = `tab-${Date.now()}`;
+    // Staff: optimistic insert, persisted through create_staff_booking
+    const court = data.courts.find(c => c.id === bookingData.courtId);
+    const isBlock = bookingData.category === 'Bloqueo';
+    const courtAmount = isBlock
+      ? 0
+      : bookingData.courtAmount ?? Math.round((court ? court.rate : 0) * durationMinutes / 60);
+    const uid = `${Date.now()}${Math.floor(Math.random() * 1000)}`;
+    const newBookingId = `book-${uid}`;
+    const newTabId = isBlock ? null : `tab-${uid}`;
+    const phone = normalizePyPhone(bookingData.clientPhone) || '';
+    const endTime = fromMinutes(toMinutes(startTime) + durationMinutes);
 
     const newBooking = {
       id: newBookingId,
-      code: bookingCode,
+      code: '…',
       courtId: bookingData.courtId,
-      date: bookingData.date || selectedDate,
-      timeSlot: bookingData.timeSlot,
+      date,
+      startTime,
+      endTime,
+      durationMinutes,
+      timeSlot: `${startTime} - ${endTime}`,
       clientName: bookingData.clientName,
-      clientPhone: bookingData.clientPhone || '',
+      clientPhone: phone,
       category: bookingData.category || 'Reserva Estándar',
-      status: depositPaid > 0 ? 'Confirmada' : 'Seña Pendiente',
+      status: 'Confirmada',
       courtAmount,
-      depositPaid,
+      depositPaid: 0,
       barTableRequested: !!bookingData.barTableRequested,
       rentedRackets: Number(bookingData.rentedRackets) || 0,
       ballTubes: Number(bookingData.ballTubes) || 0,
       linkedTabId: newTabId,
-      createdAt: new Date().toLocaleTimeString('es-PY', { hour: '2-digit', minute: '2-digit' })
+      notes: bookingData.notes || '',
+      createdAt: fromMinutes(clubNow().minutes)
     };
 
-    const newTab = {
+    const newTab = isBlock ? null : {
       id: newTabId,
       linkedBookingId: newBookingId,
       courtId: bookingData.courtId,
-      courtName: court ? court.name : 'Cancha del Club',
+      courtName: court ? court.name : 'Cancha',
       clientName: bookingData.clientName,
       courtAmount,
-      depositPaid,
-      racketCount: Number(bookingData.rentedRackets) || 0,
-      racketUnitFee: pricingConfig.racketRentalFee || 30000,
-      ballTubeCount: Number(bookingData.ballTubes) || 0,
-      ballTubeUnitFee: pricingConfig.ballTubeFee || 70000,
+      depositPaid: 0,
+      racketCount: newBooking.rentedRackets,
+      racketUnitFee: pricingConfig.racketRentalFee,
+      ballTubeCount: newBooking.ballTubes,
+      ballTubeUnitFee: pricingConfig.ballTubeFee,
       items: [],
       status: 'open',
       activityStatus: 'en_cancha',
       paymentMethod: null,
-      barTableRequested: !!bookingData.barTableRequested,
+      barTableRequested: newBooking.barTableRequested,
       openedAt: newBooking.createdAt
     };
 
-    // Add or update player in CRM directory
-    const existingPlayerIndex = data.players.findIndex(
-      p => p.name.toLowerCase() === bookingData.clientName.toLowerCase() || p.phone === bookingData.clientPhone
-    );
-
-    let updatedPlayers = [...data.players];
-    if (existingPlayerIndex >= 0) {
-      updatedPlayers[existingPlayerIndex] = {
-        ...updatedPlayers[existingPlayerIndex],
-        totalBookings: updatedPlayers[existingPlayerIndex].totalBookings + 1,
-        totalSpent: updatedPlayers[existingPlayerIndex].totalSpent + courtAmount,
-        lastVisit: 'Hoy, ' + bookingData.timeSlot.split(' - ')[0]
-      };
-    } else {
-      updatedPlayers.push({
-        id: `plr-${Date.now()}`,
-        name: bookingData.clientName,
-        phone: bookingData.clientPhone || '',
-        category: '4ta Categoría',
-        isFixedPassHolder: bookingData.category === 'Abono Fijo Semanal',
-        fixedPassDay: bookingData.category === 'Abono Fijo Semanal' ? `${bookingData.timeSlot}` : null,
-        totalBookings: 1,
-        totalSpent: courtAmount,
-        status: 'Jugador Registrado',
-        lastVisit: 'Hoy, ' + bookingData.timeSlot.split(' - ')[0]
-      });
-    }
-
-    // Update optimistic local state
     setData(prev => ({
       ...prev,
       bookings: [newBooking, ...prev.bookings],
-      tabs: [newTab, ...prev.tabs],
-      players: updatedPlayers
+      tabs: newTab ? [newTab, ...prev.tabs] : prev.tabs
     }));
 
-    // Persist to Supabase if live, or enqueue if offline
     persistMutation(
-      () => dbCreateBookingAndTab(bookingData, newBooking, newTab),
-      { type: 'CREATE_BOOKING', bookingData, newBooking, newTab },
-      // The server assigns the definitive booking code and status
+      () => dbCreateBookingAndTab(newBooking, newTab),
+      { type: 'CREATE_BOOKING', newBooking, newTab },
+      // The server assigns the definitive booking code
       (result) => {
         if (!result) return;
         setData(prev => ({

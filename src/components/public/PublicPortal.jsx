@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useClub } from '../../context/ClubContext';
-import { CourtsBookingView } from './CourtsBookingView';
+import { BookingFlow } from './BookingFlow';
+import { MyBookingView } from './MyBookingView';
 import { BlackBarMenuView } from './BlackBarMenuView';
 import { BlackTeamView } from './BlackTeamView';
 import { BlackGymView } from './BlackGymView';
@@ -17,25 +18,11 @@ import {
 } from 'lucide-react';
 import { CLUB_WHATSAPP_URL } from '../../config/contact';
 
-function getPadelStatus(courts, bookings) {
-  const now = new Date();
-  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-  const currentHour = now.getHours();
-  
-  const inPlayBookings = (bookings || []).filter(b => {
-    if (b.date !== todayStr || b.status === 'Cancelada') return false;
-    const startHour = parseInt(b.timeSlot?.split(':')[0], 10);
-    return startHour === currentHour;
-  });
-
-  const inPlayCount = inPlayBookings.length;
-  const totalCourts = courts?.length || 3;
-  
+function getPadelStatus(courts) {
+  const totalCourts = courts?.filter(c => c.status === 'operational').length || 0;
   return {
     title: `${totalCourts} Canchas Habilitadas`,
-    subtitle: inPlayCount > 0 
-      ? `${inPlayCount} en juego · Turnos de 1h` 
-      : `Todas disponibles · Turnos de 1h`,
+    subtitle: 'Turnos de 1 h, 1 h 30 o 2 h',
     dotClass: 'emerald'
   };
 }
@@ -102,11 +89,25 @@ function getBarStatus() {
 }
 
 export function PublicPortal() {
-  const { courts, bookings } = useClub();
+  const { courts } = useClub();
   const [activeTab, setActiveTab] = useState('courts');
+  // "#mi-reserva" opens the self-service view (shareable link)
+  const [showMyBooking, setShowMyBooking] = useState(() => typeof window !== 'undefined' && window.location.hash === '#mi-reserva');
+
+  const openMyBooking = () => {
+    setActiveTab('courts');
+    setShowMyBooking(true);
+    window.history.replaceState(null, '', '#mi-reserva');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const closeMyBooking = () => {
+    setShowMyBooking(false);
+    window.history.replaceState(null, '', window.location.pathname);
+  };
 
   // Real-time dynamic operational calculations
-  const padelRealtime = useMemo(() => getPadelStatus(courts, bookings), [courts, bookings]);
+  const padelRealtime = useMemo(() => getPadelStatus(courts), [courts]);
   const gymRealtime = useMemo(() => getGymStatus(), []);
   const barRealtime = useMemo(() => getBarStatus(), []);
 
@@ -273,7 +274,7 @@ export function PublicPortal() {
           return (
             <button
               key={item.id}
-              onClick={() => setActiveTab(item.id)}
+              onClick={() => { setActiveTab(item.id); setShowMyBooking(false); }}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -315,7 +316,9 @@ export function PublicPortal() {
 
       {/* Main Content Modules */}
       <main style={{ marginTop: '16px' }}>
-        {activeTab === 'courts' && <CourtsBookingView />}
+        {activeTab === 'courts' && (showMyBooking
+          ? <MyBookingView onBack={closeMyBooking} />
+          : <BookingFlow onOpenMyBooking={openMyBooking} />)}
         {activeTab === 'gym' && <BlackGymView />}
         {activeTab === 'team' && <BlackTeamView />}
         {activeTab === 'tournaments' && <TournamentsView />}
@@ -377,7 +380,7 @@ export function PublicPortal() {
           return (
             <button
               key={item.id}
-              onClick={() => setActiveTab(item.id)}
+              onClick={() => { setActiveTab(item.id); setShowMyBooking(false); }}
               className={`mobile-nav-item ${isActive ? 'active' : ''}`}
               aria-label={item.fullLabel}
             >

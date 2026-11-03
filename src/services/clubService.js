@@ -79,11 +79,18 @@ export const mapPlayerFromDb = (p) => ({
   lastVisit: p.last_visit
 });
 
+const hhmm = (time) => (time ? String(time).slice(0, 5) : '');
+
 export const mapBookingFromDb = (b) => ({
   id: b.id,
   code: b.code,
   courtId: b.court_id,
   date: typeof b.date === 'string' ? b.date.substring(0, 10) : b.date,
+  startTime: hhmm(b.start_time),
+  endTime: (b.time_slot || '').split(' - ')[1] || '',
+  durationMinutes: Number(b.duration_minutes) || 60,
+  expiresAt: b.expires_at,
+  notes: b.cancelled_reason || '',
   timeSlot: b.time_slot,
   clientName: b.client_name,
   clientPhone: b.client_phone,
@@ -181,17 +188,15 @@ export const fetchAllClubData = async () => {
 
 // Public visitors only see catalogs and slot occupancy (no client names or phones)
 const fetchPublicClubData = async () => {
-  const [courtsRes, coachesRes, menuRes, gymRes, tournRes, slotsRes] = await Promise.all([
+  const [courtsRes, coachesRes, menuRes, gymRes, tournRes] = await Promise.all([
     supabase.from('courts').select('*'),
     supabase.from('coaches').select('*'),
     supabase.from('menu_items').select('*'),
     supabase.from('gym_plans').select('*'),
-    supabase.from('tournaments').select('*'),
-    supabase.rpc('get_public_occupied_slots')
+    supabase.from('tournaments').select('*')
   ]);
 
   if (courtsRes.error) throw courtsRes.error;
-  if (slotsRes.error) throw slotsRes.error;
 
   return {
     courts: (courtsRes.data || []).map(mapCourtFromDb),
@@ -200,13 +205,7 @@ const fetchPublicClubData = async () => {
     gymPlans: (gymRes.data || []).map(mapGymPlanFromDb),
     tournaments: (tournRes.data || []).map(mapTournamentFromDb),
     players: [],
-    bookings: (slotsRes.data || []).map(s => ({
-      id: `slot-${s.court_id}-${s.date}-${s.time_slot}`,
-      courtId: s.court_id,
-      date: typeof s.date === 'string' ? s.date.substring(0, 10) : s.date,
-      timeSlot: s.time_slot,
-      status: s.status
-    })),
+    bookings: [],
     tabs: [],
     gymApplications: [],
     tournamentRegistrations: []
@@ -244,26 +243,29 @@ export const describeServerError = (err) => {
   const key = Object.keys(SERVER_ERROR_MESSAGES).find(k => message.includes(k));
   if (key) return SERVER_ERROR_MESSAGES[key];
   if (err?.code === '42501') return 'No tenés permisos para hacer este cambio.';
+  const serverText = message.match(/^[A-Z_]+: (.+)$/);
+  if (serverText) return serverText[1];
   return 'No se pudo guardar el cambio en el servidor. Se recargaron los datos.';
 };
 
-export const dbCreateBookingAndTab = async (bookingData, newBooking, newTab) => {
+export const dbCreateBookingAndTab = async (newBooking, newTab) => {
   if (!isSupabaseConfigured()) return null;
 
   return unwrap(await supabase.rpc('create_staff_booking', {
     p_booking_id: newBooking.id,
-    p_tab_id: newTab.id,
+    p_tab_id: newTab ? newTab.id : null,
     p_court_id: newBooking.courtId,
     p_date: newBooking.date,
-    p_time_slot: newBooking.timeSlot,
+    p_start_time: newBooking.startTime,
+    p_duration: newBooking.durationMinutes,
     p_client_name: newBooking.clientName,
-    p_client_phone: newBooking.clientPhone,
+    p_client_phone: newBooking.clientPhone || '',
     p_category: newBooking.category,
     p_court_amount: Number(newBooking.courtAmount),
-    p_deposit_paid: Number(newBooking.depositPaid) || 0,
-    p_bar_table_requested: Boolean(newBooking.barTableRequested),
     p_rented_rackets: Number(newBooking.rentedRackets) || 0,
-    p_ball_tubes: Number(newBooking.ballTubes) || 0
+    p_ball_tubes: Number(newBooking.ballTubes) || 0,
+    p_bar_table_requested: Boolean(newBooking.barTableRequested),
+    p_notes: newBooking.notes || null
   }));
 };
 
@@ -353,6 +355,11 @@ export const fetchPricingConfig = async () => {
     if (byKey.ball_tube_fee !== undefined) config.ballTubeFee = byKey.ball_tube_fee;
     if (byKey.deposit_percent !== undefined) config.bookingDepositPercent = byKey.deposit_percent;
     if (byKey.booking_hold_minutes !== undefined) config.holdExpiresMinutes = byKey.booking_hold_minutes;
+    if (byKey.open_hour !== undefined) config.openHour = byKey.open_hour;
+    if (byKey.close_hour !== undefined) config.closeHour = byKey.close_hour;
+    if (byKey.slot_step_minutes !== undefined) config.slotStepMinutes = byKey.slot_step_minutes;
+    if (byKey.booking_window_days !== undefined) config.bookingWindowDays = byKey.booking_window_days;
+    if (byKey.cancel_notice_hours !== undefined) config.cancelNoticeHours = byKey.cancel_notice_hours;
     return config;
   } catch {
     return null;
@@ -376,37 +383,37 @@ export const fetchStaffRole = async (userId) => {
   }
 };
 
-// RPC 1: Public Booking creation with server-side validations & rate limits
-export const rpcCreatePublicBooking = async ({
-  courtId,
-  date,
-  timeSlot,
-  clientName,
-  clientPhone,
-  barTableRequested = false,
-  rentedRackets = 0,
-  ballTubes = 0
+// Public booking request: price, hours and overlaps are validated by the server
+export const requestBooking = async ({
+  courtId, date, startTime, durationMinutes, clientName, clientPhone,
+  rentedRackets = 0, ballTubes = 0, barTableRequested = false
 }) => {
-  if (!isSupabaseConfigured()) {
-    throw new Error('Supabase no está configurado');
-  }
-
-  const { data, error } = await supabase.rpc('create_public_booking', {
+  return unwrap(await supabase.rpc('request_booking', {
     p_court_id: courtId,
     p_date: date,
-    p_time_slot: timeSlot,
+    p_start_time: startTime,
+    p_duration: durationMinutes,
     p_client_name: clientName,
     p_client_phone: clientPhone,
-    p_bar_table_requested: Boolean(barTableRequested),
-    p_rented_rackets: Number(rentedRackets) || 0,
-    p_ball_tubes: Number(ballTubes) || 0
-  });
+    p_rented_rackets: rentedRackets,
+    p_ball_tubes: ballTubes,
+    p_bar_table_requested: barTableRequested
+  }));
+};
 
-  if (error) {
-    throw error;
-  }
+// Busy ranges for a day, without client data
+export const fetchAvailability = async (date) => {
+  if (!isSupabaseConfigured()) return [];
+  const rows = unwrap(await supabase.rpc('get_public_availability', { p_date: date })) || [];
+  return rows.map(r => ({ courtId: r.court_id, startTime: r.start_time, endTime: r.end_time }));
+};
 
-  return data;
+export const fetchMyBooking = async (code, phone) => {
+  return unwrap(await supabase.rpc('get_my_booking', { p_code: code, p_phone: phone }));
+};
+
+export const cancelMyBooking = async (code, phone) => {
+  return unwrap(await supabase.rpc('cancel_my_booking', { p_code: code, p_phone: phone }));
 };
 
 // RPC 2: POS Tab settlement with atomic server-side calculation
