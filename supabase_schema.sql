@@ -844,17 +844,17 @@ ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
 -- Canchas Oficiales
 INSERT INTO courts (id, name, code, specs, surface, enclosure, lighting, rate, prime_rate, indoor, panoramic, status, image)
 VALUES
-('court-1', 'Cancha Central Panorámica', 'CANCHA 01 · WPT', 'Vidrio Panorámico 12mm WPT · Césped Monofilamento Negro Texturizado · LED 1000 Lux', 'Césped Texturizado Negro Pro', 'Cristal Panorámico Continuo WPT', 'LED Competition 1000 Lux', 160000, 180000, false, true, 'operational', '/images/court_panoramic.jpg'),
-('court-2', 'Cancha 2 (Indoor Climatizada)', 'CANCHA 02 · CLIMA', 'Climatizada 21°C · Cerramiento Acústico · Iluminación LED Directa Difusa', 'Césped Monofilamento Tournament', 'Vidrio Laminado Acústico 10+10mm', 'Paneles LED Difusos Especiales', 140000, 160000, true, false, 'operational', '/images/court_panoramic.jpg'),
-('court-3', 'Cancha 3 (Outdoor Techada)', 'CANCHA 03 · OUTDOOR', 'Outdoor Techada · Aluminio Aeroespacial · Césped Tournament Blue', 'Césped Fibrilado Azul Oficial', 'Estructura Aluminio Reforzada', 'Torretas LED Exteriores 800 Lux', 120000, 140000, false, false, 'operational', '/images/court_panoramic.jpg')
+('court-1', 'Cancha Central Panorámica', 'CANCHA 01 · WPT', 'Vidrio Panorámico 12mm WPT · Césped Monofilamento Negro Texturizado · LED 1000 Lux', 'Césped Texturizado Negro Pro', 'Cristal Panorámico Continuo WPT', 'LED Competition 1000 Lux', 160000, 180000, false, true, 'operational', '/images/cancha-partido.jpg'),
+('court-2', 'Cancha 2 (Indoor Climatizada)', 'CANCHA 02 · CLIMA', 'Climatizada 21°C · Cerramiento Acústico · Iluminación LED Directa Difusa', 'Césped Monofilamento Tournament', 'Vidrio Laminado Acústico 10+10mm', 'Paneles LED Difusos Especiales', 140000, 160000, true, false, 'operational', '/images/cancha-partido.jpg'),
+('court-3', 'Cancha 3 (Outdoor Techada)', 'CANCHA 03 · OUTDOOR', 'Outdoor Techada · Aluminio Aeroespacial · Césped Tournament Blue', 'Césped Fibrilado Azul Oficial', 'Estructura Aluminio Reforzada', 'Torretas LED Exteriores 800 Lux', 120000, 140000, false, false, 'operational', '/images/cancha-partido.jpg')
 ON CONFLICT (id) DO UPDATE SET rate = EXCLUDED.rate, prime_rate = EXCLUDED.prime_rate;
 
 -- Entrenadores BlackTeam
 INSERT INTO coaches (id, name, role, credentials, bio, rate, default_court_id, avatar, enabled_slots)
 VALUES
-('coach-1', 'Alejandro Benítez', 'Director Técnico de Academia', 'Ex-Jugador WPT · Entrenador Nivel 3 FIP', 'Biomecánica cinemática del golpe, transiciones ofensivas y táctica en situaciones bajo presión.', 200000, 'court-1', '/images/blackteam.jpg', ARRAY['08:00 - 09:00', '15:00 - 16:00', '19:00 - 20:00']),
-('coach-2', 'Santiago Morales', 'Head Coach de Competición', 'Certificado APA · Especialista en Rendimiento', 'Formador de parejas líderes en primera y segunda categoría. Lectura de pared y aceleración de bandeja.', 160000, 'court-2', '/images/blackteam.jpg', ARRAY['09:00 - 10:00', '17:00 - 18:00', '21:00 - 22:00']),
-('coach-3', 'Matías Duarte', 'Instructor Formativo & Clínicas', 'Técnico Nacional de Pádel', 'Consolidación técnica para categorías intermedias, consistencia en fondo de cancha y juego aéreo.', 130000, 'court-3', '/images/blackteam.jpg', ARRAY['11:00 - 12:00', '18:00 - 19:00'])
+('coach-1', 'Alejandro Benítez', 'Director Técnico de Academia', 'Ex-Jugador WPT · Entrenador Nivel 3 FIP', 'Biomecánica cinemática del golpe, transiciones ofensivas y táctica en situaciones bajo presión.', 200000, 'court-1', NULL, ARRAY['08:00 - 09:00', '15:00 - 16:00', '19:00 - 20:00']),
+('coach-2', 'Santiago Morales', 'Head Coach de Competición', 'Certificado APA · Especialista en Rendimiento', 'Formador de parejas líderes en primera y segunda categoría. Lectura de pared y aceleración de bandeja.', 160000, 'court-2', NULL, ARRAY['09:00 - 10:00', '17:00 - 18:00', '21:00 - 22:00']),
+('coach-3', 'Matías Duarte', 'Instructor Formativo & Clínicas', 'Técnico Nacional de Pádel', 'Consolidación técnica para categorías intermedias, consistencia en fondo de cancha y juego aéreo.', 130000, 'court-3', NULL, ARRAY['11:00 - 12:00', '18:00 - 19:00'])
 ON CONFLICT (id) DO NOTHING;
 
 -- Catálogo de Consumibles y Merchandising con Stock

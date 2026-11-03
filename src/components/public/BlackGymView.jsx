@@ -95,7 +95,7 @@ export function BlackGymView() {
 
   return (
     <div className="sec">
-      <div className="sec-banner" style={{ backgroundImage: 'url(/images/blackgym.jpg)' }}>
+      <div className="sec-banner" style={{ backgroundImage: 'url(/images/gym-rack.jpg)' }}>
         <div className="sec-head">
           <span className="eyebrow">BlackGym · Biostrength</span>
           <h2 className="sec-title">Fuerza para jugar mejor</h2>

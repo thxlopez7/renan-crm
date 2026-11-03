@@ -107,7 +107,9 @@ export function BlackTeamView() {
       <div className="grid-cards is-3">
         {coaches.map(coach => (
           <article key={coach.id} className="card">
-            <div className="card-media" style={{ backgroundImage: `url(${coach.avatar || '/images/blackteam.jpg'})` }} />
+            <div className="coach-mark" aria-hidden="true">
+              {coach.name.split(' ').map(part => part[0]).slice(0, 2).join('')}
+            </div>
             <div>
               <div className="card-sub">{coach.role}</div>
               <h3 className="card-title" style={{ marginTop: 6 }}>{coach.name}</h3>

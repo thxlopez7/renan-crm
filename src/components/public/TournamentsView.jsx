@@ -27,7 +27,7 @@ export function TournamentsView() {
       </div>
 
       {flagship && (
-        <section className="sec-banner event-hero" style={{ backgroundImage: 'url(/images/court_panoramic.jpg)' }} aria-label={flagship.title}>
+        <section className="sec-banner event-hero" style={{ backgroundImage: 'url(/images/torneo-paletas.jpg)' }} aria-label={flagship.title}>
           <div style={{ display: 'grid', gap: 14, width: '100%' }}>
             <span className="card-tag">Edición finalizada</span>
             <h3 className="sec-title" style={{ fontSize: 'clamp(30px, 6vw, 46px)' }}>{flagship.title}</h3>

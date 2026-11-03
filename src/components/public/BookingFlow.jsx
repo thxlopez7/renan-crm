@@ -239,7 +239,6 @@ export function BookingFlow({ onOpenMyBooking }) {
               const free = isCourtFree(busy, court.id, startTime, duration);
               return (
                 <article key={court.id} className={`bk-court ${free ? '' : 'is-busy'}`}>
-                  <div className="bk-court-media" style={{ backgroundImage: `url(${court.image || '/images/court_panoramic.jpg'})` }} />
                   <div className="bk-court-body">
                   <div className="bk-court-top">
                     <div>

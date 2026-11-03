@@ -81,7 +81,7 @@ html, body {
   background-color: #070709;
   background-image: 
     linear-gradient(180deg, rgba(7, 7, 9, 0.65) 0%, rgba(7, 7, 9, 0.80) 40%, rgba(7, 7, 9, 0.92) 100%),
-    url('/images/fondo_pagina.jpg');
+    none;
   background-size: cover;
   background-position: center top;
   background-repeat: no-repeat;
@@ -900,10 +900,46 @@ body::before {
   z-index: -1;
   background:
     linear-gradient(180deg, rgba(8, 8, 8, 0.72) 0%, rgba(8, 8, 8, 0.86) 45%, rgba(8, 8, 8, 0.95) 100%),
-    url('/images/blackteam.jpg') 58% center / cover no-repeat;
+    url('/images/hero-smash.jpg') center 30% / cover no-repeat;
 }
 html, body { background-color: #080808; }
 
 .display { font-family: var(--font-display); font-weight: 800; text-transform: uppercase; letter-spacing: 0.005em; line-height: 0.92; }
 .eyebrow, .tracking-luxury { color: var(--gold); letter-spacing: 0.18em; }
 .topbar-word { font-family: var(--font-display); font-weight: 800; text-transform: uppercase; font-size: 21px; letter-spacing: 0.04em; }
+
+/* ==========================================================================
+   CLUB V3: poster language from the club's own Instagram.
+   One family (Archivo): ultra-condensed black caps for titles, plain text for reading.
+   Flat surfaces, square corners, red blocks; no gradients, glows or glass.
+   ========================================================================== */
+:root {
+  --font-sans: 'Archivo', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Archivo', 'Arial Narrow', sans-serif;
+  --font-mono: 'Archivo', sans-serif;
+  --gold: #E3232C;
+  --gold-soft: rgba(227, 35, 44, 0.12);
+  --gold-line: rgba(227, 35, 44, 0.55);
+  --surface-base: #121212;
+  --surface-elevated: #181818;
+  --surface-active: #262626;
+  --border-subtle: #242424;
+  --border-regular: #343434;
+  --radius: 4px;
+}
+body { font-family: var(--font-sans); font-stretch: 100%; letter-spacing: 0; }
+body::before {
+  background:
+    linear-gradient(180deg, rgba(8, 8, 8, 0.78) 0%, rgba(8, 8, 8, 0.9) 55%, #080808 100%),
+    url('/images/hero-smash.jpg') center 30% / cover no-repeat;
+}
+.display, .topbar-word {
+  font-family: var(--font-display);
+  font-stretch: 62%;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: -0.005em;
+}
+.eyebrow, .tracking-luxury { font-size: 11px; letter-spacing: 0.12em; font-weight: 700; color: var(--gold); }
+.topbar-word { font-size: 24px; }
+.topbar-btn, .topbar-icon, .topbar-pill { border-radius: var(--radius); }

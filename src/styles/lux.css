@@ -20,7 +20,7 @@
   z-index: -1;
   background:
     linear-gradient(180deg, rgba(10,10,10,0.45) 0%, rgba(10,10,10,0.4) 30%, rgba(10,10,10,0.8) 58%, #0A0A0A 96%),
-    url('/images/court_panoramic.jpg') center / cover no-repeat;
+    url('/images/hero-smash.jpg') center / cover no-repeat;
   transform: scale(1.04);
   animation: lux-zoom 14s ease-out forwards;
 }
@@ -285,7 +285,7 @@
 .lux-hero-media {
   background:
     linear-gradient(180deg, rgba(8,8,8,0.35) 0%, rgba(8,8,8,0.35) 35%, rgba(8,8,8,0.85) 70%, rgba(8,8,8,0.98) 100%),
-    url('/images/blackteam.jpg') 60% center / cover no-repeat;
+    url('/images/hero-smash.jpg') center 22% / cover no-repeat;
 }
 .lux-hero-title { font-size: clamp(64px, 19vw, 150px); }
 .lux-hero-title em {
@@ -330,3 +330,62 @@
 .sec-banner { border-radius: 14px; }
 .chip { border-radius: 4px; }
 .progress span { background: var(--gold); }
+
+/* ---- Club v3: poster language ---- */
+.lux-hero-media {
+  background:
+    linear-gradient(180deg, rgba(8,8,8,0.2) 0%, rgba(8,8,8,0.15) 30%, rgba(8,8,8,0.82) 68%, #080808 100%),
+    url('/images/hero-smash.jpg') center 22% / cover no-repeat;
+  animation: none;
+  transform: none;
+}
+.lux-hero-title { font-stretch: 62%; font-weight: 900; font-size: clamp(76px, 24vw, 170px); line-height: 0.84; }
+.lux-hero-title em { font-stretch: 100%; border-radius: 0; font-size: 13px; letter-spacing: 0.16em; padding: 7px 10px; }
+.lux-hero-copy { color: #D0D0D0; }
+.lux-btn { border-radius: var(--radius); backdrop-filter: none; -webkit-backdrop-filter: none; background: transparent; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; font-size: 13px; }
+.lux-status { border-top-color: #2A2A2A; }
+.lux-tabs { backdrop-filter: none; -webkit-backdrop-filter: none; background: #080808; }
+.lux-tabs button { font-family: var(--font-display); font-stretch: 75%; font-weight: 800; font-size: 17px; letter-spacing: 0.02em; }
+
+.sec-title, .card-title, .menu-group-title, .lux-footer-brand {
+  font-stretch: 62%;
+  font-weight: 900;
+  line-height: 0.88;
+  letter-spacing: -0.005em;
+}
+.sec-title { font-size: clamp(48px, 14vw, 88px); }
+.card-title { font-size: 34px; }
+.menu-group-title { font-size: 34px; border-left: 0; padding-left: 0; }
+.menu-group-title::before { content: ''; display: inline-block; width: 14px; height: 14px; background: var(--gold); margin-right: 10px; vertical-align: 4px; }
+
+.card, .sec-banner, .card-media, .event-fact { border-radius: var(--radius); }
+.card { background: var(--surface-base); backdrop-filter: none; -webkit-backdrop-filter: none; border-color: var(--border-subtle); }
+.card.is-featured { background: var(--surface-base); border-color: var(--gold); box-shadow: inset 0 4px 0 var(--gold); }
+.card-media { border-radius: var(--radius) var(--radius) 0 0; }
+.card-media::after { display: none; }
+.card-tag, .chip { border-radius: 2px; }
+.card-tag { font-size: 10.5px; letter-spacing: 0.1em; }
+.card-sub { letter-spacing: 0.08em; }
+.card-price strong, .event-fact strong, .menu-item-price { font-family: var(--font-display); font-stretch: 75%; font-weight: 800; }
+.card-price strong { font-size: 40px; }
+.event-fact { background: rgba(8, 8, 8, 0.78); backdrop-filter: none; -webkit-backdrop-filter: none; }
+.sec-banner::before { background: linear-gradient(180deg, rgba(8,8,8,0) 0%, rgba(8,8,8,0.55) 45%, rgba(8,8,8,0.95) 100%); }
+.menu-cats button { border-radius: var(--radius); }
+
+/* Coach monogram instead of a stock face */
+.coach-mark {
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--gold);
+  color: #FFFFFF;
+  font-family: var(--font-display);
+  font-stretch: 62%;
+  font-weight: 900;
+  font-size: 34px;
+  text-transform: uppercase;
+}
+.sec-banner .eyebrow { color: #FFFFFF; background: var(--gold); padding: 4px 8px; align-self: flex-start; justify-self: start; }
+.event-hero::before { background: linear-gradient(180deg, rgba(8,8,8,0.35) 0%, rgba(8,8,8,0.8) 40%, rgba(8,8,8,0.96) 100%); }

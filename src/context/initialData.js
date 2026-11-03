@@ -20,7 +20,7 @@ export const INITIAL_COURTS = [
     indoor: false,
     panoramic: true,
     status: 'operational',
-    image: '/images/court_panoramic.jpg'
+    image: '/images/cancha-partido.jpg'
   },
   {
     id: 'court-2',
@@ -35,7 +35,7 @@ export const INITIAL_COURTS = [
     indoor: true,
     panoramic: false,
     status: 'operational',
-    image: '/images/court_panoramic.jpg'
+    image: '/images/cancha-partido.jpg'
   },
   {
     id: 'court-3',
@@ -50,7 +50,7 @@ export const INITIAL_COURTS = [
     indoor: false,
     panoramic: false,
     status: 'operational',
-    image: '/images/court_panoramic.jpg'
+    image: '/images/cancha-partido.jpg'
   }
 ];
 
@@ -84,7 +84,7 @@ export const INITIAL_COACHES = [
     bio: 'Biomecánica cinemática del golpe, transiciones ofensivas y táctica en situaciones bajo presión.',
     rate: 200000,
     defaultCourtId: 'court-1',
-    avatar: '/images/blackteam.jpg',
+    avatar: null,
     enabledSlots: ['08:00 - 09:00', '15:00 - 16:00', '19:00 - 20:00']
   },
   {
@@ -95,7 +95,7 @@ export const INITIAL_COACHES = [
     bio: 'Formador de parejas líderes en primera y segunda categoría. Lectura de pared y aceleración de bandeja.',
     rate: 160000,
     defaultCourtId: 'court-2',
-    avatar: '/images/blackteam.jpg',
+    avatar: null,
     enabledSlots: ['09:00 - 10:00', '17:00 - 18:00', '21:00 - 22:00']
   },
   {
@@ -106,7 +106,7 @@ export const INITIAL_COACHES = [
     bio: 'Consolidación técnica para categorías intermedias, consistencia en fondo de cancha y juego aéreo.',
     rate: 130000,
     defaultCourtId: 'court-3',
-    avatar: '/images/blackteam.jpg',
+    avatar: null,
     enabledSlots: ['11:00 - 12:00', '18:00 - 19:00']
   }
 ];

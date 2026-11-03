@@ -603,3 +603,21 @@
 .cash-tab { gap: 10px; padding: 12px; }
 .cash-tab-amount { font-size: 19px; }
 @media (max-width: 480px) { .cash-tab > svg { display: none; } }
+
+/* ---- Club v3 ---- */
+.ag-date-label, .set-head h3, .ag-section-title, .crm-sidebar-title strong, .ag-stat strong, .dash-tile strong, .cash-tab-amount {
+  font-stretch: 62%;
+  font-weight: 900;
+}
+.ag-date-label { font-size: 26px; }
+.set-head h3, .ag-section-title { font-size: 26px; }
+.ag-stat strong, .dash-tile strong { font-size: 32px; }
+.dash-tile.is-hero strong { font-size: 48px; }
+.ag-stat, .set-card, .dash-tile, .cash-tab, .ag-board, .cash-register, .cash-search, .ag-request, .ag-btn, .ag-chip,
+.set-court, .set-edit, .ag-select, .cash-product, .cash-amount, .ag-suggest, .ag-event, .crm-nav-item {
+  border-radius: var(--radius);
+}
+.ag-fab { border-radius: var(--radius); text-transform: uppercase; letter-spacing: 0.06em; font-size: 14px; font-weight: 800; box-shadow: 0 10px 24px rgba(0,0,0,0.6); }
+.ag-request { background: var(--surface-base); box-shadow: inset 4px 0 0 #F2A33A; }
+.dash-tile.is-hero { background: var(--surface-base); box-shadow: inset 0 4px 0 var(--gold); }
+.crm-tabbar, .crm-sidebar { backdrop-filter: none; -webkit-backdrop-filter: none; background: #080808; }
