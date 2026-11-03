@@ -20,21 +20,27 @@ const SECTIONS = [
 ];
 
 // Opening hours in club time. Gym: Mon-Fri 07-12 / 14-21, Sat 08-13. Bar: every day 17-00.
-function venueStatus() {
+function venueStatus({ openHour, closeHour }) {
   const now = clubNow();
   const day = weekdayOf(now.date);
   const h = now.minutes / 60;
   const gymOpen = (day >= 1 && day <= 5 && ((h >= 7 && h < 12) || (h >= 14 && h < 21))) || (day === 6 && h >= 8 && h < 13);
   const barOpen = h >= 17;
   return [
-    { label: 'Canchas', value: 'Hasta medianoche', open: h >= 7 },
+    {
+      label: 'Canchas',
+      value: h >= openHour && h < closeHour
+        ? `Abiertas hasta ${closeHour >= 24 ? '00:00' : `${closeHour}:00`}`
+        : `Abren ${String(openHour).padStart(2, '0')}:00`,
+      open: h >= openHour && h < closeHour
+    },
     { label: 'BlackGym', value: gymOpen ? 'Abierto ahora' : 'Cerrado', open: gymOpen },
     { label: 'Bar & Lounge', value: barOpen ? 'Abierto hasta 00:00' : 'Abre 17:00', open: barOpen }
   ];
 }
 
 export function PublicPortal() {
-  const { courts } = useClub();
+  const { courts, pricingConfig } = useClub();
   const [activeTab, setActiveTab] = useState('courts');
   // "#mi-reserva" opens the self-service view (shareable link)
   const [showMyBooking, setShowMyBooking] = useState(() => typeof window !== 'undefined' && window.location.hash === '#mi-reserva');
@@ -67,7 +73,7 @@ export function PublicPortal() {
           <span className="eyebrow">Asunción · Paraguay</span>
           <h1 className="display lux-hero-title">
             Black Club
-            <em>pádel, cuerpo y sobremesa.</em>
+            <em>Pádel · Gym · Bar</em>
           </h1>
           <p className="lux-hero-copy">
             {openCourts} canchas de nivel profesional, gimnasio Biostrength y un lounge para el tercer tiempo.
@@ -82,7 +88,7 @@ export function PublicPortal() {
             </button>
           </div>
           <dl className="lux-status">
-            {venueStatus().map(s => (
+            {venueStatus({ openHour: Number(pricingConfig.openHour), closeHour: Number(pricingConfig.closeHour) }).map(s => (
               <div key={s.label}>
                 <dt><span className={`lux-dot ${s.open ? 'is-open' : ''}`} />{s.label}</dt>
                 <dd>{s.value}</dd>

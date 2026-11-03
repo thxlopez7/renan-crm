@@ -280,3 +280,53 @@
   cursor: pointer;
 }
 .slot-row button.is-active { background: var(--text-primary); color: #0A0A0A; border-color: var(--text-primary); }
+
+/* ---- Club identity layer ---- */
+.lux-hero-media {
+  background:
+    linear-gradient(180deg, rgba(8,8,8,0.35) 0%, rgba(8,8,8,0.35) 35%, rgba(8,8,8,0.85) 70%, rgba(8,8,8,0.98) 100%),
+    url('/images/blackteam.jpg') 60% center / cover no-repeat;
+}
+.lux-hero-title { font-size: clamp(64px, 19vw, 150px); }
+.lux-hero-title em {
+  font-family: var(--font-sans);
+  font-style: normal;
+  font-weight: 700;
+  font-size: clamp(13px, 3.6vw, 18px);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+  margin-top: 14px;
+  display: inline-flex;
+  align-self: flex-start;
+  background: var(--gold);
+  padding: 6px 12px;
+  line-height: 1.2;
+}
+.lux-btn.is-solid { background: var(--gold); border-color: var(--gold); color: #FFFFFF; }
+.lux-btn.is-solid:hover { background: #C81E26; border-color: #C81E26; }
+.lux-btn { border-radius: 10px; }
+.lux-tabs { background: rgba(8, 8, 8, 0.9); }
+.lux-tabs button { font-family: var(--font-display); font-size: 16px; letter-spacing: 0.08em; }
+.lux-bottom-nav { background: rgba(8, 8, 8, 0.96); }
+
+.sec-title, .card-title, .menu-group-title, .lux-footer-brand {
+  font-family: var(--font-display);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  line-height: 0.95;
+}
+.sec-title { font-size: clamp(40px, 10vw, 64px); }
+.card-title { font-size: 30px; }
+.menu-group-title { font-size: 30px; border-left: 4px solid var(--gold); padding-left: 10px; }
+.card { border-radius: 14px; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+.card.is-featured { border-color: var(--gold-line); background: linear-gradient(180deg, rgba(229,38,47,0.14), var(--surface-base) 55%); }
+.card-media { border-radius: 14px 14px 0 0; }
+.card-tag { border-radius: 4px; color: #FFFFFF; background: var(--gold); border-color: var(--gold); }
+.card-tag.is-muted { background: transparent; }
+.card-price strong, .event-fact strong, .menu-item-price { font-family: var(--font-display); font-weight: 700; }
+.menu-item-price { color: var(--text-primary); font-size: 22px; }
+.sec-banner { border-radius: 14px; }
+.chip { border-radius: 4px; }
+.progress span { background: var(--gold); }

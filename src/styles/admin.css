@@ -578,3 +578,28 @@
 .ag-btn.is-whatsapp { background: transparent; color: #8FBF9F; border-color: rgba(143, 191, 159, 0.4); }
 .ag-btn.is-danger { color: #E8A0A0; border-color: rgba(232, 160, 160, 0.35); }
 .ag-stat strong { font-variant-numeric: lining-nums tabular-nums; }
+
+/* ---- Club identity layer ---- */
+.ag-date-label, .set-head h3, .ag-section-title, .crm-sidebar-title strong {
+  font-family: var(--font-display);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+.ag-date-label small { color: var(--gold); }
+.ag-stat strong, .dash-tile strong, .cash-tab-amount { font-family: var(--font-display); font-weight: 700; }
+.ag-btn, .ag-chip { border-radius: 10px; }
+.ag-btn.is-primary, .ag-fab { background: var(--gold); color: #FFFFFF; border-color: var(--gold); }
+.ag-chip.is-active { background: #FFFFFF; color: #0A0A0A; border-color: #FFFFFF; }
+.ag-fab { border-radius: 999px; box-shadow: 0 14px 34px rgba(229, 38, 47, 0.35); }
+.ag-count, .crm-badge { background: var(--gold); color: #FFFFFF; }
+.ag { --ag-pending: #F2A33A; --ag-pending-bg: rgba(242, 163, 58, 0.16); }
+.ag-request { border-color: rgba(242, 163, 58, 0.45); background: linear-gradient(180deg, rgba(242,163,58,0.12), var(--surface-base)); }
+.ag-timer { color: #F2A33A; }
+.ag-board { background: rgba(14, 14, 14, 0.9); }
+.dash-bar-fill { background: var(--gold); }
+.cash-register { border-color: rgba(242, 163, 58, 0.4); background: rgba(242, 163, 58, 0.08); }
+.crm-sidebar { background: rgba(8, 8, 8, 0.92); }
+.cash-tab { gap: 10px; padding: 12px; }
+.cash-tab-amount { font-size: 19px; }
+@media (max-width: 480px) { .cash-tab > svg { display: none; } }

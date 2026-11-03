@@ -239,7 +239,7 @@ export function ScheduleView({ onOpenPosTab }) {
       </div>
 
       <div className="ag-legend">
-        <span><i style={{ background: '#C8B08A' }} />Por confirmar</span>
+        <span><i style={{ background: '#F2A33A' }} />Por confirmar</span>
         <span><i style={{ background: '#E8E4DC' }} />Confirmada</span>
         <span><i style={{ background: '#8FBF9F' }} />Jugando</span>
         <span><i style={{ background: '#71717A' }} />Finalizada / bloqueo</span>

@@ -872,3 +872,38 @@ html, body {
 .topbar.is-public.is-scrolled { background: rgba(10, 10, 10, 0.9); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-bottom-color: var(--border-subtle); }
 /* Cormorant defaults to old-style figures; prices and times read better with lining ones */
 body { font-variant-numeric: lining-nums; font-feature-settings: "lnum" 1; }
+
+/* ==========================================================================
+   CLUB IDENTITY (Instagram @blackclubparaguay): black + red, sporty condensed type.
+   Overrides the luxury layer above; --gold is kept as the name of "the accent".
+   ========================================================================== */
+:root {
+  --gold: #E5262F;
+  --gold-soft: rgba(229, 38, 47, 0.13);
+  --gold-line: rgba(229, 38, 47, 0.45);
+  --border-focus: rgba(229, 38, 47, 0.6);
+  --text-primary: #FFFFFF;
+  --text-platinum: #F2F2F2;
+  --text-secondary: #B3B3B3;
+  --text-muted: #808080;
+  --surface-base: rgba(18, 18, 18, 0.92);
+  --surface-elevated: rgba(26, 26, 26, 0.94);
+  --font-display: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+}
+
+/* Page backdrop: a player photo behind everything, darkened so content stays readable.
+   A fixed pseudo-element instead of background-attachment, which iOS ignores. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(180deg, rgba(8, 8, 8, 0.72) 0%, rgba(8, 8, 8, 0.86) 45%, rgba(8, 8, 8, 0.95) 100%),
+    url('/images/blackteam.jpg') 58% center / cover no-repeat;
+}
+html, body { background-color: #080808; }
+
+.display { font-family: var(--font-display); font-weight: 800; text-transform: uppercase; letter-spacing: 0.005em; line-height: 0.92; }
+.eyebrow, .tracking-luxury { color: var(--gold); letter-spacing: 0.18em; }
+.topbar-word { font-family: var(--font-display); font-weight: 800; text-transform: uppercase; font-size: 21px; letter-spacing: 0.04em; }
