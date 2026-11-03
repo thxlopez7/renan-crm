@@ -24,6 +24,8 @@ import {
   fetchStaffRole,
   requestBooking,
   rpcSettleTab,
+  rpcPayTab,
+  dbOpenWalkinTab,
   isRetryableError,
   describeServerError
 } from '../services/clubService';
@@ -261,6 +263,8 @@ export function ClubProvider({ children }) {
       try {
         if (item.type === 'CREATE_BOOKING') {
           await dbCreateBookingAndTab(item.newBooking, item.newTab);
+        } else if (item.type === 'OPEN_WALKIN_TAB') {
+          await dbOpenWalkinTab(item.tabId, item.clientName);
         } else if (item.type === 'UPDATE_BOOKING') {
           await dbUpdateBooking(item.bookingId, item.patch);
         } else if (item.type === 'UPDATE_STATUS') {
@@ -735,6 +739,69 @@ export function ClubProvider({ children }) {
     );
   };
 
+  // Money is only recorded when the server accepts it, so this never goes through the offline queue
+  const payTab = async (tabId, payments, invoice = {}) => {
+    if (isSupabaseConfigured()) {
+      try {
+        await rpcPayTab(tabId, payments, invoice);
+      } catch (err) {
+        throw new Error(describeServerError(err));
+      }
+    }
+    const paidTotal = payments.reduce((sum, p) => sum + Number(p.amount), 0);
+    const methods = [...new Set(payments.map(p => p.method))];
+    setData(prev => {
+      const tab = prev.tabs.find(t => t.id === tabId);
+      const net = tab ? calculateTabBalances(tab).netPending : paidTotal;
+      return {
+        ...prev,
+        tabs: prev.tabs.map(t => t.id === tabId ? {
+          ...t,
+          status: 'settled',
+          activityStatus: 'liquidada',
+          paymentMethod: methods.length > 1 ? 'Mixto' : methods[0],
+          settledAt: fromMinutes(clubNow().minutes),
+          cashedDate: clubNow().date,
+          changeGiven: Math.max(0, paidTotal - net),
+          invoiceRuc: invoice.ruc || '',
+          invoiceName: invoice.name || ''
+        } : t),
+        bookings: prev.bookings.map(b => (tab && b.id === tab.linkedBookingId && !['Cancelada', 'No vino'].includes(b.status))
+          ? { ...b, status: 'Finalizada' } : b)
+      };
+    });
+  };
+
+  const openWalkinTab = (clientName) => {
+    const tabId = `tab-walkin-${Date.now()}${Math.floor(Math.random() * 1000)}`;
+    const name = clientName?.trim() || 'Venta de barra';
+    setData(prev => ({
+      ...prev,
+      tabs: [{
+        id: tabId,
+        linkedBookingId: null,
+        courtId: null,
+        courtName: null,
+        clientName: name,
+        courtAmount: 0,
+        depositPaid: 0,
+        racketCount: 0,
+        racketUnitFee: pricingConfig.racketRentalFee,
+        ballTubeCount: 0,
+        ballTubeUnitFee: pricingConfig.ballTubeFee,
+        items: [],
+        status: 'open',
+        activityStatus: 'en_barra',
+        paymentMethod: null,
+        barTableRequested: false,
+        openedAt: fromMinutes(clubNow().minutes),
+        isWalkin: true
+      }, ...prev.tabs]
+    }));
+    persistMutation(() => dbOpenWalkinTab(tabId, name), { type: 'OPEN_WALKIN_TAB', tabId, clientName: name });
+    return tabId;
+  };
+
   const bookCoachClass = ({ coachId, date, timeSlot, clientName, clientPhone }) => {
     const coach = data.coaches.find(c => c.id === coachId);
     if (!coach) throw new Error('Entrenador no encontrado');
@@ -915,6 +982,8 @@ export function ClubProvider({ children }) {
         updateTabItemQty,
         updateTabEquipment,
         settleTab,
+        payTab,
+        openWalkinTab,
         bookCoachClass,
         registerTournament,
         applyGymMembership,

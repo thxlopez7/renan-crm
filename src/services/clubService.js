@@ -123,6 +123,10 @@ export const mapTabFromDb = (t, tabItems = []) => ({
   paymentMethod: t.payment_method,
   settledAt: t.settled_at,
   cashedDate: t.cashed_at ? clubNow(new Date(t.cashed_at)).date : null,
+  invoiceRuc: t.invoice_ruc || '',
+  invoiceName: t.invoice_name || '',
+  changeGiven: Number(t.change_given) || 0,
+  isWalkin: !t.linked_booking_id,
   barTableRequested: Boolean(t.bar_table_requested),
   openedAt: t.opened_at,
   items: tabItems.filter(item => item.tab_id === t.id).map(i => ({
@@ -464,4 +468,66 @@ export const rpcSettleTab = async (tabId, paymentMethod = 'Tarjeta') => {
   }
 
   return data;
+};
+
+// Cash: mixed payments per tab, walk-in bar tabs and cash register shifts
+export const PAYMENT_METHODS = ['Efectivo', 'Transferencia', 'QR', 'Débito', 'Crédito', 'Billetera'];
+
+export const rpcPayTab = async (tabId, payments, invoice = {}) => {
+  return unwrap(await supabase.rpc('pay_tab', {
+    p_tab_id: tabId,
+    p_payments: payments.map(p => ({ method: p.method, amount: Math.round(Number(p.amount)) })),
+    p_invoice_ruc: invoice.ruc || null,
+    p_invoice_name: invoice.name || null
+  }));
+};
+
+export const dbOpenWalkinTab = async (tabId, clientName) => {
+  if (!isSupabaseConfigured()) return;
+  unwrap(await supabase.rpc('open_walkin_tab', { p_tab_id: tabId, p_client_name: clientName }));
+};
+
+const mapRegister = (r) => r && ({
+  id: r.id,
+  status: r.status,
+  shiftName: r.shift_name,
+  openedAt: r.opened_at,
+  closedAt: r.closed_at,
+  openingBalance: Number(r.opening_balance) || 0,
+  totalCollected: Number(r.total_collected) || 0,
+  breakdown: r.payment_breakdown || {},
+  expectedCash: r.expected_cash === null ? null : Number(r.expected_cash),
+  countedCash: r.counted_cash === null ? null : Number(r.counted_cash),
+  cashDifference: r.cash_difference === null ? null : Number(r.cash_difference),
+  notes: r.notes || ''
+});
+
+export const fetchOpenRegister = async () => {
+  const row = unwrap(await supabase.from('daily_cash_registers').select('*').eq('status', 'open').maybeSingle());
+  return mapRegister(row);
+};
+
+export const fetchRecentRegisters = async (limit = 10) => {
+  const rows = unwrap(await supabase.from('daily_cash_registers').select('*').order('opened_at', { ascending: false }).limit(limit));
+  return (rows || []).map(mapRegister);
+};
+
+export const fetchRegisterPayments = async (registerId) => {
+  const rows = unwrap(await supabase.from('tab_payments').select('method, amount, tab_id').eq('register_id', registerId));
+  return rows || [];
+};
+
+export const rpcOpenCashRegister = async (openingBalance, shiftName) => {
+  return mapRegister(unwrap(await supabase.rpc('open_cash_register', {
+    p_opening_balance: Math.round(Number(openingBalance) || 0),
+    p_shift_name: shiftName || 'General'
+  })));
+};
+
+export const rpcCloseCashRegister = async (registerId, countedCash, notes) => {
+  return mapRegister(unwrap(await supabase.rpc('close_cash_register', {
+    p_register_id: registerId,
+    p_counted_cash: Math.round(Number(countedCash) || 0),
+    p_notes: notes || null
+  })));
 };

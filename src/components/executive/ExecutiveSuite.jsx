@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useClub } from '../../context/ClubContext';
 import { ExecutiveDashboard } from './ExecutiveDashboard';
 import { ScheduleView } from './ScheduleView';
-import { POSTerminalView } from './POSTerminalView';
+import { CashView } from './CashView';
 import { PlayersDirectoryView } from './PlayersDirectoryView';
 import { CatalogManagementView } from './CatalogManagementView';
 import { TrendingUp, Calendar, Receipt, Users, Sliders } from 'lucide-react';
@@ -68,7 +68,7 @@ export function ExecutiveSuite() {
       <main className="crm-main">
         <div className="crm-content">
           {activeSection === 'schedule' && <ScheduleView onOpenPosTab={handleOpenPosTab} />}
-          {activeSection === 'pos' && <POSTerminalView highlightedTabId={highlightedTabId} />}
+          {activeSection === 'pos' && <CashView highlightedTabId={highlightedTabId} />}
           {activeSection === 'players' && <PlayersDirectoryView />}
           {activeSection === 'dashboard' && <ExecutiveDashboard onNavigate={go} />}
           {activeSection === 'catalog' && <CatalogManagementView />}
