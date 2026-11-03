@@ -4,6 +4,7 @@ import { ExecutiveTopBar } from './components/ExecutiveTopBar';
 import { PublicPortal } from './components/public/PublicPortal';
 import { ExecutiveSuite } from './components/executive/ExecutiveSuite';
 import { StaffLoginModal } from './components/auth/StaffLoginModal';
+import { SyncErrorToast } from './components/common/SyncErrorToast';
 
 export function AppContent() {
   const [viewMode, setViewMode] = useState('public'); // 'public' | 'executive'
@@ -27,6 +28,8 @@ export function AppContent() {
       ) : (
         <ExecutiveSuite />
       )}
+
+      <SyncErrorToast />
 
       {/* Staff Authentication Modal */}
       <StaffLoginModal 

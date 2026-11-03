@@ -485,7 +485,7 @@ BEGIN
     v_equipment_total := (p_rented_rackets * v_racket_fee::integer) + (p_ball_tubes * v_ball_fee::integer);
 
     v_booking_id := 'book-' || extract(epoch from now())::bigint || '-' || floor(random() * 1000)::text;
-    v_booking_code := 'BC-' || (1000 + floor(random() * 9000))::text;
+    v_booking_code := gen_booking_code();
     v_tab_id := 'tab-' || extract(epoch from now())::bigint || '-' || floor(random() * 1000)::text;
     v_expires_at := NOW() + (v_hold_minutes || ' minutes')::interval;
     v_created_time_str := to_char(v_now_asuncion, 'HH24:MI');
@@ -948,3 +948,225 @@ ON CONFLICT (id) DO NOTHING;
 -- ==============================================================================
 -- FIN DEL ESQUEMA MAESTRO
 -- ==============================================================================
+
+-- ==============================================================================
+-- Códigos de reserva sin colisiones y alta de reservas del staff en una sola
+-- transacción del servidor (reserva + cuenta POS + ficha de jugador).
+-- ==============================================================================
+
+-- 1. Código BC-#### libre (antes una colisión se informaba como "turno ocupado")
+CREATE OR REPLACE FUNCTION gen_booking_code()
+RETURNS TEXT
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+    v_code TEXT;
+BEGIN
+    LOOP
+        v_code := 'BC-' || (1000 + floor(random() * 9000))::text;
+        EXIT WHEN NOT EXISTS (SELECT 1 FROM bookings WHERE code = v_code);
+    END LOOP;
+    RETURN v_code;
+END;
+$$;
+
+REVOKE EXECUTE ON FUNCTION gen_booking_code() FROM PUBLIC, anon, authenticated;
+
+
+-- 2. Alta de reserva desde el CRM. Idempotente por p_booking_id para que la cola
+--    offline pueda reintentar sin duplicar.
+CREATE OR REPLACE FUNCTION create_staff_booking(
+    p_booking_id TEXT,
+    p_tab_id TEXT,
+    p_court_id TEXT,
+    p_date DATE,
+    p_time_slot TEXT,
+    p_client_name TEXT,
+    p_client_phone TEXT,
+    p_category TEXT,
+    p_court_amount INTEGER,
+    p_deposit_paid INTEGER DEFAULT 0,
+    p_bar_table_requested BOOLEAN DEFAULT FALSE,
+    p_rented_rackets INTEGER DEFAULT 0,
+    p_ball_tubes INTEGER DEFAULT 0
+)
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
+DECLARE
+    v_court RECORD;
+    v_existing RECORD;
+    v_code TEXT;
+    v_status TEXT;
+    v_racket_fee INTEGER;
+    v_ball_fee INTEGER;
+    v_created_time_str TEXT;
+    v_player_id TEXT;
+BEGIN
+    IF NOT is_staff() THEN
+        RAISE EXCEPTION 'NOT_STAFF: Solo el staff puede cargar reservas desde el CRM.';
+    END IF;
+
+    SELECT id, code, linked_tab_id, status INTO v_existing FROM bookings WHERE id = p_booking_id;
+    IF FOUND THEN
+        RETURN jsonb_build_object('id', v_existing.id, 'code', v_existing.code,
+                                  'linkedTabId', v_existing.linked_tab_id, 'status', v_existing.status);
+    END IF;
+
+    IF trim(COALESCE(p_client_name, '')) = '' THEN
+        RAISE EXCEPTION 'INVALID_NAME: El nombre del cliente es obligatorio.';
+    END IF;
+    IF p_court_amount IS NULL OR p_court_amount < 0 THEN
+        RAISE EXCEPTION 'INVALID_AMOUNT: El monto de la cancha no es válido.';
+    END IF;
+    IF COALESCE(p_deposit_paid, 0) < 0 OR COALESCE(p_deposit_paid, 0) > p_court_amount THEN
+        RAISE EXCEPTION 'INVALID_DEPOSIT: La seña debe estar entre 0 y el monto de la cancha.';
+    END IF;
+    IF COALESCE(p_rented_rackets, 0) NOT BETWEEN 0 AND 4 OR COALESCE(p_ball_tubes, 0) NOT BETWEEN 0 AND 6 THEN
+        RAISE EXCEPTION 'INVALID_EQUIPMENT: Cantidad de paletas (0-4) o tubos (0-6) inválida.';
+    END IF;
+    IF split_part(p_time_slot, ' - ', 1) !~ '^\d{2}:\d{2}$' THEN
+        RAISE EXCEPTION 'INVALID_TIMESLOT_FORMAT: Formato de horario inválido (se esperaba HH:00 - HH:00).';
+    END IF;
+
+    SELECT * INTO v_court FROM courts WHERE id = p_court_id;
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'COURT_NOT_FOUND: La cancha seleccionada no existe.';
+    END IF;
+
+    SELECT value::integer INTO v_racket_fee FROM pricing_config WHERE key = 'racket_rental_fee';
+    SELECT value::integer INTO v_ball_fee FROM pricing_config WHERE key = 'ball_tube_fee';
+    v_racket_fee := COALESCE(v_racket_fee, 30000);
+    v_ball_fee := COALESCE(v_ball_fee, 70000);
+
+    v_code := gen_booking_code();
+    v_status := CASE WHEN COALESCE(p_deposit_paid, 0) > 0 THEN 'Confirmada' ELSE 'Seña Pendiente' END;
+    v_created_time_str := to_char((NOW() AT TIME ZONE 'America/Asuncion'), 'HH24:MI');
+
+    BEGIN
+        INSERT INTO bookings (
+            id, code, court_id, date, time_slot, client_name, client_phone,
+            category, status, court_amount, deposit_paid, bar_table_requested,
+            rented_rackets, ball_tubes, linked_tab_id, created_at_time, created_at, updated_at
+        ) VALUES (
+            p_booking_id, v_code, p_court_id, p_date, p_time_slot,
+            trim(p_client_name), trim(COALESCE(p_client_phone, '')), COALESCE(p_category, 'Reserva Estándar'),
+            v_status, p_court_amount, COALESCE(p_deposit_paid, 0), COALESCE(p_bar_table_requested, FALSE),
+            COALESCE(p_rented_rackets, 0), COALESCE(p_ball_tubes, 0), p_tab_id, v_created_time_str, NOW(), NOW()
+        );
+    EXCEPTION WHEN unique_violation THEN
+        RAISE EXCEPTION 'SLOT_ALREADY_BOOKED: El turno % en % para el % ya fue reservado.',
+            p_time_slot, v_court.name, p_date;
+    END;
+
+    INSERT INTO tabs (
+        id, linked_booking_id, court_id, court_name, client_name,
+        court_amount, deposit_paid, racket_count, racket_unit_fee,
+        ball_tube_count, ball_tube_unit_fee, status, activity_status,
+        bar_table_requested, opened_at, created_at, updated_at
+    ) VALUES (
+        p_tab_id, p_booking_id, p_court_id, v_court.name, trim(p_client_name),
+        p_court_amount, COALESCE(p_deposit_paid, 0), COALESCE(p_rented_rackets, 0), v_racket_fee,
+        COALESCE(p_ball_tubes, 0), v_ball_fee, 'open', 'en_cancha',
+        COALESCE(p_bar_table_requested, FALSE), v_created_time_str, NOW(), NOW()
+    );
+
+    IF trim(COALESCE(p_client_phone, '')) <> '' THEN
+        SELECT id INTO v_player_id FROM players WHERE phone = trim(p_client_phone) LIMIT 1;
+    END IF;
+
+    IF v_player_id IS NOT NULL THEN
+        UPDATE players
+        SET total_bookings = total_bookings + 1,
+            total_spent = total_spent + p_court_amount,
+            last_visit = to_char(p_date, 'DD/MM') || ', ' || split_part(p_time_slot, ' - ', 1),
+            updated_at = NOW()
+        WHERE id = v_player_id;
+    ELSE
+        INSERT INTO players (
+            id, name, phone, category, is_fixed_pass_holder, fixed_pass_day,
+            total_bookings, total_spent, status, last_visit
+        ) VALUES (
+            'plr-' || p_booking_id, trim(p_client_name), trim(COALESCE(p_client_phone, '')), '4ta Categoría',
+            p_category = 'Abono Fijo Semanal',
+            CASE WHEN p_category = 'Abono Fijo Semanal' THEN p_time_slot END,
+            1, p_court_amount, 'Jugador Registrado',
+            to_char(p_date, 'DD/MM') || ', ' || split_part(p_time_slot, ' - ', 1)
+        );
+    END IF;
+
+    RETURN jsonb_build_object('id', p_booking_id, 'code', v_code, 'linkedTabId', p_tab_id, 'status', v_status);
+END;
+$$;
+
+REVOKE EXECUTE ON FUNCTION create_staff_booking(TEXT, TEXT, TEXT, DATE, TEXT, TEXT, TEXT, TEXT, INTEGER, INTEGER, BOOLEAN, INTEGER, INTEGER) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION create_staff_booking(TEXT, TEXT, TEXT, DATE, TEXT, TEXT, TEXT, TEXT, INTEGER, INTEGER, BOOLEAN, INTEGER, INTEGER) TO authenticated;
+
+-- ==============================================================================
+-- Ajuste de cantidades en comandas POS: una sola fila por producto y cuenta,
+-- solo sobre cuentas abiertas. El precio lo fija trg_sync_tab_item_price.
+-- ==============================================================================
+CREATE OR REPLACE FUNCTION adjust_tab_item(
+    p_tab_id TEXT,
+    p_menu_item_id TEXT,
+    p_delta INTEGER
+)
+RETURNS INTEGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
+DECLARE
+    v_tab_status TEXT;
+    v_item RECORD;
+    v_qty INTEGER;
+BEGIN
+    IF NOT is_staff() THEN
+        RAISE EXCEPTION 'NOT_STAFF: Solo el staff puede modificar comandas.';
+    END IF;
+
+    SELECT status INTO v_tab_status FROM tabs WHERE id = p_tab_id FOR UPDATE;
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'TAB_NOT_FOUND: La cuenta POS % no existe.', p_tab_id;
+    END IF;
+    IF v_tab_status <> 'open' THEN
+        RAISE EXCEPTION 'TAB_NOT_OPEN: La cuenta ya fue liquidada o cancelada.';
+    END IF;
+
+    SELECT id, name, price INTO v_item FROM menu_items WHERE id = p_menu_item_id;
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'MENU_ITEM_NOT_FOUND: El producto % no existe.', p_menu_item_id;
+    END IF;
+
+    SELECT COALESCE(SUM(qty), 0) + p_delta INTO v_qty
+    FROM tab_items WHERE tab_id = p_tab_id AND menu_item_id = p_menu_item_id;
+
+    DELETE FROM tab_items WHERE tab_id = p_tab_id AND menu_item_id = p_menu_item_id;
+
+    IF v_qty > 0 THEN
+        INSERT INTO tab_items (id, tab_id, menu_item_id, name, price, qty)
+        VALUES ('item-' || p_tab_id || '-' || p_menu_item_id, p_tab_id, p_menu_item_id, v_item.name, v_item.price, v_qty);
+    END IF;
+
+    RETURN GREATEST(v_qty, 0);
+END;
+$$;
+
+REVOKE EXECUTE ON FUNCTION adjust_tab_item(TEXT, TEXT, INTEGER) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION adjust_tab_item(TEXT, TEXT, INTEGER) TO authenticated;
+
+-- Tarifas de canchas y catálogo del bar: solo el propietario (recepción no ve esa sección)
+DROP POLICY IF EXISTS "Staff update courts" ON courts;
+DROP POLICY IF EXISTS "Staff insert menu_items" ON menu_items;
+DROP POLICY IF EXISTS "Staff update menu_items" ON menu_items;
+
+CREATE POLICY "Owners update courts" ON courts FOR UPDATE TO authenticated
+    USING (current_user_role() = 'owner') WITH CHECK (current_user_role() = 'owner');
+CREATE POLICY "Owners insert menu_items" ON menu_items FOR INSERT TO authenticated
+    WITH CHECK (current_user_role() = 'owner');
+CREATE POLICY "Owners update menu_items" ON menu_items FOR UPDATE TO authenticated
+    USING (current_user_role() = 'owner') WITH CHECK (current_user_role() = 'owner');

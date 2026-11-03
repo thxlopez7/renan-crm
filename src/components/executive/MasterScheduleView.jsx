@@ -12,6 +12,7 @@ import {
   ArrowLeft, 
   Bell 
 } from 'lucide-react';
+import { CLUB_WHATSAPP_NUMBER } from '../../config/contact';
 
 export function MasterScheduleView({ onOpenPosTab }) {
   const { 
@@ -100,7 +101,7 @@ export function MasterScheduleView({ onOpenPosTab }) {
       date: selectedDate,
       timeSlot: createSlotData.slot,
       clientName: newClientName.trim(),
-      clientPhone: newClientPhone.trim() || '+595 983 573 396',
+      clientPhone: newClientPhone.trim(),
       category: isFixedPass ? 'Abono Fijo Semanal' : 'Reserva Estándar',
       courtAmount: court.rate,
       depositPaid: deposit,
@@ -236,7 +237,7 @@ export function MasterScheduleView({ onOpenPosTab }) {
             {pendingRequests.map(req => {
               const courtObj = courts.find(c => c.id === req.courtId);
               const cleanPhone = (req.clientPhone || '').replace(/\D/g, '');
-              const waUrl = `https://wa.me/${cleanPhone || '595983573396'}?text=${encodeURIComponent(`Hola ${req.clientName}, te escribimos de Black Club Elite para confirmar tu reserva en la cancha ${courtObj?.name || ''} para el ${req.date} en el turno ${req.timeSlot}.`)}`;
+              const waUrl = `https://wa.me/${cleanPhone || CLUB_WHATSAPP_NUMBER}?text=${encodeURIComponent(`Hola ${req.clientName}, te escribimos de Black Club Elite para confirmar tu reserva en la cancha ${courtObj?.name || ''} para el ${req.date} en el turno ${req.timeSlot}.`)}`;
 
               return (
                 <div 

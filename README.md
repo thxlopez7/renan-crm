@@ -114,7 +114,7 @@ Para garantizar la coherencia operativa:
 - El sistema compara la fecha seleccionada contra la fecha actual (`America/Asuncion`).
 - Si la fecha es pasada, toda la grilla queda deshabilitada.
 - Si la fecha es **Hoy**, el sistema evalúa la hora y minuto del inicio del slot (ej. `18:00`). Si la hora actual es mayor o igual a las 18:00, el turno se clasifica como `past` y el botón queda inactivo para reservas públicas.
-- Esta validación se ejecuta tanto en el frontend ([`src/utils/dateHelpers.js`](file:///home/thiagol/renan-crm/src/utils/dateHelpers.js)) como en el servidor dentro de la función RPC [`create_public_booking`](file:///home/thiagol/renan-crm/supabase_schema.sql), impidiendo que cualquier solicitud maliciosa reserve turnos caducados.
+- Esta validación se ejecuta tanto en el frontend ([`src/utils/dateHelpers.js`](src/utils/dateHelpers.js)) como en el servidor dentro de la función RPC [`create_public_booking`](supabase_schema.sql), impidiendo que cualquier solicitud maliciosa reserve turnos caducados.
 
 ---
 
@@ -354,13 +354,13 @@ renan-crm/
 
 Toda la base de datos se encuentra unificada en un solo archivo:
 
-📄 [**`supabase_schema.sql`**](file:///home/thiagol/renan-crm/supabase_schema.sql)
+📄 [**`supabase_schema.sql`**](supabase_schema.sql)
 
 ### Instrucciones de Aplicación:
 1. Inicia sesión en tu cuenta de [Supabase](https://supabase.com/) y abre tu proyecto.
 2. En el menú lateral izquierdo, haz clic en **SQL Editor**.
 3. Haz clic en **+ New Query**.
-4. Copia el contenido completo de [`supabase_schema.sql`](file:///home/thiagol/renan-crm/supabase_schema.sql) y pégalo en el editor.
+4. Copia el contenido completo de [`supabase_schema.sql`](supabase_schema.sql) y pégalo en el editor.
 5. Haz clic en el botón verde **Run** (Ejecutar).
 6. **Verificación:**
    - En **Table Editor**, verás las 15 tablas creadas y pobladas con los datos de seed.
@@ -377,7 +377,7 @@ El repositorio está configurado para integración y despliegue continuo (CI/CD)
 1. Ingresa a [Vercel](https://vercel.com/) e inicia sesión con GitHub.
 2. Haz clic en **Add New... ➜ Project**.
 3. Selecciona el repositorio `renan-crm`.
-4. Vercel detectará el archivo [`vercel.json`](file:///home/thiagol/renan-crm/vercel.json) y la configuración de Vite:
+4. Vercel detectará el archivo [`vercel.json`](vercel.json) y la configuración de Vite:
    - **Framework Preset:** `Vite`
    - **Build Command:** `npm run build`
    - **Output Directory:** `dist`
@@ -435,7 +435,7 @@ npm run build
 
 Para los dueños del club, socios administradores, recepcionistas y personal de mostrador que no tienen conocimientos técnicos de programación, se ha redactado un manual de procedimientos operativos estándar en lenguaje claro y ejecutivo:
 
-📖 [**`MANUAL_DE_USO_CLIENTE.md`**](file:///home/thiagol/renan-crm/MANUAL_DE_USO_CLIENTE.md)
+📖 [**`MANUAL_DE_USO_CLIENTE.md`**](MANUAL_DE_USO_CLIENTE.md)
 
 Incluye:
 - Guía ilustrada de recepción de reservas y bloqueo de canchas.

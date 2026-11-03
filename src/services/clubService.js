@@ -214,226 +214,146 @@ const fetchPublicClubData = async () => {
 };
 
 // Supabase Real-time Database Mutations
+// supabase-js returns { error } instead of throwing, so every write goes through unwrap()
+const unwrap = ({ data, error }) => {
+  if (error) throw error;
+  return data;
+};
+
+// Network failures are worth retrying from the offline queue; anything the
+// server rejected (RLS, validation, conflicts) will fail the same way again.
+export const isRetryableError = (err) => {
+  if (!err) return false;
+  if (err.code) return false;
+  return /fetch|network|timeout|offline/i.test(err.message || '');
+};
+
+const SERVER_ERROR_MESSAGES = {
+  SLOT_ALREADY_BOOKED: 'Ese turno ya está reservado. Elegí otro horario.',
+  NOT_STAFF: 'Tu usuario no tiene permisos de staff.',
+  TAB_NOT_OPEN: 'La cuenta ya fue liquidada o cancelada.',
+  TAB_ALREADY_SETTLED: 'La cuenta ya fue liquidada.',
+  INVALID_DEPOSIT: 'La seña debe estar entre 0 y el monto de la cancha.',
+  INVALID_EQUIPMENT: 'Cantidad de paletas (0-4) o tubos (0-6) inválida.',
+  INVALID_NAME: 'El nombre del cliente es obligatorio.',
+  PAST_SLOT: 'Ese turno ya pasó.'
+};
+
+export const describeServerError = (err) => {
+  const message = err?.message || '';
+  const key = Object.keys(SERVER_ERROR_MESSAGES).find(k => message.includes(k));
+  if (key) return SERVER_ERROR_MESSAGES[key];
+  if (err?.code === '42501') return 'No tenés permisos para hacer este cambio.';
+  return 'No se pudo guardar el cambio en el servidor. Se recargaron los datos.';
+};
+
 export const dbCreateBookingAndTab = async (bookingData, newBooking, newTab) => {
-  if (!isSupabaseConfigured()) return;
+  if (!isSupabaseConfigured()) return null;
 
-  try {
-    // 1. Insert booking
-    await supabase.from('bookings').insert({
-      id: newBooking.id,
-      code: newBooking.code,
-      court_id: newBooking.courtId,
-      date: newBooking.date,
-      time_slot: newBooking.timeSlot,
-      client_name: newBooking.clientName,
-      client_phone: newBooking.clientPhone,
-      category: newBooking.category,
-      status: newBooking.status,
-      court_amount: newBooking.courtAmount,
-      deposit_paid: newBooking.depositPaid,
-      bar_table_requested: newBooking.barTableRequested,
-      rented_rackets: newBooking.rentedRackets,
-      ball_tubes: newBooking.ballTubes,
-      linked_tab_id: newBooking.linkedTabId,
-      created_at_time: newBooking.createdAt
-    });
-
-    // 2. Insert tab
-    await supabase.from('tabs').insert({
-      id: newTab.id,
-      linked_booking_id: newBooking.id,
-      court_id: newTab.courtId,
-      court_name: newTab.courtName,
-      client_name: newTab.clientName,
-      court_amount: newTab.courtAmount,
-      deposit_paid: newTab.depositPaid,
-      racket_count: newTab.racketCount,
-      racket_unit_fee: newTab.racketUnitFee,
-      ball_tube_count: newTab.ballTubeCount,
-      ball_tube_unit_fee: newTab.ballTubeUnitFee,
-      status: newTab.status,
-      activity_status: newTab.activityStatus,
-      bar_table_requested: newTab.barTableRequested,
-      opened_at: newTab.openedAt
-    });
-
-    // 3. Upsert player
-    const { data: existingPlayer } = await supabase
-      .from('players')
-      .select('id, total_bookings, total_spent')
-      .eq('phone', newBooking.clientPhone)
-      .maybeSingle();
-
-    if (existingPlayer) {
-      await supabase.from('players').update({
-        total_bookings: existingPlayer.total_bookings + 1,
-        total_spent: Number(existingPlayer.total_spent) + newBooking.courtAmount,
-        last_visit: 'Hoy, ' + newBooking.timeSlot.split(' - ')[0]
-      }).eq('id', existingPlayer.id);
-    } else {
-      await supabase.from('players').insert({
-        id: `plr-${Date.now()}`,
-        name: newBooking.clientName,
-        phone: newBooking.clientPhone,
-        category: '4ta Categoría',
-        is_fixed_pass_holder: newBooking.category === 'Abono Fijo Semanal',
-        fixed_pass_day: newBooking.category === 'Abono Fijo Semanal' ? newBooking.timeSlot : null,
-        total_bookings: 1,
-        total_spent: newBooking.courtAmount,
-        status: 'Jugador Registrado',
-        last_visit: 'Hoy, ' + newBooking.timeSlot.split(' - ')[0]
-      });
-    }
-  } catch (err) {
-    console.error('[Supabase] Error creating booking:', err);
-  }
+  return unwrap(await supabase.rpc('create_staff_booking', {
+    p_booking_id: newBooking.id,
+    p_tab_id: newTab.id,
+    p_court_id: newBooking.courtId,
+    p_date: newBooking.date,
+    p_time_slot: newBooking.timeSlot,
+    p_client_name: newBooking.clientName,
+    p_client_phone: newBooking.clientPhone,
+    p_category: newBooking.category,
+    p_court_amount: Number(newBooking.courtAmount),
+    p_deposit_paid: Number(newBooking.depositPaid) || 0,
+    p_bar_table_requested: Boolean(newBooking.barTableRequested),
+    p_rented_rackets: Number(newBooking.rentedRackets) || 0,
+    p_ball_tubes: Number(newBooking.ballTubes) || 0
+  }));
 };
 
 export const dbUpdateBookingStatus = async (bookingId, newStatus, depositAmount) => {
   if (!isSupabaseConfigured()) return;
 
-  try {
-    const updatePayload = { status: newStatus };
-    if (depositAmount !== undefined) {
-      updatePayload.deposit_paid = Number(depositAmount);
-    }
+  const updatePayload = { status: newStatus };
+  if (depositAmount !== undefined) {
+    updatePayload.deposit_paid = Number(depositAmount);
+  }
 
-    await supabase.from('bookings').update(updatePayload).eq('id', bookingId);
+  unwrap(await supabase.from('bookings').update(updatePayload).eq('id', bookingId));
 
-    // Sync tab deposit if changed
-    if (depositAmount !== undefined) {
-      await supabase.from('tabs').update({ deposit_paid: Number(depositAmount) }).eq('linked_booking_id', bookingId);
-    }
-  } catch (err) {
-    console.error('[Supabase] Error updating booking status:', err);
+  // Sync tab deposit if changed
+  if (depositAmount !== undefined) {
+    unwrap(await supabase.from('tabs').update({ deposit_paid: Number(depositAmount) }).eq('linked_booking_id', bookingId));
   }
 };
 
-export const dbAddTabItem = async (tabId, item, qty = 1) => {
+export const dbAdjustTabItem = async (tabId, menuItemId, delta) => {
   if (!isSupabaseConfigured()) return;
 
-  try {
-    const itemId = `item-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-    await supabase.from('tab_items').insert({
-      id: itemId,
-      tab_id: tabId,
-      menu_item_id: item.id,
-      name: item.name,
-      price: item.price,
-      qty: qty
-    });
-  } catch (err) {
-    console.error('[Supabase] Error adding tab item:', err);
-  }
+  unwrap(await supabase.rpc('adjust_tab_item', {
+    p_tab_id: tabId,
+    p_menu_item_id: menuItemId,
+    p_delta: delta
+  }));
 };
 
 export const dbUpdateTabEquipment = async (tabId, { racketCount, ballTubeCount }) => {
   if (!isSupabaseConfigured()) return;
 
-  try {
-    const payload = {};
-    if (racketCount !== undefined) payload.racket_count = Number(racketCount);
-    if (ballTubeCount !== undefined) payload.ball_tube_count = Number(ballTubeCount);
+  const payload = {};
+  if (racketCount !== undefined) payload.racket_count = Number(racketCount);
+  if (ballTubeCount !== undefined) payload.ball_tube_count = Number(ballTubeCount);
 
-    await supabase.from('tabs').update(payload).eq('id', tabId);
-  } catch (err) {
-    console.error('[Supabase] Error updating tab equipment:', err);
-  }
-};
-
-export const dbSettleTab = async (tabId, paymentMethod) => {
-  if (!isSupabaseConfigured()) return;
-
-  try {
-    const nowTime = new Date().toLocaleTimeString('es-PY', { hour: '2-digit', minute: '2-digit' });
-    
-    // 1. Settle tab
-    const { data: tab } = await supabase.from('tabs').update({
-      status: 'settled',
-      activity_status: 'liquidada',
-      payment_method: paymentMethod,
-      settled_at: nowTime
-    }).eq('id', tabId).select('linked_booking_id').single();
-
-    // 2. Mark linked booking finished
-    if (tab && tab.linked_booking_id) {
-      await supabase.from('bookings').update({ status: 'Finalizada' }).eq('id', tab.linked_booking_id);
-    }
-  } catch (err) {
-    console.error('[Supabase] Error settling tab:', err);
-  }
+  unwrap(await supabase.from('tabs').update(payload).eq('id', tabId));
 };
 
 export const dbUpdateCourtRate = async (courtId, newRate, newPrimeRate) => {
   if (!isSupabaseConfigured()) return;
 
-  try {
-    const payload = { rate: Number(newRate) };
-    if (newPrimeRate !== undefined && newPrimeRate !== null) {
-      payload.prime_rate = Number(newPrimeRate);
-    }
-    await supabase.from('courts').update(payload).eq('id', courtId);
-  } catch (err) {
-    console.error('[Supabase] Error updating court rate:', err);
+  const payload = { rate: Number(newRate) };
+  if (newPrimeRate !== undefined && newPrimeRate !== null) {
+    payload.prime_rate = Number(newPrimeRate);
   }
+  unwrap(await supabase.from('courts').update(payload).eq('id', courtId));
 };
 
 export const dbUpdateMenuItem = async (updatedItem) => {
   if (!isSupabaseConfigured()) return;
 
-  try {
-    await supabase.from('menu_items').update({
-      name: updatedItem.name,
-      category: updatedItem.category,
-      price: Number(updatedItem.price),
-      stock: Number(updatedItem.stock !== undefined ? updatedItem.stock : 50),
-      available: Boolean(updatedItem.available)
-    }).eq('id', updatedItem.id);
-  } catch (err) {
-    console.error('[Supabase] Error updating menu item:', err);
-  }
+  unwrap(await supabase.from('menu_items').update({
+    name: updatedItem.name,
+    category: updatedItem.category,
+    price: Number(updatedItem.price),
+    stock: Number(updatedItem.stock !== undefined ? updatedItem.stock : 50),
+    available: Boolean(updatedItem.available)
+  }).eq('id', updatedItem.id));
 };
 
 export const dbAddMenuItem = async (newItem) => {
   if (!isSupabaseConfigured()) return;
 
-  try {
-    await supabase.from('menu_items').insert([{
-      id: newItem.id,
-      name: newItem.name,
-      category: newItem.category,
-      description: newItem.description || '',
-      price: Number(newItem.price),
-      stock: Number(newItem.stock !== undefined ? newItem.stock : 50),
-      available: Boolean(newItem.available !== false),
-      tag: newItem.tag || ''
-    }]);
-  } catch (err) {
-    console.error('[Supabase] Error adding menu item:', err);
-  }
+  unwrap(await supabase.from('menu_items').insert([{
+    id: newItem.id,
+    name: newItem.name,
+    category: newItem.category,
+    description: newItem.description || '',
+    price: Number(newItem.price),
+    stock: Number(newItem.stock !== undefined ? newItem.stock : 50),
+    available: Boolean(newItem.available !== false),
+    tag: newItem.tag || ''
+  }]));
 };
 
 // Centralized Pricing Config from Database
 export const fetchPricingConfig = async () => {
   if (!isSupabaseConfigured()) return null;
   try {
-    const { data, error } = await supabase
-      .from('pricing_config')
-      .select('*')
-      .order('id', { ascending: true })
-      .limit(1)
-      .maybeSingle();
-
+    const { data, error } = await supabase.from('pricing_config').select('key, value');
     if (error || !data) return null;
-    return {
-      dayRateDefault: Number(data.day_rate_default || 160000),
-      primeRateDefault: Number(data.prime_rate_default || 200000),
-      primeStartHour: data.prime_start_hour || '17:00:00',
-      racketRentalFee: Number(data.racket_rental_fee || 30000),
-      ballTubeFee: Number(data.ball_tube_fee || 70000),
-      bookingDepositPercent: Number(data.booking_deposit_percent || 50),
-      holdExpiresMinutes: Number(data.hold_expires_minutes || 30)
-    };
+
+    const byKey = Object.fromEntries(data.map(row => [row.key, Number(row.value)]));
+    const config = {};
+    if (byKey.racket_rental_fee !== undefined) config.racketRentalFee = byKey.racket_rental_fee;
+    if (byKey.ball_tube_fee !== undefined) config.ballTubeFee = byKey.ball_tube_fee;
+    if (byKey.deposit_percent !== undefined) config.bookingDepositPercent = byKey.deposit_percent;
+    if (byKey.booking_hold_minutes !== undefined) config.holdExpiresMinutes = byKey.booking_hold_minutes;
+    return config;
   } catch {
     return null;
   }

@@ -16,16 +16,17 @@ import {
   fetchAllClubData,
   dbCreateBookingAndTab,
   dbUpdateBookingStatus,
-  dbAddTabItem,
+  dbAdjustTabItem,
   dbUpdateTabEquipment,
-  dbSettleTab,
   dbUpdateCourtRate,
   dbUpdateMenuItem,
   dbAddMenuItem,
   fetchPricingConfig,
   fetchStaffRole,
   rpcCreatePublicBooking,
-  rpcSettleTab
+  rpcSettleTab,
+  isRetryableError,
+  describeServerError
 } from '../services/clubService';
 import { calculateTabBalances as computeTabBalances } from '../utils/financeHelpers';
 
@@ -76,6 +77,7 @@ export function ClubProvider({ children }) {
   const [userRole, setUserRole] = useState('anon'); // 'owner' | 'reception' | 'anon'
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [pendingQueue, setPendingQueue] = useState(getInitialPendingQueue);
+  const [syncError, setSyncError] = useState(null);
   const [syncStatus, setSyncStatus] = useState(typeof navigator !== 'undefined' && navigator.onLine ? 'synced' : 'offline');
   const [pricingConfig, setPricingConfig] = useState({
     dayRateDefault: 160000,
@@ -90,7 +92,7 @@ export function ClubProvider({ children }) {
   // Fetch Pricing Config on startup
   useEffect(() => {
     fetchPricingConfig().then(cfg => {
-      if (cfg) setPricingConfig(cfg);
+      if (cfg) setPricingConfig(prev => ({ ...prev, ...cfg }));
     });
   }, []);
 
@@ -178,6 +180,33 @@ export function ClubProvider({ children }) {
     setSyncStatus(navigator.onLine ? 'pending' : 'offline');
   }, []);
 
+  const clearSyncError = useCallback(() => setSyncError(null), []);
+
+  // A write the server rejected: tell the user and reload so the optimistic change is undone
+  const reportServerRejection = useCallback((err) => {
+    console.error('[Supabase] Write rejected:', err);
+    setSyncError(describeServerError(err));
+    syncFromSupabase();
+  }, [syncFromSupabase]);
+
+  // Run a write now when online; queue it on network failure, surface server rejections
+  const persistMutation = useCallback((run, mutation, onSuccess) => {
+    if (!isSupabaseConfigured()) return;
+    if (typeof navigator !== 'undefined' && !navigator.onLine) {
+      enqueueMutation(mutation);
+      return;
+    }
+    run()
+      .then(result => onSuccess?.(result))
+      .catch(err => {
+        if (isRetryableError(err)) {
+          enqueueMutation(mutation);
+        } else {
+          reportServerRejection(err);
+        }
+      });
+  }, [enqueueMutation, reportServerRejection]);
+
   // Offline queue worker
   const processPendingQueue = useCallback(async () => {
     if (typeof navigator !== 'undefined' && !navigator.onLine) {
@@ -201,24 +230,29 @@ export function ClubProvider({ children }) {
           await dbCreateBookingAndTab(item.bookingData, item.newBooking, item.newTab);
         } else if (item.type === 'UPDATE_STATUS') {
           await dbUpdateBookingStatus(item.bookingId, item.newStatus, item.depositAmount);
+        } else if (item.type === 'ADJUST_TAB_ITEM') {
+          await dbAdjustTabItem(item.tabId, item.menuItemId, item.delta);
         } else if (item.type === 'ADD_TAB_ITEM') {
-          await dbAddTabItem(item.tabId, item.menuItem, item.qty);
+          await dbAdjustTabItem(item.tabId, item.menuItem.id, item.qty);
         } else if (item.type === 'UPDATE_EQUIPMENT') {
           await dbUpdateTabEquipment(item.tabId, item.equipment);
         } else if (item.type === 'SETTLE_TAB') {
-          try {
-            await rpcSettleTab(item.tabId, item.paymentMethod);
-          } catch {
-            await dbSettleTab(item.tabId, item.paymentMethod);
-          }
+          await rpcSettleTab(item.tabId, item.paymentMethod);
         } else if (item.type === 'UPDATE_COURT_RATE') {
-          await dbUpdateCourtRate(item.courtId, item.newRate);
+          await dbUpdateCourtRate(item.courtId, item.newRate, item.newPrimeRate);
         } else if (item.type === 'UPDATE_MENU_ITEM') {
           await dbUpdateMenuItem(item.updatedItem);
+        } else if (item.type === 'ADD_MENU_ITEM') {
+          await dbAddMenuItem(item.newItem);
         }
       } catch (err) {
-        console.warn('[Queue Worker] Failed mutation, retaining for retry:', item, err);
-        remaining.push(item);
+        if (isRetryableError(err)) {
+          console.warn('[Queue Worker] Failed mutation, retaining for retry:', item, err);
+          remaining.push(item);
+        } else {
+          console.error('[Queue Worker] Server rejected queued mutation, dropping:', item, err);
+          setSyncError(describeServerError(err));
+        }
       }
     }
 
@@ -363,7 +397,7 @@ export function ClubProvider({ children }) {
 
     const court = data.courts.find(c => c.id === bookingData.courtId);
     const courtAmount = bookingData.courtAmount || (court ? court.rate : 160000);
-    const depositPercent = pricingConfig.bookingDepositPercent || 50;
+    const depositPercent = pricingConfig.bookingDepositPercent ?? 0;
     const depositPaid = bookingData.depositPaid !== undefined 
       ? bookingData.depositPaid 
       : Math.round(courtAmount * (depositPercent / 100));
@@ -445,7 +479,12 @@ export function ClubProvider({ children }) {
       }
     }
 
-    // Staff or Offline flow
+    // Public bookings must be validated by the server; never queue them offline
+    if (isPublicUser && isSupabaseConfigured()) {
+      throw new Error('Sin conexión a internet. Revisá tu conexión e intentá de nuevo.');
+    }
+
+    // Staff flow (also demo mode without Supabase)
     const bookingCode = `BC-${Math.floor(1000 + Math.random() * 9000)}`;
     const newBookingId = `book-${Date.now()}`;
     const newTabId = `tab-${Date.now()}`;
@@ -457,7 +496,7 @@ export function ClubProvider({ children }) {
       date: bookingData.date || selectedDate,
       timeSlot: bookingData.timeSlot,
       clientName: bookingData.clientName,
-      clientPhone: bookingData.clientPhone || '+595 983 573 396',
+      clientPhone: bookingData.clientPhone || '',
       category: bookingData.category || 'Reserva Estándar',
       status: depositPaid > 0 ? 'Confirmada' : 'Seña Pendiente',
       courtAmount,
@@ -506,7 +545,7 @@ export function ClubProvider({ children }) {
       updatedPlayers.push({
         id: `plr-${Date.now()}`,
         name: bookingData.clientName,
-        phone: bookingData.clientPhone || '+595 983 573 396',
+        phone: bookingData.clientPhone || '',
         category: '4ta Categoría',
         isFixedPassHolder: bookingData.category === 'Abono Fijo Semanal',
         fixedPassDay: bookingData.category === 'Abono Fijo Semanal' ? `${bookingData.timeSlot}` : null,
@@ -526,13 +565,18 @@ export function ClubProvider({ children }) {
     }));
 
     // Persist to Supabase if live, or enqueue if offline
-    if (isSupabaseConfigured() && typeof navigator !== 'undefined' && navigator.onLine) {
-      dbCreateBookingAndTab(bookingData, newBooking, newTab).catch(() => {
-        enqueueMutation({ type: 'CREATE_BOOKING', bookingData, newBooking, newTab });
-      });
-    } else {
-      enqueueMutation({ type: 'CREATE_BOOKING', bookingData, newBooking, newTab });
-    }
+    persistMutation(
+      () => dbCreateBookingAndTab(bookingData, newBooking, newTab),
+      { type: 'CREATE_BOOKING', bookingData, newBooking, newTab },
+      // The server assigns the definitive booking code and status
+      (result) => {
+        if (!result) return;
+        setData(prev => ({
+          ...prev,
+          bookings: prev.bookings.map(b => b.id === newBooking.id ? { ...b, code: result.code, status: result.status } : b)
+        }));
+      }
+    );
 
     return newBooking;
   };
@@ -568,20 +612,17 @@ export function ClubProvider({ children }) {
       };
     });
 
-    if (isSupabaseConfigured() && typeof navigator !== 'undefined' && navigator.onLine) {
-      dbUpdateBookingStatus(bookingId, newStatus, depositAmount).catch(() => {
-        enqueueMutation({ type: 'UPDATE_STATUS', bookingId, newStatus, depositAmount });
-      });
-    } else {
-      enqueueMutation({ type: 'UPDATE_STATUS', bookingId, newStatus, depositAmount });
-    }
+    persistMutation(
+      () => dbUpdateBookingStatus(bookingId, newStatus, depositAmount),
+      { type: 'UPDATE_STATUS', bookingId, newStatus, depositAmount }
+    );
   };
 
   const addItemToTab = (tabId, menuItem, qty = 1) => {
     setData(prev => {
       const updatedTabs = prev.tabs.map(tab => {
         if (tab.id === tabId) {
-          const existingItemIndex = tab.items.findIndex(i => i.id === menuItem.id);
+          const existingItemIndex = tab.items.findIndex(i => (i.menuItemId || i.id) === menuItem.id);
           let newItems = [...tab.items];
           if (existingItemIndex >= 0) {
             newItems[existingItemIndex] = {
@@ -591,6 +632,7 @@ export function ClubProvider({ children }) {
           } else {
             newItems.push({
               id: menuItem.id,
+              menuItemId: menuItem.id,
               name: menuItem.name,
               price: menuItem.price,
               qty: qty
@@ -603,16 +645,18 @@ export function ClubProvider({ children }) {
       return { ...prev, tabs: updatedTabs };
     });
 
-    if (isSupabaseConfigured() && typeof navigator !== 'undefined' && navigator.onLine) {
-      dbAddTabItem(tabId, menuItem, qty).catch(() => {
-        enqueueMutation({ type: 'ADD_TAB_ITEM', tabId, menuItem, qty });
-      });
-    } else {
-      enqueueMutation({ type: 'ADD_TAB_ITEM', tabId, menuItem, qty });
-    }
+    persistMutation(
+      () => dbAdjustTabItem(tabId, menuItem.id, qty),
+      { type: 'ADJUST_TAB_ITEM', tabId, menuItemId: menuItem.id, delta: qty }
+    );
   };
 
   const updateTabItemQty = (tabId, itemId, delta) => {
+    const tab = data.tabs.find(t => t.id === tabId);
+    const item = tab?.items.find(i => i.id === itemId);
+    if (!item) return;
+    const menuItemId = item.menuItemId || item.id;
+
     setData(prev => {
       const updatedTabs = prev.tabs.map(tab => {
         if (tab.id === tabId) {
@@ -631,6 +675,11 @@ export function ClubProvider({ children }) {
       });
       return { ...prev, tabs: updatedTabs };
     });
+
+    persistMutation(
+      () => dbAdjustTabItem(tabId, menuItemId, delta),
+      { type: 'ADJUST_TAB_ITEM', tabId, menuItemId, delta }
+    );
   };
 
   const updateTabEquipment = (tabId, { racketCount, ballTubeCount }) => {
@@ -648,13 +697,10 @@ export function ClubProvider({ children }) {
       return { ...prev, tabs: updatedTabs };
     });
 
-    if (isSupabaseConfigured() && typeof navigator !== 'undefined' && navigator.onLine) {
-      dbUpdateTabEquipment(tabId, { racketCount, ballTubeCount }).catch(() => {
-        enqueueMutation({ type: 'UPDATE_EQUIPMENT', tabId, equipment: { racketCount, ballTubeCount } });
-      });
-    } else {
-      enqueueMutation({ type: 'UPDATE_EQUIPMENT', tabId, equipment: { racketCount, ballTubeCount } });
-    }
+    persistMutation(
+      () => dbUpdateTabEquipment(tabId, { racketCount, ballTubeCount }),
+      { type: 'UPDATE_EQUIPMENT', tabId, equipment: { racketCount, ballTubeCount } }
+    );
   };
 
   const settleTab = (tabId, paymentMethod = 'Tarjeta') => {
@@ -690,16 +736,10 @@ export function ClubProvider({ children }) {
       };
     });
 
-    if (isSupabaseConfigured() && typeof navigator !== 'undefined' && navigator.onLine) {
-      rpcSettleTab(tabId, paymentMethod).catch((rpcErr) => {
-        console.warn('[settleTab RPC fallback to direct mutation]', rpcErr);
-        dbSettleTab(tabId, paymentMethod).catch(() => {
-          enqueueMutation({ type: 'SETTLE_TAB', tabId, paymentMethod });
-        });
-      });
-    } else {
-      enqueueMutation({ type: 'SETTLE_TAB', tabId, paymentMethod });
-    }
+    persistMutation(
+      () => rpcSettleTab(tabId, paymentMethod),
+      { type: 'SETTLE_TAB', tabId, paymentMethod }
+    );
   };
 
   const bookCoachClass = ({ coachId, date, timeSlot, clientName, clientPhone }) => {
@@ -781,13 +821,10 @@ export function ClubProvider({ children }) {
       menuItems: prev.menuItems.map(item => item.id === updatedItem.id ? updatedItem : item)
     }));
 
-    if (isSupabaseConfigured() && typeof navigator !== 'undefined' && navigator.onLine) {
-      dbUpdateMenuItem(updatedItem).catch(() => {
-        enqueueMutation({ type: 'UPDATE_MENU_ITEM', updatedItem });
-      });
-    } else {
-      enqueueMutation({ type: 'UPDATE_MENU_ITEM', updatedItem });
-    }
+    persistMutation(
+      () => dbUpdateMenuItem(updatedItem),
+      { type: 'UPDATE_MENU_ITEM', updatedItem }
+    );
   };
 
   const addMenuItem = (newItem) => {
@@ -807,13 +844,10 @@ export function ClubProvider({ children }) {
       menuItems: [itemWithId, ...prev.menuItems]
     }));
 
-    if (isSupabaseConfigured() && typeof navigator !== 'undefined' && navigator.onLine) {
-      dbAddMenuItem(itemWithId).catch(() => {
-        enqueueMutation({ type: 'ADD_MENU_ITEM', newItem: itemWithId });
-      });
-    } else {
-      enqueueMutation({ type: 'ADD_MENU_ITEM', newItem: itemWithId });
-    }
+    persistMutation(
+      () => dbAddMenuItem(itemWithId),
+      { type: 'ADD_MENU_ITEM', newItem: itemWithId }
+    );
 
     return itemWithId;
   };
@@ -828,13 +862,10 @@ export function ClubProvider({ children }) {
       } : c)
     }));
 
-    if (isSupabaseConfigured() && typeof navigator !== 'undefined' && navigator.onLine) {
-      dbUpdateCourtRate(courtId, newRate, newPrimeRate).catch(() => {
-        enqueueMutation({ type: 'UPDATE_COURT_RATE', courtId, newRate, newPrimeRate });
-      });
-    } else {
-      enqueueMutation({ type: 'UPDATE_COURT_RATE', courtId, newRate, newPrimeRate });
-    }
+    persistMutation(
+      () => dbUpdateCourtRate(courtId, newRate, newPrimeRate),
+      { type: 'UPDATE_COURT_RATE', courtId, newRate, newPrimeRate }
+    );
   };
 
   const resetToSeedData = () => {
@@ -877,6 +908,8 @@ export function ClubProvider({ children }) {
         pendingCount: pendingQueue.length,
         pricingConfig,
         retrySync: processPendingQueue,
+        syncError,
+        clearSyncError,
         isStaffAuthenticated: Boolean(user),
         showAuthModal,
         setShowAuthModal,

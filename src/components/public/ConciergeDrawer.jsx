@@ -12,6 +12,7 @@ import {
   Minus,
   ArrowLeft
 } from 'lucide-react';
+import { CLUB_WHATSAPP_URL, CLUB_PHONE_DISPLAY } from '../../config/contact';
 
 export function ConciergeDrawer({ slotData, onClose }) {
   const { createBooking } = useClub();
@@ -108,7 +109,7 @@ export function ConciergeDrawer({ slotData, onClose }) {
 
       // Redirección directa e inmediata a WhatsApp oficial
       const waMsg = `Hola Black Club Elite, acabo de solicitar la reserva de la cancha ${court.name} para el día ${date} en el turno ${timeSlot} a nombre de ${clientName.trim()} (Tel: ${clientPhone.trim()}). Aguardo confirmación del operador para el bloqueo oficial de mi turno.`;
-      const waUrl = `https://wa.me/595983573396?text=${encodeURIComponent(waMsg)}`;
+      const waUrl = `${CLUB_WHATSAPP_URL}?text=${encodeURIComponent(waMsg)}`;
       if (typeof window !== 'undefined') {
         window.open(waUrl, '_blank');
       }
@@ -372,7 +373,7 @@ export function ConciergeDrawer({ slotData, onClose }) {
                 </div>
 
                 <div style={{ fontSize: '11.5px', color: '#A1A1AA', lineHeight: 1.45 }}>
-                  Al presionar el botón serás redirigido a nuestro WhatsApp oficial (<strong>+595 983 573 396</strong>) y tu solicitud ingresará instantáneamente en la agenda del CRM para que el operador bloquee tu cancha.
+                  Al presionar el botón serás redirigido a nuestro WhatsApp oficial (<strong>{CLUB_PHONE_DISPLAY}</strong>) y tu solicitud ingresará instantáneamente en la agenda del CRM para que el operador bloquee tu cancha.
                 </div>
               </div>
 
@@ -484,14 +485,14 @@ export function ConciergeDrawer({ slotData, onClose }) {
               {/* Action Buttons */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <a
-                  href={`https://wa.me/595983573396?text=${encodeURIComponent(`Hola Black Club Elite, acabo de solicitar la reserva de la cancha ${court.name} para el ${date} en el turno ${timeSlot} a nombre de ${confirmedBooking.clientName}. Aguardo confirmación.`)}`}
+                  href={`${CLUB_WHATSAPP_URL}?text=${encodeURIComponent(`Hola Black Club Elite, acabo de solicitar la reserva de la cancha ${court.name} para el ${date} en el turno ${timeSlot} a nombre de ${confirmedBooking.clientName}. Aguardo confirmación.`)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="btn-primary"
                   style={{ textDecoration: 'none', minHeight: '44px', gap: '8px' }}
                 >
                   <Share2 size={14} />
-                  <span>Abrir WhatsApp (+595 983 573 396)</span>
+                  <span>Abrir WhatsApp ({CLUB_PHONE_DISPLAY})</span>
                 </a>
 
                 <button

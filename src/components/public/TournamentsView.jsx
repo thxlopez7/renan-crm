@@ -9,9 +9,10 @@ import {
   ArrowUpRight,
   MessageCircle
 } from 'lucide-react';
+import { CLUB_WHATSAPP_NUMBER, CLUB_PHONE_DISPLAY } from '../../config/contact';
 
-const TOURNAMENTS_WHATSAPP_NUMBER = '595983573396';
-const TOURNAMENTS_PHONE_DISPLAY = '+595 983 573 396';
+const TOURNAMENTS_WHATSAPP_NUMBER = CLUB_WHATSAPP_NUMBER;
+const TOURNAMENTS_PHONE_DISPLAY = CLUB_PHONE_DISPLAY;
 
 export function TournamentsView() {
   const { tournaments } = useClub();

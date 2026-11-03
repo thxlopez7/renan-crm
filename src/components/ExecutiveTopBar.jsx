@@ -14,6 +14,7 @@ import {
   UserCheck,
   ArrowLeft
 } from 'lucide-react';
+import { CLUB_WHATSAPP_URL } from '../config/contact';
 
 export function ExecutiveTopBar({ viewMode, setViewMode }) {
   const { 
@@ -124,7 +125,7 @@ export function ExecutiveTopBar({ viewMode, setViewMode }) {
             <>
               {/* Contacto Direct (Desktop only) */}
               <a
-                href="https://wa.me/595983573396"
+                href={CLUB_WHATSAPP_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hide-mobile"
@@ -405,7 +406,7 @@ export function ExecutiveTopBar({ viewMode, setViewMode }) {
 
                 {/* Direct WhatsApp Contact */}
                 <a
-                  href="https://wa.me/595983573396"
+                  href={CLUB_WHATSAPP_URL}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="btn-athletic"

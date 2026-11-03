@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useClub } from '../../context/ClubContext';
 import { ExecutiveDashboard } from './ExecutiveDashboard';
 import { MasterScheduleView } from './MasterScheduleView';
 import { POSTerminalView } from './POSTerminalView';
@@ -13,16 +14,23 @@ import {
 } from 'lucide-react';
 
 export function ExecutiveSuite() {
-  const [activeSection, setActiveSection] = useState('dashboard');
+  const { userRole } = useClub();
+  const isOwner = userRole === 'owner';
+  const [selectedSection, setActiveSection] = useState(null);
   const [highlightedTabId, setHighlightedTabId] = useState(null);
 
+  // Financial panel and pricing/catalog are owner-only (enforced by RLS as well)
   const sidebarItems = [
-    { id: 'dashboard', label: 'Panel', fullLabel: 'Panel de Control', icon: TrendingUp },
+    { id: 'dashboard', label: 'Panel', fullLabel: 'Panel de Control', icon: TrendingUp, ownerOnly: true },
     { id: 'schedule', label: 'Agenda', fullLabel: 'Agenda de Canchas', icon: Calendar },
     { id: 'pos', label: 'Caja & Cuentas', fullLabel: 'Caja & Cuentas (Terminal)', icon: Receipt },
     { id: 'players', label: 'Clientes', fullLabel: 'Directorio de Clientes', icon: Users },
-    { id: 'catalog', label: 'Tarifas & Stock', fullLabel: 'Tarifas & Inventario', icon: Sliders }
-  ];
+    { id: 'catalog', label: 'Tarifas & Stock', fullLabel: 'Tarifas & Inventario', icon: Sliders, ownerOnly: true }
+  ].filter(item => isOwner || !item.ownerOnly);
+
+  const activeSection = sidebarItems.some(item => item.id === selectedSection)
+    ? selectedSection
+    : sidebarItems[0].id;
 
   const handleOpenPosTab = (tabId) => {
     setHighlightedTabId(tabId);

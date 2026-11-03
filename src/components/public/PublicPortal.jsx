@@ -15,6 +15,7 @@ import {
   Phone,
   ExternalLink 
 } from 'lucide-react';
+import { CLUB_WHATSAPP_URL } from '../../config/contact';
 
 function getPadelStatus(courts, bookings) {
   const now = new Date();
@@ -131,7 +132,7 @@ export function PublicPortal() {
             </div>
 
             <a
-              href="https://wa.me/595983573396"
+              href={CLUB_WHATSAPP_URL}
               target="_blank"
               rel="noopener noreferrer"
               style={{ 
@@ -356,7 +357,7 @@ export function PublicPortal() {
           </a>
 
           <a 
-            href="https://wa.me/595983573396" 
+            href={CLUB_WHATSAPP_URL} 
             target="_blank" 
             rel="noopener noreferrer"
             style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#FFFFFF', textDecoration: 'none', fontWeight: 600 }}
