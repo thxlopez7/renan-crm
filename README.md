@@ -1,448 +1,324 @@
-# 🎾 BLACK CLUB ELITE — PLATAFORMA DIGITAL INTEGRAL & CRM SUITE
-> **Sistema Operativo Deportivo, Comercial y de Hospitalidad para Complejos de Pádel de Alto Rendimiento**  
-> **Complejo Oficial:** `@blackclubparaguay` — Asunción, Paraguay  
-> **Canal Oficial de Contacto:** WhatsApp `+595 983573396` (`+595 983 573 396`)  
-> **Moneda del Sistema:** Guaraníes Paraguayos (`Gs.`)  
-> **Versión:** 2.0 (Producción Final Certificada)
+# Black Club · Web de reservas y panel de gestión
+
+Aplicación web para **Black Club** (pádel, gimnasio BlackGym, clases BlackTeam y bar) en San Juan Bautista, Misiones, Paraguay.
+
+Tiene dos partes que comparten la misma base de datos:
+
+| Parte | Quién la usa | Qué hace |
+|---|---|---|
+| **Web pública** | Jugadores y clientes | Reservar cancha en pocos toques, consultar o cancelar su reserva, ver planes del gimnasio, pedir clases, ver el Circuito y la carta del bar. |
+| **Panel del club** | Dueño y recepción | Agenda de canchas, confirmación de solicitudes, turnos fijos, caja con cobros mixtos y cierre de caja, clientes, panel de números y ajustes. |
+
+Este documento es la referencia técnica. El manual para el club está en [`MANUAL_DE_USO_CLIENTE.md`](MANUAL_DE_USO_CLIENTE.md).
 
 ---
 
-## 📑 TABLA DE CONTENIDOS
+## Índice
 
-1. [Visión General del Producto](#1-visión-general-del-producto)
-2. [Arquitectura del Sistema & Stack Tecnológico](#2-arquitectura-del-sistema--stack-tecnológico)
-3. [Lógica de Negocio y Reglas Operativas en Profundidad](#3-lógica-de-negocio-y-reglas-operativas-en-profundidad)
-   - 3.1. Infraestructura de Canchas y Horarios
-   - 3.2. Validación de Horarios y Prevención de Turnos Pasados
-   - 3.3. Nuevo Flujo de Reservas Ágiles (Sin Señas Previas)
-   - 3.4. Integridad Física Anti-Doble Reserva (Concurrency Lock)
-   - 3.5. Ciclo de Vida de los Turnos en el CRM y Tarjeta de Alerta Entrante
-   - 3.6. Terminal POS, Cuentas Corrientes y Comandas de Cancha
-   - 3.7. Calculadora de Pago por Jugadores (Fórmula de Prorrateo Dual)
-   - 3.8. Modificación Dinámica de Tarifas (Estándar vs. Prime)
-   - 3.9. Control de Inventario, Semáforo de Stock Crítico y Disponibilidad
-   - 3.10. BlackGym, BlackTeam y Circuito de Torneos Oficiales
-   - 3.11. Resiliencia de Red y Modo Offline Transparente
-   - 3.12. Matriz de Roles Staff y Auditoría Inmutable
-4. [Estructura del Repositorio](#4-estructura-del-repositorio)
-5. [Guía de Configuración de la Base de Datos (Supabase)](#5-guía-de-configuración-de-la-base-de-datos-supabase)
-6. [Guía de Despliegue en Producción (Vercel)](#6-guía-de-despliegue-en-producción-vercel)
-7. [Desarrollo Local y Ejecución de Pruebas](#7-desarrollo-local-y-ejecución-de-pruebas)
-8. [Documentación para el Cliente Final](#8-documentación-para-el-cliente-final)
+1. [Tecnología](#1-tecnología)
+2. [Puesta en marcha local](#2-puesta-en-marcha-local)
+3. [Estructura del proyecto](#3-estructura-del-proyecto)
+4. [Cómo fluyen los datos](#4-cómo-fluyen-los-datos)
+5. [Base de datos (Supabase)](#5-base-de-datos-supabase)
+6. [Reglas de negocio](#6-reglas-de-negocio)
+7. [Seguridad](#7-seguridad)
+8. [Diseño y estilos](#8-diseño-y-estilos)
+9. [Pruebas y calidad](#9-pruebas-y-calidad)
+10. [Despliegue](#10-despliegue)
+11. [Tareas habituales](#11-tareas-habituales)
+12. [Pendientes conocidos](#12-pendientes-conocidos)
 
 ---
 
-## 1. VISIÓN GENERAL DEL PRODUCTO
+## 1. Tecnología
 
-**Black Club Elite** es una solución digital de extremo a extremo concebida para profesionalizar y elevar la operación de complejos deportivos de pádel y clubes de membresía premium. 
+| Capa | Herramienta |
+|---|---|
+| Interfaz | React 19 + Vite 8, CSS propio (sin frameworks de estilos) |
+| Íconos | lucide-react |
+| Tipografía | Archivo (Google Fonts), ancho variable: títulos condensados, texto normal |
+| Base de datos y usuarios | Supabase (PostgreSQL 17, Auth, Realtime, `pg_cron`) |
+| Publicación | Vercel (sitio estático + redirección SPA) |
+| Pruebas | Vitest |
+| Revisión de código | oxlint |
 
-El sistema fusiona dos entornos interconectados en tiempo real:
-
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                       ECOSISTEMA DIGITAL BLACK CLUB                         │
-├──────────────────────────────────────┬──────────────────────────────────────┤
-│      A. PORTAL PÚBLICO DIGITAL       │        B. SUITE CRM EJECUTIVA        │
-│         (Para Jugadores/Socios)      │       (Para Propietarios y Staff)    │
-├──────────────────────────────────────┼──────────────────────────────────────┤
-│ • Consulta interactiva de canchas    │ • Agenda maestra de pistas en vivo   │
-│ • Reserva sin fricción en 1 toque    │ • Alerta dorada de reserva entrante  │
-│ • Redirección a WhatsApp oficial     │ • Bloqueo de turnos con 1 clic       │
-│ • Circuito oficial y torneos         │ • Terminal POS y comandas en pista   │
-│ • Carta digital del bar y lounge     │ • Calculadora de pago por jugadores  │
-│ • Membresías BlackGym (Biostrength)  │ • Gestión de tarifas y stock en vivo │
-│ • Coaches y academia BlackTeam       │ • Directorio de jugadores y métricas │
-└──────────────────────────────────────┴──────────────────────────────────────┘
-```
-
-La plataforma responde al paradigma de diseño **"Quiet Athletic Luxury"**: interfaces oscuras basadas en tonos obsidiana, contrastes controlados, microinteracciones sutiles, tipografías sans-serif de precisión suiza y total adaptabilidad en dispositivos móviles (iOS y Android) y terminales de escritorio.
+No hay servidor propio: toda la lógica sensible (precios, solapamientos, cobros, permisos) vive en **funciones de PostgreSQL** y **políticas RLS** dentro de Supabase. El navegador solo llama a esas funciones.
 
 ---
 
-## 2. ARQUITECTURA DEL SISTEMA & STACK TECNOLÓGICO
+## 2. Puesta en marcha local
 
-```
-[ Navegador Cliente / Móvil ]
-        │
-        ├── PWA SPA (React 19 + Vite 8)
-        │     ├── ClubContext (Estado Reactivo, Cache Local, Worker Offline)
-        │     ├── Router / View Switching (Portal Público vs. Suite CRM)
-        │     └── Módulos Visuales (Schedule, POS, Catalog, Directory, Drawer)
-        │
-        ▼ (HTTPS REST / RPC & WebSockets WSS)
-[ Supabase PostgreSQL 15+ (Cloud Engine) ]
-        ├── PostgreSQL Relational Core (15 tablas relacionales normalizadas)
-        ├── Row Level Security (RLS) & Role-Based Access Control (RBAC)
-        ├── Stored Procedures (RPCs con transacciones atómicas SECURITY DEFINER)
-        ├── Triggers de Auditoría e Integridad de Precios
-        └── Supabase Realtime (Replicación WebSockets de cambios en caliente)
-        │
-        ▲ (CI/CD Automático)
-[ Vercel Edge Network ]
-        └── CDN Global + Enrutamiento SPA vía vercel.json
-```
+Requisitos: Node 20 o superior.
 
-### Componentes Técnicos Clave:
-- **Frontend Core:** React `19.2.8` con soporte para React Compiler y Strict Mode.
-- **Bundler & Build Tool:** Vite `8.3.0` (tiempo de compilación de producción en ~430ms).
-- **Estilos:** Vanilla CSS moderno organizado en tokens semánticos (sin sobrecarga de frameworks externos como Tailwind, respetando máxima ligereza y control estético).
-- **Iconografía:** Lucide React (trazos limpios de 1.5px y 2px).
-- **Pruebas Automatizadas:** Vitest `5.0.5` con suites de pruebas unitarias sobre cálculos financieros, formateo de Guaraníes, validación de turnos pasados y encolado offline.
-- **Auditoría de Código:** Oxlint `1.81.0` (análisis estático ultrarrápido).
-- **Backend as a Service:** Supabase (Auth JWT, PostgreSQL, Realtime Publications).
-
----
-
-## 3. LÓGICA DE NEGOCIO Y REGLAS OPERATIVAS EN PROFUNDIDAD
-
-La plataforma implementa un conjunto riguroso de reglas de negocio diseñadas para maximizar la ocupación de pistas, evitar errores humanos en caja y acelerar la atención en recepción.
-
-### 3.1. Infraestructura de Canchas y Horarios
-El club dispone de 3 pistas reglamentarias de pádel con características técnicas diferenciadas:
-1. **Cancha Central Panorámica (CANCHA 01 · WPT):** Vidrio panorámico continuo 12mm de estándar World Padel Tour, césped texturizado monofilamento negro e iluminación LED de competición de 1000 Lux.
-2. **Cancha 2 Indoor Climatizada (CANCHA 02 · CLIMA):** Recinto cerrado con climatización activa a 21°C, aislamiento acústico y paneles LED de luz difusa.
-3. **Cancha 3 Outdoor Techada (CANCHA 03 · OUTDOOR):** Estructura techada de aluminio aeroespacial reforzado con césped Tournament Blue.
-
-**Franjas Horarias:**
-- El sistema opera en bloques de **1 hora exacta** (ej. `18:00 - 19:00`, `19:00 - 20:00`), cubriendo de 07:00 a 23:00 / 00:00 hs los 7 días de la semana.
-- El carrusel de fechas genera automáticamente los **próximos 7 días consecutivos**, actualizándose día a día sin desfasajes de zona horaria.
-
----
-
-### 3.2. Validación de Horarios y Prevención de Turnos Pasados (`isSlotPast`)
-Para garantizar la coherencia operativa:
-- El sistema compara la fecha seleccionada contra la fecha actual (`America/Asuncion`).
-- Si la fecha es pasada, toda la grilla queda deshabilitada.
-- Si la fecha es **Hoy**, el sistema evalúa la hora y minuto del inicio del slot (ej. `18:00`). Si la hora actual es mayor o igual a las 18:00, el turno se clasifica como `past` y el botón queda inactivo para reservas públicas.
-- Esta validación se ejecuta tanto en el frontend ([`src/utils/dateHelpers.js`](src/utils/dateHelpers.js)) como en el servidor dentro de la función RPC [`create_public_booking`](supabase_schema.sql), impidiendo que cualquier solicitud maliciosa reserve turnos caducados.
-
----
-
-### 3.3. Nuevo Flujo de Reservas Ágiles (Sin Señas Previas)
-
-#### Problema de Negocio Previo:
-Exigir una seña bancaria por transferencia del 50% causaba abandono de reservas. Los jugadores debían abrir su home banking, realizar la transferencia, tomar una captura de pantalla y aguardar verificación humana, lo cual generaba cuellos de botella en horarios pico.
-
-#### Solución Implementada:
-Se eliminó la barrera de la seña previa para el cliente. El flujo ahora es de alta velocidad:
-
-```
-[1. Cliente elige Cancha y Horario en la Web]
-                    │
-                    ▼
-[2. Se abre el Concierge Drawer]
-   - Nombre y Apellido
-   - Teléfono / WhatsApp
-   - Opcionales: Paletas Pro (+20.000 Gs.), Tubos de Pelotas (+45.000 Gs.), Mesa en Bar (Gratis)
-                    │
-                    ▼
-[3. Cliente presiona "Solicitar Reserva & Confirmar por WhatsApp"]
-                    │
-                    ├── A. Base de Datos crea la reserva con:
-                    │      status: 'Solicitud Pendiente'
-                    │      deposit_paid: 0 Gs.
-                    │      court_amount: tarifa oficial de la cancha
-                    │
-                    └── B. Se abre automáticamente WhatsApp en el celular del cliente
-                           con mensaje pre-redactado hacia el número oficial: +595 983573396
-```
-
-**Texto del Mensaje Oficial Pre-cargado:**
-> *"Hola Black Club Elite, acabo de solicitar la reserva de la Cancha Central Panorámica para el día 26/10/2026 en el turno 19:00 - 20:00 a nombre de Juan Pérez (WhatsApp: 0981123456). Aguardo su confirmación. ¡Muchas gracias!"*
-
----
-
-### 3.4. Integridad Física Anti-Doble Reserva (Concurrency Lock)
-
-Para erradicar de raíz el riesgo de sobreventa concurrente (*double booking*), la base de datos PostgreSQL implementa un **índice único parcial**:
-
-```sql
-CREATE UNIQUE INDEX IF NOT EXISTS uq_bookings_active_slot
-ON bookings (court_id, date, time_slot)
-WHERE status <> 'Cancelada';
-```
-
-**Comportamiento:**
-- Si dos clientes hacen clic exactamente al mismo milisegundo en la misma cancha y horario, la base de datos procesa la primera transacción y rechaza físicamente la segunda con una violación de unicidad (`unique_violation`).
-- La función RPC `create_public_booking` intercepta este error y responde amigablemente con el código `SLOT_ALREADY_BOOKED`:  
-  *"El turno solicitado ya fue reservado por otro jugador. Por favor elija otro horario."*
-
----
-
-### 3.5. Ciclo de Vida de los Turnos en el CRM y Tarjeta de Alerta Entrante
-
-En la Suite CRM de recepción, la pantalla **"Agenda de Canchas"** es reactiva y se actualiza en tiempo real:
-
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│ 🔔 ¡ALGUIEN QUIERE RESERVAR UNA CANCHA!            1 solicitud pendiente    │
-├─────────────────────────────────────────────────────────────────────────────┤
-│ 🎾 Cancha Central Panorámica  │  📅 Hoy · 19:00 - 20:00  │  👤 Juan Pérez   │
-│ 📱 WhatsApp: 0981123456       │  🏷️ Tarifa: 160.000 Gs.                     │
-├─────────────────────────────────────────────────────────────────────────────┤
-│ [🔒 BLOQUEAR RESERVA]      [💬 CHAT WHATSAPP]      [❌ DESCARTAR]           │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
-
-#### Máquina de Estados de una Reserva:
-1. **`Solicitud Pendiente` (Dorado/Amarillo):** El cliente envió la solicitud desde la web. Aparece en el banner superior de recepción.
-2. **`Confirmada` (Azul Ejecutivo):** La recepción presiona **"Bloquear Reserva"**. La cancha queda bloqueada y ya nadie más puede solicitar ese slot.
-3. **`En Cancha` (Verde Esmeralda):** Los jugadores se presentan en recepción e ingresan a la pista.
-4. **`Finalizada` (Gris Neutro):** El partido concluyó, los jugadores abonaron la cuenta en caja y el turno queda cerrado contablemente.
-5. **`Cancelada` (Rojo Tenue):** Solicitud descartada o cancelada. El horario vuelve a quedar libre automáticamente en la web.
-
-#### Acciones Directas del Operador:
-- **Bloquear Reserva:** Pasa el estado a `Confirmada` con 1 solo clic.
-- **Chat WhatsApp:** Abre el enlace `https://wa.me/595[telefono]` para iniciar chat directo con el cliente sin necesidad de agendarlo en los contactos del teléfono de recepción.
-- **Descartar:** Cancela la solicitud pendiente si el cliente avisó que no podrá asistir.
-
----
-
-### 3.6. Terminal POS, Cuentas Corrientes y Comandas de Cancha
-
-Cada reserva activa cuenta con una cuenta corriente abierta (`tabs`) en el módulo **"Caja & Cuentas"**:
-- **Consumos de Barra y Pro-Shop:** Los mozos o recepcionistas pueden cargar cervezas, energizantes, chopps, hamburguesas o pelotas a la comanda de la pista en tiempo real.
-- **Protección de Precios con Trigger de Servidor (`trg_sync_tab_item_price`):** Aunque un cliente intentara enviar un precio adulterado, la base de datos ignora el valor enviado y fuerza el precio unitario oficial registrado en `menu_items`.
-
----
-
-### 3.7. Calculadora de Pago por Jugadores (Fórmula de Prorrateo Dual)
-
-Al concluir el partido, los jugadores acuden a pagar. En lugar de divisiones complejas o calculadoras externas, el terminal POS incorpora la **Calculadora de Pago por Jugadores**:
-
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│ 🧮 CALCULADORA DE PAGO POR JUGADORES                                        │
-├─────────────────────────────────────────────────────────────────────────────┤
-│ Cantidad de jugadores:  [ 2 ]  [ 4 ]  [ 6 ]  [ 8 ]   o ingresar: [ 8 ]      │
-├──────────────────────────────────────┬──────────────────────────────────────┤
-│ 🎾 SOLO CANCHA POR JUGADOR           │ 🧾 TOTAL CUENTA POR JUGADOR          │
-│    20.000 Gs. / persona              │    35.000 Gs. / persona              │
-│    (Cancha 160.000 Gs. entre 8)      │    (Cuenta total 280.000 Gs. entre 8)│
-└──────────────────────────────────────┴──────────────────────────────────────┘
-```
-
-#### Fórmulas de Cálculo:
-$$\text{Solo Cancha por Jugador} = \frac{\text{Costo Cancha}}{\text{Cantidad de Jugadores}}$$
-
-$$\text{Total Cuenta por Jugador} = \frac{\text{Costo Cancha} + \text{Alquileres} + \text{Pelotas} + \text{Consumos Bar}}{\text{Cantidad de Jugadores}}$$
-
-#### Matriz de Ejemplos en Guaraníes:
-
-| Concepto | Alquiler Cancha | Consumo Bar | Total Cuenta | Jugadores | Solo Cancha c/u | Total Cuenta c/u |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Partido Clásico Dobles** | 160.000 Gs. | 0 Gs. | 160.000 Gs. | 4 | **40.000 Gs.** | **40.000 Gs.** |
-| **Dobles + Cervezas** | 160.000 Gs. | 80.000 Gs. | 240.000 Gs. | 4 | **40.000 Gs.** | **60.000 Gs.** |
-| **Clase Compartida** | 180.000 Gs. | 30.000 Gs. | 210.000 Gs. | 6 | **30.000 Gs.** | **35.000 Gs.** |
-| **Torneo Americano (Rotación)** | 160.000 Gs. | 120.000 Gs. | 280.000 Gs. | 8 | **20.000 Gs.** | **35.000 Gs.** |
-
-#### Liquidación de Cuenta (`settle_tab`):
-- Medios de pago soportados: **Tarjeta (POS Físico)**, **Efectivo** y **Transferencia Itaú**.
-- La llamada a la RPC `settle_tab` registra el cajero responsable (`cashed_by`), la marca temporal de cobro (`cashed_at`), marca la cuenta como `settled` y la reserva asociada como `Finalizada`.
-
----
-
-### 3.8. Modificación Dinámica de Tarifas (Estándar vs. Prime)
-Desde la pantalla **"Tarifas & Stock"** del CRM, los administradores pueden cambiar los precios sin tocar código:
-- **Tarifa Estándar:** Precio regular por hora de juego.
-- **Tarifa Horario Prime:** Precio nocturno o fines de semana para alta demanda.
-- El cambio impacta inmediatamente en la base de datos `courts` y se propaga en tiempo real a la web de reservas.
-
----
-
-### 3.9. Control de Inventario, Semáforo de Stock Crítico y Disponibilidad
-En la misma pantalla de catálogo, se gestiona el inventario de bebidas, snacks y merchandising:
-- **Ajustes Rápidos:** Botones `+` y `-` para sumar ingresos de distribuidores o descontar mermas.
-- **Semáforo de Stock Crítico:** Si el inventario de un producto desciende de **10 unidades**, el número se resalta en **color rojo**, alertando a la administración para reposición inmediata.
-- **Conmutador de Disponibilidad:** Permite cambiar cualquier artículo a **"Agotado"** con un clic, ocultándolo de la venta en barra.
-- **Alta de Nuevos Productos:** Modal para ingresar nombre, categoría, precio en Gs. y stock inicial.
-
----
-
-### 3.10. BlackGym, BlackTeam y Circuito de Torneos Oficiales
-- **BlackGym:** Información de membresías (Black Pass, Turno Mañana, Pádel Functional Training), equipamiento biomecánico Biostrength y registro de solicitudes de socios.
-- **BlackTeam:** Plantel de profesores (Alejandro Benítez, Santiago Morales, Matías Duarte) con sus credenciales oficiales FIP/APA, disponibilidad de turnos y solicitud de clases.
-- **Circuito & Torneos:** Cartelera de torneos y sorteos con pozo de premios. Cada tarjeta cuenta con un enlace directo a WhatsApp (`+595 983573396`) con el texto del torneo pre-cargado para coordinar la inscripción en persona con la organización.
-
----
-
-### 3.11. Resiliencia de Red y Modo Offline Transparente
-En caso de intermitencia en la conexión de internet del club:
-- Las acciones operativas (cambios de estado, consumos en barra) se encolan automáticamente en `localStorage` bajo la clave `black_club_pending_queue`.
-- En la barra superior ejecutiva aparece el indicador:  
-  `🔴 Offline (X mutaciones pendientes)`.
-- En cuanto se reanuda la conexión, un worker automático procesa la cola de manera secuencial, sincronizando los datos con Supabase sin pérdida de información.
-
----
-
-### 3.12. Matriz de Roles Staff y Auditoría Inmutable
-- **`owner` (Propietario / Gerente General):** Acceso total. Puede modificar tarifas de canchas, dar de alta productos, alterar roles de usuarios y eliminar turnos.
-- **`reception` (Operadores de Turno):** Acceso operativo a la agenda maestra, bloqueo de turnos, comanda de barra, calculadora de cobro y liquidación de cuentas. Tiene restringida la eliminación de turnos pasados o alteración de precios base.
-- **Pista de Auditoría (`audit_log`):** Triggers automáticos en PostgreSQL registran cada `INSERT`, `UPDATE` o `DELETE` en reservas, cuentas, consumos y cajas diarias, almacenando `user_id`, datos anteriores (`old_data`) y datos nuevos (`new_data`).
-
----
-
-## 4. ESTRUCTURA DEL REPOSITORIO
-
-El árbol de directorios ha sido optimizado y saneado de cualquier código legacy o archivos redundantes:
-
-```
-renan-crm/
-├── public/                      # Activos estáticos públicos
-│   ├── favicon.svg              # Ícono de pestaña oficial
-│   ├── icons.svg                # Sprite SVG
-│   └── images/                  # Imágenes oficiales de alta resolución
-│       ├── blackgym.jpg         # Instalaciones Biostrength
-│       ├── blackteam.jpg        # Coaches y academia
-│       ├── court_panoramic.jpg  # Cancha Panorámica WPT
-│       ├── fondo_pagina.jpg     # Background oficial
-│       ├── logo_black_club.png  # Isologo corporativo Black Club
-│       └── lounge_bar.jpg       # Bar & Tercer Tiempo
-├── src/                         # Código fuente de la aplicación
-│   ├── components/
-│   │   ├── auth/                # Modal de login de staff (StaffLoginModal.jsx)
-│   │   ├── executive/           # CRM y Suite de Gestión
-│   │   │   ├── CatalogManagementView.jsx # Tarifas de canchas y stock de bar
-│   │   │   ├── ExecutiveDashboard.jsx    # KPIs de facturación y ocupación
-│   │   │   ├── ExecutiveSuite.jsx        # Contenedor y navegación del CRM
-│   │   │   ├── MasterScheduleView.jsx    # Agenda maestra y alerta dorada
-│   │   │   ├── PlayersDirectoryView.jsx  # Directorio CRM de jugadores
-│   │   │   └── POSTerminalView.jsx       # Caja y Calculadora por Jugadores
-│   │   ├── public/              # Portal Web de Jugadores
-│   │   │   ├── BlackBarMenuView.jsx      # Carta digital gastronómica
-│   │   │   ├── BlackGymView.jsx          # Membresías del gimnasio
-│   │   │   ├── BlackTeamView.jsx         # Coaches y clases de pádel
-│   │   │   ├── ConciergeDrawer.jsx       # Formulario ágil de reserva
-│   │   │   ├── CourtsBookingView.jsx     # Grilla interactiva de canchas
-│   │   │   ├── PublicPortal.jsx          # Portal público contenedor
-│   │   │   └── TournamentsView.jsx       # Torneos y contacto WhatsApp
-│   │   └── ExecutiveTopBar.jsx  # Barra superior con KPIs y modo offline
-│   ├── context/
-│   │   ├── ClubContext.jsx      # Estado global, realtime y sincronización
-│   │   └── initialData.js       # Fallback de datos y configuración
-│   ├── lib/
-│   │   └── supabase.js          # Cliente oficial de Supabase
-│   ├── services/
-│   │   └── clubService.js       # Capa de datos y llamadas a RPCs
-│   ├── utils/
-│   │   ├── dateHelpers.js       # Utilidades de fecha, 7 días y horas pasadas
-│   │   ├── financeHelpers.js    # Lógica de cálculo de saldos y prorrateo
-│   │   └── formatters.js        # Formateo de Guaraníes (Gs.) y fechas
-│   ├── App.jsx                  # Raíz de la app y orquestador de vistas
-│   ├── index.css                # Sistema de tokens Obsidian Luxury CSS
-│   └── main.jsx                 # Punto de entrada de React
-├── tests/                       # Suite de pruebas unitarias
-│   └── unit/
-│       ├── calculateTabBalances.test.js # Tests de balances de caja
-│       ├── formatGs.test.js             # Tests de formato moneda Gs.
-│       ├── isSlotPast.test.js           # Tests de descarte de turnos pasados
-│       └── offlineQueue.test.js         # Tests de encolado offline
-├── .env.example                 # Variables de entorno requeridas
-├── .gitignore                   # Archivos ignorados por Git
-├── index.html                   # HTML base de la SPA
-├── MANUAL_DE_USO_CLIENTE.md     # Manual operativo profesional para el cliente
-├── package.json                 # Dependencias y scripts del proyecto
-├── README.md                    # Documentación técnica y de negocio integral
-├── supabase_schema.sql          # Esquema maestro SQL único de producción
-├── vercel.json                  # Configuración de despliegue SPA en Vercel
-└── vite.config.js               # Configuración del bundler Vite
-```
-
----
-
-## 5. GUÍA DE CONFIGURACIÓN DE LA BASE DE DATOS (SUPABASE)
-
-Toda la base de datos se encuentra unificada en un solo archivo:
-
-📄 [**`supabase_schema.sql`**](supabase_schema.sql)
-
-### Instrucciones de Aplicación:
-1. Inicia sesión en tu cuenta de [Supabase](https://supabase.com/) y abre tu proyecto.
-2. En el menú lateral izquierdo, haz clic en **SQL Editor**.
-3. Haz clic en **+ New Query**.
-4. Copia el contenido completo de [`supabase_schema.sql`](supabase_schema.sql) y pégalo en el editor.
-5. Haz clic en el botón verde **Run** (Ejecutar).
-6. **Verificación:**
-   - En **Table Editor**, verás las 15 tablas creadas y pobladas con los datos de seed.
-   - En **Database ➜ Functions**, verificarás las funciones `create_public_booking`, `settle_tab`, `process_audit_log` y `current_user_role`.
-   - En **Database ➜ Publications**, verificarás que `supabase_realtime` incluye las tablas principales.
-
----
-
-## 6. GUÍA DE DESPLIEGUE EN PRODUCCIÓN (VERCEL)
-
-El repositorio está configurado para integración y despliegue continuo (CI/CD) con Vercel.
-
-### Pasos para Conectar y Publicar:
-1. Ingresa a [Vercel](https://vercel.com/) e inicia sesión con GitHub.
-2. Haz clic en **Add New... ➜ Project**.
-3. Selecciona el repositorio `renan-crm`.
-4. Vercel detectará el archivo [`vercel.json`](vercel.json) y la configuración de Vite:
-   - **Framework Preset:** `Vite`
-   - **Build Command:** `npm run build`
-   - **Output Directory:** `dist`
-5. En la sección **Environment Variables**, añade:
-   - `VITE_SUPABASE_URL`: URL de tu proyecto en Supabase (ej: `https://xxxx.supabase.co`).
-   - `VITE_SUPABASE_ANON_KEY`: Tu clave anónima pública (`anon key`).
-6. Haz clic en **Deploy**. Cada commit a la rama `main` en GitHub disparará automáticamente una nueva compilación y despliegue en Vercel.
-
----
-
-## 7. DESARROLLO LOCAL Y EJECUCIÓN DE PRUEBAS
-
-### 1. Clonar e Instalar
 ```bash
-git clone https://github.com/thxlopez7/renan-crm.git
-cd renan-crm
 npm install
+cp .env.example .env      # completar con los datos del proyecto Supabase
+npm run dev               # http://localhost:5173
 ```
 
-### 2. Configurar Entorno Local
-Copia el archivo de plantilla y completa tus credenciales:
+Variables de entorno (`.env`, nunca se sube al repositorio):
+
+| Variable | Valor |
+|---|---|
+| `VITE_SUPABASE_URL` | URL del proyecto (`https://<ref>.supabase.co`) |
+| `VITE_SUPABASE_ANON_KEY` | Clave **publicable** (`sb_publishable_…`). Nunca la `service_role`. |
+
+### Modo demo (sin base de datos)
+
+Sirve para mostrar o probar el panel sin tocar datos reales. Solo funciona con `npm run dev`, nunca en producción.
+
 ```bash
-cp .env.example .env.local
-```
-Contenido de `.env.local`:
-```env
-VITE_SUPABASE_URL=https://tu-proyecto.supabase.co
-VITE_SUPABASE_ANON_KEY=tu-clave-anon-aqui
+VITE_SUPABASE_URL=https://your-project-id.supabase.co npm run dev
 ```
 
-### 3. Servidor de Desarrollo
-```bash
-npm run dev
-```
-La aplicación estará disponible de inmediato en `http://localhost:5173/`.
+Abrir `http://localhost:5173/?demo` (dueño) o `?demo=reception` (recepción). Usa los datos de ejemplo de `src/context/initialData.js`.
 
-### 4. Ejecución de Pruebas Unitarias
-```bash
-npm run test
-```
-Ejecuta los 18 tests en Vitest cubriendo:
-- `formatGs`: Formateo correcto con separador de miles por puntos y sufijo `Gs.`.
-- `isSlotPast`: Detección precisa de turnos que ya transcurrieron según la hora de Asunción.
-- `calculateTabBalances`: Integridad en la liquidación de canchas, paletas, pelotas y bar.
-- `offlineQueue`: Encolamiento y vaciado secuencial de mutaciones en modo offline.
+### Scripts
 
-### 5. Compilación para Producción
+| Comando | Qué hace |
+|---|---|
+| `npm run dev` | Servidor de desarrollo |
+| `npm run build` | Compila a `dist/` |
+| `npm run preview` | Sirve `dist/` localmente |
+| `npm test` | Pruebas unitarias |
+| `npm run lint` | oxlint |
+
+---
+
+## 3. Estructura del proyecto
+
+```
+renan/
+├── index.html                  Fuentes, título y descripción de la página
+├── vercel.json                 Redirección de todas las rutas a index.html
+├── supabase_schema.sql         Esquema completo (para crear una base desde cero)
+├── supabase/migrations/        Cambios aplicados a la base, en orden
+├── public/images/              Fotos (ver CREDITOS.md) y logo
+├── tests/unit/                 Pruebas de utilidades y reglas
+└── src/
+    ├── main.jsx                Punto de entrada
+    ├── App.jsx                 Alterna web pública / panel; recuerda la vista
+    ├── index.css               Tokens de diseño, barra superior, tema base
+    ├── config/contact.js       WhatsApp, dirección y coordenadas del club
+    ├── lib/supabase.js         Cliente de Supabase
+    ├── context/
+    │   ├── ClubContext.jsx     Estado global, sesión, sincronización, acciones
+    │   └── initialData.js      Datos de ejemplo (modo demo y primer render)
+    ├── services/clubService.js Todas las llamadas a Supabase (consultas y RPC)
+    ├── utils/
+    │   ├── clubTime.js         Hora de Asunción, armado de horarios, solapamientos
+    │   ├── phone.js            Celulares paraguayos (normalizar, mostrar, WhatsApp)
+    │   ├── ruc.js              Validación de RUC (dígito verificador de la SET)
+    │   ├── calendar.js         Archivo .ics para agendar la reserva
+    │   ├── formatters.js       Guaraníes y fechas en español
+    │   └── financeHelpers.js   Total de una cuenta de caja
+    ├── styles/
+    │   ├── lux.css             Web pública (portada, secciones, tarjetas, carta)
+    │   ├── booking.css         Flujo de reserva y hojas inferiores (también se usan en el panel)
+    │   └── admin.css           Panel: agenda, caja, clientes, panel del dueño, ajustes
+    └── components/
+        ├── ExecutiveTopBar.jsx         Barra superior (marca, acceso del personal)
+        ├── auth/StaffLoginModal.jsx    Ingreso del personal
+        ├── common/SyncErrorToast.jsx   Aviso cuando el servidor rechaza un cambio
+        ├── public/
+        │   ├── PublicPortal.jsx        Portada, navegación, pie
+        │   ├── BookingFlow.jsx         Día → duración → hora → cancha
+        │   ├── BookingSheet.jsx        Datos del cliente, extras, confirmación
+        │   ├── MyBookingView.jsx       Consultar / cancelar con código + celular
+        │   ├── BlackGymView.jsx        Planes y solicitud de alta
+        │   ├── BlackTeamView.jsx       Profesores y pedido de clase por WhatsApp
+        │   ├── TournamentsView.jsx     Circuito Black Pádel (edición finalizada)
+        │   └── BlackBarMenuView.jsx    Carta del bar
+        └── executive/
+            ├── ExecutiveSuite.jsx      Navegación del panel (barra inferior en celular)
+            ├── ScheduleView.jsx        Agenda por cancha + solicitudes por confirmar
+            ├── StaffBookingSheet.jsx   Reserva, turno fijo, clase o bloqueo
+            ├── BookingActionsSheet.jsx Confirmar, empezar, mover, no vino, cancelar
+            ├── CashView.jsx            Cuentas por cobrar, consumos, venta de barra
+            ├── PaymentSheet.jsx        Cobro con varios medios, vuelto, factura
+            ├── CashRegisterBar.jsx     Apertura y cierre de caja con arqueo
+            ├── ClientsView.jsx         Clientes, segmentos e historial
+            ├── OwnerDashboard.jsx      Facturación, ocupación, medios de pago
+            └── SettingsView.jsx        Horarios, precios, canchas, productos
+```
+
+Documentos de apoyo en la raíz: `AUDITORIA.md` (auditoría inicial y su estado) y `ANALISIS_NEGOCIO.md` (análisis de reglas de negocio y decisiones tomadas).
+
+---
+
+## 4. Cómo fluyen los datos
+
+```
+Navegador ── clubService.js ──► Supabase
+   │                              ├─ tablas con RLS (lectura)
+   │                              ├─ funciones RPC (escrituras importantes)
+   │                              └─ Realtime (avisos de cambios)
+   └── ClubContext.jsx: estado en memoria + copia en localStorage
+```
+
+- **Visitante sin sesión:** carga solo catálogos (canchas, profesores, planes, carta, torneos). La ocupación se pide por día con `get_public_availability`, que devuelve horarios ocupados **sin datos personales**. Se refresca cada 30 s.
+- **Personal con sesión:** carga todo (reservas, cuentas, clientes) y escucha cambios en tiempo real.
+- **Cambios desde el panel:** se aplican primero en pantalla y luego se envían (`persistMutation`).
+  - Si falla la **red**, quedan en una cola local y se reintentan solos.
+  - Si el **servidor rechaza** el cambio (permisos, horario ocupado, etc.), se muestra un aviso y se recargan los datos reales.
+- **Cobros:** nunca pasan por la cola. Solo se registran si el servidor los acepta.
+
+---
+
+## 5. Base de datos (Supabase)
+
+Proyecto: `renan_crm`. Los cambios se versionan en `supabase/migrations/` y además se acumulan en `supabase_schema.sql` para poder crear una base nueva de una vez.
+
+### Tablas
+
+| Tabla | Contenido |
+|---|---|
+| `courts` | Canchas: nombre, precio por hora (`rate`), estado (`operational` / `maintenance`) |
+| `bookings` | Reservas: cancha, fecha, `start_time`, `duration_minutes` (60/90/120), estado, cliente, monto, vencimiento |
+| `tabs` | Cuentas de caja (una por reserva o venta de barra), datos de factura, vuelto |
+| `tab_items` | Consumos de cada cuenta (el precio lo fija la base) |
+| `tab_payments` | Cada pago de una cuenta: medio, monto, caja, quién cobró |
+| `daily_cash_registers` | Turnos de caja: fondo, totales por medio, esperado, contado, diferencia |
+| `players` | Clientes (clave práctica: celular normalizado `+5959XXXXXXXX`) |
+| `menu_items` | Carta del bar y tienda, con stock y disponibilidad |
+| `gym_plans`, `coaches`, `tournaments` | Catálogos de la web |
+| `gym_applications`, `tournament_registrations` | Formularios enviados desde la web |
+| `pricing_config` | Ajustes del club en formato clave/valor (ver abajo) |
+| `staff_roles` | Usuarios del personal y su rol (`owner` / `reception`) |
+| `audit_log` | Registro automático de cambios en reservas, cuentas y caja |
+
+### Ajustes del club (`pricing_config`)
+
+| Clave | Significado | Valor actual |
+|---|---|---|
+| `open_hour` / `close_hour` | Horario de canchas (24 = medianoche) | 7 / 24 |
+| `slot_step_minutes` | Cada cuánto puede empezar un turno | 30 |
+| `booking_hold_minutes` | Minutos para confirmar una solicitud web | 60 |
+| `booking_window_days` | Días de anticipación para reservar online | 14 |
+| `cancel_notice_hours` | Horas mínimas para cancelar online | 3 |
+| `racket_rental_fee` / `ball_tube_fee` | Alquiler de paleta / tubo de pelotas (Gs.) | 30.000 / 70.000 |
+| `deposit_percent` | Seña (no se usa: el club trabaja sin seña) | 0 |
+
+### Funciones (RPC)
+
+| Función | Quién | Para qué |
+|---|---|---|
+| `request_booking` | Público | Solicitud web: valida horario, celular, solapamiento; precio = tarifa × duración |
+| `get_public_availability` | Público | Horarios ocupados de un día, sin datos personales |
+| `get_my_booking`, `cancel_my_booking` | Público | Consultar / cancelar con código + celular, respetando la anticipación |
+| `create_staff_booking` | Personal | Reserva, turno fijo, clase o bloqueo desde el panel (idempotente) |
+| `adjust_tab_item` | Personal | Sumar o restar consumos de una cuenta abierta |
+| `pay_tab` | Personal | Cobro con uno o varios medios, vuelto en efectivo, factura con RUC |
+| `open_walkin_tab` | Personal | Venta de barra sin reserva |
+| `open_cash_register`, `close_cash_register` | Personal | Turno de caja con arqueo |
+| `settle_tab` | Personal | Cobro simple (compatibilidad) |
+| `release_expired_bookings` | Interno | Libera solicitudes vencidas (cada 5 min con `pg_cron`) |
+| `is_staff`, `current_user_role` | Interno | Usadas por las políticas de seguridad |
+
+Disparadores principales: `trg_bookings_schedule` (calcula inicio/fin y el texto del horario), `trg_bookings_close_tab` (cancelar o "no vino" cierra la cuenta sin cobro), precio oficial de consumos y auditoría.
+
+Restricción clave: `bookings_no_overlap` (exclusión GiST) impide dos reservas activas que se pisen en la misma cancha.
+
+---
+
+## 6. Reglas de negocio
+
+- **Turnos de 60, 90 o 120 minutos**, a elección del cliente, empezando cada 30 minutos dentro del horario del club.
+- **Precio:** tarifa por hora de la cancha × duración. Sin tarifa Prime, sin seña.
+- **Estados de reserva:** Pendiente → Confirmada → Jugando → Finalizada, más Cancelada y No vino.
+- **Solicitudes web:** quedan *Pendiente* y se liberan solas si nadie las confirma en 60 minutos. Máximo 2 solicitudes pendientes por celular.
+- **Cancelación online:** hasta 3 horas antes, con código + celular.
+- **Turnos fijos:** se crean para 4, 8 o 12 semanas; las fechas ocupadas se saltean.
+- **Caja:** cobros mixtos (Efectivo, Transferencia, QR, Débito, Crédito, Billetera); el vuelto solo sale del efectivo; factura opcional con RUC validado.
+- **Cierre de caja:** efectivo esperado = fondo + efectivo cobrado − vueltos; se registra la diferencia con lo contado.
+- **Hora oficial:** `America/Asuncion` (UTC−3 fijo desde 2024), tanto en la base como en el navegador.
+- **Celulares:** se aceptan `0981 123 456`, `981123456` o `+595 981 123 456` y se guardan como `+595981123456`.
+
+---
+
+## 7. Seguridad
+
+- **RLS activado en todas las tablas.** Sin sesión solo se leen catálogos; reservas, clientes y cuentas son solo para el personal (`is_staff()`).
+- **Permisos por rol:** tarifas, productos y ajustes solo los cambia el dueño (`owner`). Recepción no ve el Panel del dueño ni Ajustes.
+- **Iniciar sesión no da acceso por sí solo:** un usuario tiene que estar cargado en `staff_roles`.
+- **Funciones internas** (disparadores, vencimientos, ajustes) sin permiso de ejecución para el público.
+- **Pendiente en el panel de Supabase → Authentication:**
+  - Desactivar el registro de usuarios nuevos.
+  - Activar la protección contra contraseñas filtradas.
+
+### Dar acceso a alguien del personal
+
+1. Supabase → Authentication → *Add user* (correo y contraseña).
+2. Copiar su `id` y ejecutar:
+   ```sql
+   insert into staff_roles (user_id, role) values ('<id>', 'reception');  -- o 'owner'
+   ```
+
+---
+
+## 8. Diseño y estilos
+
+- **Identidad:** la del Instagram del club. Negro con rojo `#E3232C` y estética de afiche deportivo.
+- **Tipografía:** una sola familia, **Archivo**. Los títulos van condensados (`font-stretch: 62%`), en negrita y mayúsculas; el texto va con ancho normal.
+- **Formas:** bordes rectos (`--radius: 4px`). Sin degradés en tarjetas, sin brillos ni efecto vidrio.
+- **Mobile first:** barra de navegación inferior en celular y botones de al menos 44 px. Los campos de texto usan 16 px para que iPhone no haga zoom.
+- **Fotos:** de Unsplash, con créditos en `public/images/CREDITOS.md`. Conviene reemplazarlas por fotos propias del club.
+- **Variables de diseño** en `src/index.css`. El acento se llama `--gold` por historia, pero hoy es el rojo del club.
+
+---
+
+## 9. Pruebas y calidad
+
 ```bash
+npm test        # 34 pruebas
+npm run lint
 npm run build
 ```
 
----
+Las pruebas cubren:
+- Hora de Asunción y armado de horarios.
+- Solapamientos de reservas.
+- Celulares paraguayos y RUC.
+- Total de una cuenta, formato de guaraníes y cola sin conexión.
+- Clasificación de errores del servidor.
 
-## 8. DOCUMENTACIÓN PARA EL CLIENTE FINAL
-
-Para los dueños del club, socios administradores, recepcionistas y personal de mostrador que no tienen conocimientos técnicos de programación, se ha redactado un manual de procedimientos operativos estándar en lenguaje claro y ejecutivo:
-
-📖 [**`MANUAL_DE_USO_CLIENTE.md`**](MANUAL_DE_USO_CLIENTE.md)
-
-Incluye:
-- Guía ilustrada de recepción de reservas y bloqueo de canchas.
-- Uso paso a paso de la **Calculadora de Pago por Jugadores** en caja.
-- Modificación de precios de canchas y control de inventario de bebidas.
-- Checklists diarios para el personal (apertura mañana, atención continua y arqueo de caja nocturno).
-- Plantillas de mensajes oficiales para responder a los clientes por WhatsApp.
+Las reglas críticas también están en la base: aunque el navegador falle, no se puede reservar encima de otra reserva ni cobrar mal.
 
 ---
-*Black Club Elite · Plataforma de Gestión y Hospitalidad Deportiva · Todos los derechos reservados.*
+
+## 10. Despliegue
+
+- **Vercel** compila con `npm run build` y sirve `dist/`. `vercel.json` redirige todas las rutas a `index.html`.
+- **Variables en Vercel:** `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY`.
+- **Uso comercial:** requiere el plan Pro de Vercel (o un hosting estático equivalente: Netlify, Cloudflare Pages).
+- **Supabase:** el plan gratuito pausa el proyecto tras 7 días sin uso y no tiene backups diarios. Para producción se recomienda el plan **Pro**.
+- **Dominio sugerido:** `blackclub.com.py` (NIC Paraguay) o similar, apuntado a Vercel.
+
+### Aplicar un cambio de base de datos
+
+1. Crear un archivo nuevo en `supabase/migrations/AAAAMMDDHHMMSS_descripcion.sql`.
+2. Aplicarlo con el CLI de Supabase (`supabase db push`) o el editor SQL.
+3. Agregar el mismo contenido al final de `supabase_schema.sql`.
+
+---
+
+## 11. Tareas habituales
+
+| Tarea | Dónde |
+|---|---|
+| Cambiar WhatsApp, dirección o mapa | `src/config/contact.js` |
+| Cambiar horarios, precios de cancha, extras, productos | Panel → Ajustes (no requiere código) |
+| Cambiar textos de la portada | `src/components/public/PublicPortal.jsx` |
+| Cambiar planes del gimnasio, profesores o torneos | Tablas `gym_plans`, `coaches`, `tournaments` |
+| Cambiar colores o tipografía | `src/index.css` (variables) y `index.html` (fuente) |
+| Reemplazar fotos | `public/images/` (mismos nombres de archivo) |
+
+---
+
+## 12. Pendientes conocidos
+
+- **Factura electrónica (SIFEN):** la app guarda el RUC y la razón social; la factura la emite el sistema de facturación del club.
+- **Avisos automáticos por WhatsApp:** requieren WhatsApp Business API, que tiene costo por mensaje.
+- **Compartir el partido:** un link para que los otros jugadores vean la reserva.
+- **Campeones del Circuito:** agregar resultados y fotos de la edición finalizada.
+- **Datos de ejemplo:** limpiar las cuentas de prueba del 22/10 antes de entregar.

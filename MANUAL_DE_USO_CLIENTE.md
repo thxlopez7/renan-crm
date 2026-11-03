@@ -1,333 +1,290 @@
-# 🎾 MANUAL DE OPERACIÓN Y PROCEDIMIENTOS EJECUTIVOS
-## BLACK CLUB ELITE · SUITE CRM & PORTAL DE JUGADORES
-> **Documento Oficial de Operación Corporativa**  
-> **Destinatarios:** Propietarios, Dirección General, Administradores, Encargados de Turno y Personal de Recepción & Barra.  
-> **Versión del Sistema:** Producción 2.0 (Edición Final)  
-> **Moneda Oficial del Sistema:** Guaraníes Paraguayos (Gs.)  
-> **Canal Oficial Unificado de WhatsApp:** `+595 983573396` (`+595 983 573 396`)
+# Black Club · Manual de uso
+
+Guía para el dueño y el personal de recepción de Black Club. No hace falta saber nada técnico.
 
 ---
 
-## 📑 ÍNDICE GENERAL
+## Índice
 
-1. [Visión General del Ecosistema Black Club](#1-visión-general-del-ecosistema-black-club)
-2. [Portal Público de Jugadores (Experiencia del Cliente)](#2-portal-público-de-jugadores-experiencia-del-cliente)
-3. [Nuevo Protocolo de Reservas Ágiles (Sin Señas Previas)](#3-nuevo-protocolo-de-reservas-ágiles-sin-señas-previas)
-4. [Suite CRM: Recepción y Bloqueo de Turnos en Agenda Maestra](#4-suite-crm-recepción-y-bloqueo-de-turnos-en-agenda-maestra)
-5. [Terminal de Cobro (POS), Cuentas Corrientes y Calculadora por Jugadores](#5-terminal-de-cobro-pos-cuentas-corrientes-y-calculadora-por-jugadores)
-6. [Administración de Tarifas de Canchas](#6-administración-de-tarifas-de-canchas)
-7. [Control de Inventario de Consumibles, Precios y Stock](#7-control-de-inventario-de-consumibles-precios-y-stock)
-8. [Directorio de Clientes y Fidelización](#8-directorio-de-clientes-y-fidelización)
-9. [Protocolo Operativo Diario (Checklist de Apertura, Turno y Cierre)](#9-protocolo-operativo-diario-checklist-de-apertura-turno-y-cierre)
-10. [Plantillas de Respuestas Rápidas para WhatsApp](#10-plantillas-de-respuestas-rápidas-para-whatsapp)
-11. [Preguntas Frecuentes, Contingencias y Soporte](#11-preguntas-frecuentes-contingencias-y-soporte)
-
----
-
-## 1. VISIÓN GENERAL DEL ECOSISTEMA BLACK CLUB
-
-La plataforma digital de **Black Club Elite** está diseñada bajo un estándar de lujo deportivo y eficiencia operacional. Funciona como una aplicación web moderna (PWA) accesible desde cualquier computadora de escritorio, tablet (iPad/Android) o smartphone (iPhone/Android), sin necesidad de instalar programas externos.
-
-El sistema se compone de dos entornos integrados en tiempo real:
-
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                       ECOSISTEMA DIGITAL BLACK CLUB                         │
-├──────────────────────────────────────┬──────────────────────────────────────┤
-│      A. PORTAL PÚBLICO DIGITAL       │        B. SUITE CRM EJECUTIVA        │
-│         (Para los Jugadores)         │       (Para el Personal y Club)      │
-├──────────────────────────────────────┼──────────────────────────────────────┤
-│ • Consulta de canchas y turnos       │ • Agenda maestra de canchas en vivo  │
-│ • Solicitud de turnos con 1 toque    │ • Alerta y bloqueo de solicitudes    │
-│ • Enlace directo al WhatsApp oficial │ • Terminal de cobro (POS) y comanda  │
-│ • Circuito oficial de torneos        │ • Calculadora de pago por jugadores  │
-│ • Carta digital del bar y lounge     │ • Tarifas de canchas y stock en vivo │
-│ • Información de BlackGym y coaches  │ • Métricas de ocupación e ingresos   │
-└──────────────────────────────────────┴──────────────────────────────────────┘
-```
-
-Ambos lados están conectados a la base de datos central en la nube. Cuando un cliente realiza una acción en la web, el CRM lo refleja inmediatamente; y cuando la recepción modifica un precio o disponibilidad, los clientes lo ven actualizado al instante.
+1. [Qué es y qué incluye](#1-qué-es-y-qué-incluye)
+2. [Cómo reservan los clientes](#2-cómo-reservan-los-clientes)
+3. [Entrar al panel del club](#3-entrar-al-panel-del-club)
+4. [Agenda: el día a día](#4-agenda-el-día-a-día)
+5. [Caja: cobrar y cerrar el turno](#5-caja-cobrar-y-cerrar-el-turno)
+6. [Clientes](#6-clientes)
+7. [Panel del dueño](#7-panel-del-dueño)
+8. [Ajustes del club](#8-ajustes-del-club)
+9. [Quién puede hacer qué](#9-quién-puede-hacer-qué)
+10. [Rutina recomendada](#10-rutina-recomendada)
+11. [Preguntas frecuentes](#11-preguntas-frecuentes)
+12. [Soporte y mantenimiento](#12-soporte-y-mantenimiento)
 
 ---
 
-## 2. PORTAL PÚBLICO DE JUGADORES (EXPERIENCIA DEL CLIENTE)
+## 1. Qué es y qué incluye
 
-El Portal Público es la cara visible del club hacia el exterior. Ofrece una navegación limpia, fluida y con estética *Quiet Luxury* en modo oscuro.
+Una sola dirección web, que funciona en el celular y en la computadora, con dos partes:
 
-### 2.1. Pestañas de Navegación del Portal
-1. **Pádel (Reservar Cancha):** Muestra las 3 pistas reglamentarias (*Cancha Central Panorámica*, *Cancha 2 Indoor Climatizada*, *Cancha 3 Outdoor Techada*) con selector de los próximos 7 días y estado de disponibilidad horaria de 07:00 a 23:00.
-2. **BlackGym:** Presentación de las instalaciones de musculación y alto rendimiento, tarifas mensuales y postulación para membresía.
-3. **BlackTeam:** Plantel de profesores y entrenadores de pádel con sus credenciales y contacto.
-4. **Circuito & Torneos:** Cartelera de torneos oficiales, fechas, premios, categorías y botón de contacto directo por WhatsApp con la organización.
-5. **Bar & Merch:** Carta gastronómica, chopps, cervezas, bebidas hidratantes, pelotas y productos oficiales del club.
+**Para los clientes (web pública)**
+- Reservar cancha en pocos toques, sin pagar seña.
+- Ver o cancelar su reserva con el código y su celular.
+- Ver los planes del gimnasio BlackGym y pedir el alta.
+- Pedir clases con los profesores de BlackTeam por WhatsApp.
+- Ver el Circuito Black Pádel y la carta del bar.
+- Ubicación del club en Google Maps.
 
-### 2.2. Indicadores en Tiempo Real
-En la cabecera del portal, el cliente puede verificar el estado de los servicios:
-- **Canchas:** Cuántas pistas están activas en ese momento exacto.
-- **BlackGym:** Si el gimnasio se encuentra abierto, en pausa de almuerzo o cerrado.
-- **Bar & Lounge:** Horario de cocina y coctelería (abierto desde las 17:00 hs hasta la medianoche).
+**Para el club (panel)**
+- **Agenda:** todas las canchas del día, solicitudes por confirmar, turnos fijos y bloqueos.
+- **Caja:** cuentas de cada partido, consumos del bar, cobros con varios medios de pago, factura y cierre de caja.
+- **Clientes:** lista que se arma sola, con historial y acceso directo a WhatsApp.
+- **Panel del dueño:** facturación, ocupación, medios de pago, mejores clientes y cierres de caja.
+- **Ajustes:** horarios, precios, canchas y productos, sin depender de un programador.
 
----
-
-## 3. NUEVO PROTOCOLO DE RESERVAS ÁGILES (SIN SEÑAS PREVIAS)
-
-Para maximizar la tasa de conversión y evitar que los clientes abandonen la reserva por complicaciones bancarias, **se eliminó por completo el cobro previo del 50% de seña por transferencia**.
-
-### 3.1. Flujo Paso a Paso para el Jugador
-
-```
-   [JUGADOR ENTRA A LA WEB]
-              │
-              ▼
-   [ELIGE CANCHA, DÍA Y HORA]
-              │
-              ▼
-   [COMPLETA SU NOMBRE Y TELÉFONO]  (Opcional: palas, pelotas o mesa en bar)
-              │
-              ▼
-   [TOCA "SOLICITAR RESERVA & CONFIRMAR POR WHATSAPP"]
-              │
-              ├───────────────────────────────────┐
-              ▼                                   ▼
-   [Se abre WhatsApp al instante]       [En el CRM aparece alerta dorada]
-   Mensaje oficial pre-redactado        "¡Alguien quiere reservar cancha!"
-   dirigido a +595 983573396            Operador bloquea el turno en 1 clic
-```
-
-### 3.2. Formulario Concierge Simplificado
-Cuando el cliente toca un horario disponible, se despliega una tarjeta lateral donde únicamente se le solicita:
-- **Nombre y Apellido del Titular.**
-- **Número de WhatsApp.**
-- **Servicios Adicionales (Opcionales):**
-  - Alquiler de Paletas Pro (+20.000 Gs. c/u).
-  - Tubos de Pelotas Nuevas (+45.000 Gs. c/u).
-  - Solicitud de Mesa Reservada en el Bar para el tercer tiempo (Gratuito).
-
-### 3.3. Conexión Inmediata con WhatsApp
-Al tocar el botón de confirmación, la plataforma envía al cliente directo a su aplicación de WhatsApp con un mensaje estructurado y formal listo para enviar:
-
-> *"Hola Black Club Elite, acabo de solicitar la reserva de la Cancha Central Panorámica para el día 26/10/2026 en el turno 19:00 - 20:00 a nombre de Juan Pérez (WhatsApp: 0981123456). Aguardo su confirmación. ¡Muchas gracias!"*
-
-El cliente solo debe presionar **Enviar** en WhatsApp.
+Todo se guarda en línea: lo que carga recepción lo ve el dueño al instante, desde cualquier dispositivo.
 
 ---
 
-## 4. SUITE CRM: RECEPCIÓN Y BLOQUEO DE TURNOS EN AGENDA MAESTRA
+## 2. Cómo reservan los clientes
 
-El personal del club gestiona la operativa diaria desde la **Suite CRM Ejecutiva**.
+1. Abren la web y tocan **Reservar cancha**.
+2. Eligen **día** (hasta 14 días adelante), **duración** (1 h, 1 h 30 o 2 h) y **hora**. Cada hora muestra cuántas canchas quedan libres.
+3. Eligen la **cancha**: ven el precio total antes de confirmar.
+4. Escriben **nombre y celular**. La web los recuerda para la próxima vez.
+5. Opcional: paletas, tubo de pelotas, mesa en el bar.
+6. Confirman. Reciben un **código** (por ejemplo `BC-4821`) y un botón para **avisar al club por WhatsApp**.
 
-### 4.1. Cómo Ingresar al CRM
-1. En la esquina superior derecha del portal, hacé clic en el botón **"Acceso Staff / CRM"**.
-2. Ingresá el correo electrónico y la contraseña asignada al personal.
-3. Se abrirá la barra superior ejecutiva y el panel de control operativo.
+La reserva queda **Pendiente**: el horario se aparta 60 minutos para que el club la confirme. Si nadie la confirma en ese tiempo, se libera sola.
 
-### 4.2. La Tarjeta de Alerta Entrante (Notificación en Tiempo Real)
-En cuanto un cliente solicita un turno desde la web, aparece en la parte superior de la **Agenda de Canchas** una tarjeta de notificación destacada con tono dorado y borde brillante:
+**Precio:** tarifa por hora de la cancha × duración. Ejemplo: cancha a 160.000 Gs. la hora → 1 h 30 = 240.000 Gs. Se paga en el club.
 
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│ 🔔 ¡ALGUIEN QUIERE RESERVAR UNA CANCHA!            1 solicitud pendiente    │
-├─────────────────────────────────────────────────────────────────────────────┤
-│ 🎾 Cancha Central Panorámica  │  📅 Hoy · 19:00 - 20:00  │  👤 Juan Pérez   │
-│ 📱 WhatsApp: 0981123456       │  🏷️ Tarifa: 160.000 Gs.                     │
-├─────────────────────────────────────────────────────────────────────────────┤
-│ [🔒 BLOQUEAR RESERVA]      [💬 CHAT WHATSAPP]      [❌ DESCARTAR]           │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
-
-### 4.3. Protocolo de Acción para el Operador de Recepción
-
-| Botón | Acción que realiza | Cuándo utilizarlo |
-| :--- | :--- | :--- |
-| **🔒 Bloquear Reserva** | Pasa la reserva a estado **Confirmada** inmediatamente. La cancha queda bloqueada y ya nadie más puede solicitar ese horario. | Cuando recibís el mensaje de WhatsApp del cliente o decidís asegurar el turno en el club. |
-| **💬 Chat WhatsApp** | Abre directamente el chat oficial de WhatsApp con ese cliente, sin necesidad de agendar su número en la agenda del teléfono. | Para saludar al jugador, coordinar detalles especiales o confirmar si asistirán 4 personas. |
-| **❌ Descartar** | Cancela la solicitud pendiente y libera el horario en la agenda pública para otros jugadores. | Si el cliente escribió avisando que no podrá venir o si fue una solicitud por duplicado/error. |
-
-### 4.4. Estados de una Reserva en el Sistema
-Toda reserva atraviesa un ciclo de vida transparente:
-1. **Solicitud Pendiente (Amarillo / Dorado):** Solicitada desde la web; aguarda confirmación del operador.
-2. **Confirmada (Azul Ejecutivo):** Turno asegurado y cancha bloqueada.
-3. **En Cancha (Verde Esmeralda):** Los jugadores ya ingresaron a la pista y están disputando su partido.
-4. **Finalizada (Gris):** Partido culminado, cuenta cobrada y liquidada en caja.
-5. **Cancelada (Rojo tenue):** Turno suspendido o descartado; horario disponible.
+**Cancelar:** el cliente entra a **Mi reserva**, pone su código y celular y cancela, hasta 3 horas antes del turno. Después de ese plazo, le aparece un botón para escribir al club.
 
 ---
 
-## 5. TERMINAL DE COBRO (POS), CUENTAS CORRIENTES Y CALCULADORA POR JUGADORES
+## 3. Entrar al panel del club
 
-En la sección **"Caja & Cuentas"** de la Suite CRM, cada turno activo tiene su cuenta corriente abierta en tiempo real.
+1. En la web, tocá **Personal** (arriba a la derecha).
+2. Ingresá tu correo y contraseña.
+3. Vas a ver el panel con una barra abajo: **Agenda · Caja · Clientes · Panel · Ajustes**. Panel y Ajustes solo los ve el dueño.
 
-### 5.1. Carga de Consumos a la Cuenta de la Cancha
-Mientras los jugadores están en la cancha o descansando en el lounge, el personal puede agregar consumos a su cuenta con un solo clic:
-- Bebidas hidratantes, aguas minerales o energizantes.
-- Chopps, cervezas y gaseosas.
-- Picadas y hamburguesas de la cocina.
-- Pelotas o alquileres de palas.
+Para volver a la web pública, tocá **Ver web**. Para salir, tocá el ícono de la puerta.
 
-Cada artículo agregado suma su valor automáticamente al saldo adeudado y descuenta una unidad del stock del depósito.
+> Las cuentas del personal las crea el administrador del sistema. Cada persona tiene su propio usuario: así queda registrado quién cobró cada cuenta.
 
 ---
 
-### 5.2. Calculadora de Pago por Jugadores (División Exacta)
+## 4. Agenda: el día a día
 
-Al finalizar el partido, los jugadores acuden a la recepción para abonar. Para evitar confusiones matemáticas y demoras en el mostrador, el sistema cuenta con la **Calculadora de Pago por Jugadores integrada**.
+### Solicitudes por confirmar
 
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│ 🧮 CALCULADORA DE PAGO POR JUGADORES                                        │
-├─────────────────────────────────────────────────────────────────────────────┤
-│ ¿Cuántos jugadores jugaron?                                                 │
-│ [ 2 Jug. ]   [ 4 Jug. ]   [ 6 Jug. ]   [ 8 Jug. ]   [ Ingresar número: 8 ]  │
-├──────────────────────────────────────┬──────────────────────────────────────┤
-│ 🎾 SOLO CANCHA POR JUGADOR           │ 🧾 TOTAL CUENTA POR JUGADOR          │
-│    20.000 Gs. / persona              │    35.000 Gs. / persona              │
-│    (Cancha 160.000 Gs. entre 8)      │    (Cuenta total 280.000 Gs. entre 8)│
-└──────────────────────────────────────┴──────────────────────────────────────┘
-```
+Arriba aparecen las reservas hechas desde la web, con una cuenta regresiva. Cada una tiene tres botones:
 
-#### ¿Cómo utilizarla en el mostrador?
-1. En **Caja & Cuentas**, seleccioná la tarjeta de la cancha que va a pagar.
-2. En la parte inferior verás la calculadora.
-3. Tocá el botón según cuántos jugadores estuvieron jugando: **2**, **4**, **6**, **8** o escribí cualquier otra cantidad en la casilla blanca (ej. 5 o 7).
-4. La pantalla te brinda **dos cálculos simultáneos al instante**:
-   - **Solo Cancha por Jugador:** Si los jugadores decidieron que el bar lo paga una sola persona y solo quieren dividir el costo del alquiler de la cancha.
-   - **Total Cuenta por Jugador:** Si decidieron dividir todo el consumo de la mesa equitativamente (cancha + comidas + bebidas).
-5. Le indicás el monto a cada jugador y realizás el cobro.
+- **Confirmar:** la reserva queda firme.
+- **WhatsApp:** abre un mensaje listo para el cliente ("Hola Juan, te confirmamos tu reserva…").
+- **✕ Rechazar:** libera el horario.
 
-#### Ejemplos Prácticos de Prorrateo:
+### La grilla
 
-| Escenario de Partido | Costo Cancha | Consumos de Bar | Total Cuenta | Cantidad Jugadores | Pago Solo Cancha c/u | Pago Total Cuenta c/u |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Partido Clásico de Dobles** | 160.000 Gs. | 0 Gs. | 160.000 Gs. | **4 jugadores** | **40.000 Gs.** | **40.000 Gs.** |
-| **Dobles con Bebidas en Barra** | 160.000 Gs. | 60.000 Gs. | 220.000 Gs. | **4 jugadores** | **40.000 Gs.** | **55.000 Gs.** |
-| **Clínica de Entrenamiento** | 160.000 Gs. | 40.000 Gs. | 200.000 Gs. | **6 jugadores** | **26.667 Gs.** | **33.333 Gs.** |
-| **Partido Americano (Rotación)**| 160.000 Gs. | 120.000 Gs. | 280.000 Gs. | **8 jugadores** | **20.000 Gs.** | **35.000 Gs.** |
+- Una columna por cancha y las horas hacia abajo. La línea roja marca la hora actual.
+- **Colores:**
+  - Naranja: por confirmar.
+  - Blanco: confirmada.
+  - Verde: jugando.
+  - Gris: finalizada o bloqueo.
+- **Tocá un espacio vacío** para crear una reserva en esa cancha y hora.
+- **Tocá una reserva** para ver sus datos y acciones.
 
----
+### Acciones sobre una reserva
 
-### 5.3. Liquidación y Cierre de la Cuenta
-Una vez cobrado el importe:
-1. Seleccioná el método de pago principal:
-   - **Tarjeta de Crédito / Débito (POS Físico).**
-   - **Efectivo en Caja.**
-   - **Transferencia Bancaria Itaú.**
-2. Hacé clic en el botón verde **"Liquidar Cuenta"**.
-3. La cuenta se cierra formalmente, la reserva pasa a estado **Finalizada** y los ingresos impactan en el reporte contable del día.
+| Botón | Cuándo usarlo |
+|---|---|
+| **Llegaron · empezar partido** | Cuando los jugadores entran a la cancha. |
+| **Ir a la cuenta y cobrar** | Abre su cuenta en Caja. |
+| **Mover o cambiar duración** | Cambiar cancha, día, hora o pasar de 1 h a 1 h 30. Avisa si está ocupado. |
+| **No vino** | El cliente no se presentó. Se cierra sin cobro y queda en su historial. |
+| **Cancelar reserva** | Libera el horario y cierra la cuenta sin cobro. |
+
+### Nueva reserva (botón rojo abajo a la derecha)
+
+Elegí el tipo:
+
+- **Reserva:** un turno normal. Queda confirmada al instante.
+- **Turno fijo:** el mismo día y hora todas las semanas, por 4, 8 o 12 semanas. Si alguna fecha ya está ocupada, se saltea y te avisa cuál.
+- **Clase:** para los profesores.
+- **Bloquear cancha:** mantenimiento, torneo o lo que sea. No genera cobro.
+
+Al escribir el nombre, la app sugiere clientes que ya existen, con su celular. El precio se calcula solo, pero lo podés cambiar (por ejemplo, para un descuento).
 
 ---
 
-## 6. ADMINISTRACIÓN DE TARIFAS DE CANCHAS
+## 5. Caja: cobrar y cerrar el turno
 
-La administración puede ajustar los precios de las canchas en cualquier momento sin requerir soporte informático.
+### Abrir la caja
 
-### 6.1. Pasos para Modificar Precios de Canchas
-1. En el menú superior o lateral del CRM, ingresá a **"Tarifas & Stock"**.
-2. En la sección superior encontrarás las tarjetas de cada cancha:
-   - *Cancha Central Panorámica*
-   - *Cancha 2 (Indoor Climatizada)*
-   - *Cancha 3 (Outdoor Techada)*
-3. Hacé clic en el botón **"Modificar"** de la pista que desees actualizar.
-4. Ajustá los valores en Guaraníes:
-   - **Tarifa Estándar:** Precio regular por hora de juego.
-   - **Tarifa Horario Prime:** Precio especial para horarios de alta demanda nocturna o fines de semana.
-5. Hacé clic en **"Guardar Tarifa"**.
-6. **Resultado:** El nuevo importe se guarda inmediatamente en la base de datos y se actualiza en el motor de reservas web.
+Al empezar el turno, tocá **Abrir caja** y escribí el **fondo inicial**, es decir, el cambio con el que arrancás.
 
----
+### Cuentas por cobrar
 
-## 7. CONTROL DE INVENTARIO DE CONSUMIBLES, PRECIOS Y STOCK
+Cada reserva genera su cuenta automáticamente. Tocá una para:
 
-El CRM incluye un módulo completo de inventario para controlar bebidas, alimentos, accesorios deportivos y mercadería oficial.
+- Sumar o restar **paletas** y **tubos de pelotas**.
+- **Agregar consumo:** elegís productos del bar por categoría o buscándolos por nombre.
+- **Cobrar.**
 
-### 7.1. Cómo Agregar un Nuevo Producto al Inventario
-Si compraste mercadería nueva para ofrecer en el club:
-1. En la pantalla **"Tarifas & Stock"**, hacé clic en el botón superior **"+ Agregar Nuevo Consumible"**.
-2. Rellená los campos requeridos:
-   - **Nombre del Producto:** Ej. *Agua Tónica 500ml*, *Cerveza Stella Artois 330ml*, *Muñequera Black Club*.
-   - **Categoría:** Seleccioná entre *Comida & Picadas*, *Cervezas & Chopp*, *Hidratación & Bebidas* o *Pro-Shop & Merch*.
-   - **Precio de Venta al Público (Gs.):** Ej. *15000*.
-   - **Stock Inicial:** Cantidad física ingresada al depósito (ej. *48*).
-3. Hacé clic en **"Guardar en Inventario"**.
-4. El producto queda disponible inmediatamente en el bar digital y en la terminal de cobro.
+Para alguien que solo consume en el bar sin haber jugado, usá **+ Venta**.
 
-### 7.2. Ajuste Rápido de Stock (+ / -)
-En la tabla de inventario verás la columna **Stock**:
-- Tocá el botón **`+`** para sumar unidades cuando el camión de bebidas descargue mercadería.
-- Tocá el botón **`-`** para descontar si hubo alguna rotura o consumo interno.
-- **Alerta de Stock Crítico:** Si el stock de cualquier producto baja de **10 unidades**, el número se resaltará en **color rojo**, alertando a la recepción de que debe emitir orden de reposición con los distribuidores.
+### Cobrar
 
-### 7.3. Edición de Precios Existentes y Cambio de Disponibilidad
-- **Modificar Precio:** Hacé clic en el botón **"Editar"** junto al producto, cambiá el valor en Guaraníes y presioná **"Guardar"**.
-- **Agotado / Disponible:** Con un simple toque en la pastilla de estado podés cambiar un artículo a **"Agotado"** para que los clientes sepan que momentáneamente no hay disponibilidad en la barra.
+- **Todo junto**, **Dividir en 2** o **Dividir en 4** (lo típico cuando cada jugador paga lo suyo).
+- Cada parte puede ir con un medio distinto: **Efectivo, Transferencia, QR, Débito, Crédito o Billetera** (Tigo Money, Personal).
+- La app calcula el **vuelto**. El vuelto solo puede salir del efectivo.
+- **Quiere factura con RUC:** cargás RUC y razón social. La app controla que el RUC sea válido (el número verificador después del guion).
+
+> La app guarda los datos de factura, pero **no emite la factura electrónica**. Esa factura se hace en el sistema de facturación del club, con estos datos.
+
+### Cerrar la caja
+
+Al terminar el turno, tocá **Cerrar caja**. La app muestra:
+
+- El fondo inicial.
+- Lo cobrado por cada medio de pago.
+- Los vueltos dados.
+- **El efectivo que debería haber.**
+
+Contás la plata, escribís cuánto hay y la app te dice la **diferencia**. Si no cuadra, podés dejar una observación. El dueño ve todos los cierres en su panel.
 
 ---
 
-## 8. DIRECTORIO DE CLIENTES Y FIDELIZACIÓN
+## 6. Clientes
 
-En el módulo **"Clientes"** del CRM, el club cuenta con su base de datos de jugadores:
-- **Búsqueda Inteligente:** Buscá por nombre, apellido o número de teléfono.
-- **Historial de Actividad:** Cantidad de turnos jugados en el club, fechas de asistencia y consumos habituales.
-- **Notas y Preferencias:** Anotaciones de la recepción sobre si el jugador prefiere ciertas pistas, palas pesadas o marcas específicas de bebidas.
-
----
-
-## 9. PROTOCOLO OPERATIVO DIARIO (CHECKLIST DE APERTURA, TURNO Y CIERRE)
-
-Para mantener una disciplina de trabajo impecable, el personal de recepción debe seguir esta lista de verificación diaria:
-
-### ☀️ Turno Mañana (Apertura del Club · 06:45 hs)
-- [ ] Encender la computadora o tablet de recepción y abrir el sistema Black Club.
-- [ ] Iniciar sesión con la cuenta de Staff.
-- [ ] Revisar las solicitudes pendientes de la noche en la **Agenda de Canchas**.
-- [ ] Presionar **"Bloquear Reserva"** en todas las solicitudes confirmadas.
-- [ ] Chequear el semáforo de inventario en **"Tarifas & Stock"** para asegurar que haya aguas, energizantes y pelotas suficientes en las heladeras del mostrador.
-
-### 🎾 Durante el Turno (Atención Continua a Jugadores)
-- [ ] Cuando la pareja o grupo llega a la recepción, verificar el turno y marcar la cancha como **"En Cancha"**.
-- [ ] Anotar inmediatamente cualquier bebida, agua o pelota consumida en la comanda de la cancha.
-- [ ] Si ingresa una nueva solicitud en la tarjeta dorada superior, contactar al cliente o bloquear el turno al instante.
-
-### 🌙 Turno Noche (Cierre y Arqueo · 23:30 hs)
-- [ ] Verificar en **"Caja & Cuentas"** que todas las cuentas de las canchas del día estén en estado **Liquidada**.
-- [ ] Revisar en el panel principal el total recaudado del día desglosado por:
-  - Total Recaudado en Efectivo.
-  - Total Recaudado en Tarjetas (Terminales POS).
-  - Total Recaudado en Transferencias Bancarias (Itaú).
-- [ ] Realizar el arqueo físico del dinero en caja contra el número que indica el sistema.
-- [ ] Cerrar sesión en el CRM.
+- **Cómo se arma la lista:** cada persona que reserva queda registrada sola, identificada por su celular, así no se duplica.
+- **Búsqueda:** por nombre o por celular.
+- **Filtros:**
+  - **Frecuentes:** 4 o más turnos en el último mes.
+  - **Hace +30 días:** clientes que dejaron de venir. Ideales para mandarles una promo.
+  - **Faltaron:** tienen algún "No vino".
+- **Ficha de cada cliente:** cantidad de turnos, lo gastado en canchas, faltas, historial y botón de WhatsApp.
 
 ---
 
-## 10. PLANTILLAS DE RESPUESTAS RÁPIDAS PARA WHATSAPP
+## 7. Panel del dueño
 
-Para brindar una atención al cliente de categoría ejecutiva, utilizá estas respuestas prediseñadas en el WhatsApp del club (**+595 983 573 396**):
+Elegí **Hoy**, **7 días** o **30 días**.
 
-### Plantilla 1: Confirmación de Turno Aprobado
-> *"¡Hola [Nombre del Jugador]! Un gusto saludarte desde Black Club Elite. Confirmamos tu reserva de la [Cancha] para hoy en el horario de [Horario]. La pista ya se encuentra bloqueada a tu nombre. Te recordamos que el club cuenta con estacionamiento privado, vestuarios de primer nivel y servicio de bar. ¡Nos vemos en la pista! 🎾"*
+- **Facturado:** total cobrado, separado en canchas y bar.
+- **Ocupación:** qué porcentaje del horario disponible se usó y cuántas horas se jugaron.
+- **Reservas, canceladas y no vinieron.**
+- **Ocupación por franja (mañana, siesta, tarde, noche):** las franjas más vacías son las mejores para hacer promociones.
+- **Ocupación por cancha.**
+- **Cobrado por medio de pago:** cuánto entró en efectivo, transferencia, QR, etc.
+- **Mejores clientes** del período.
+- **Últimos cierres de caja:** si cuadraron o cuánto faltó o sobró.
 
-### Plantilla 2: Horario Solicitado No Disponible (Alternativa)
-> *"¡Hola [Nombre del Jugador]! Gracias por escribirnos a Black Club Elite. Te comentamos que el turno de las [Horario] en [Cancha] acaba de ser ocupado. Sin embargo, tenemos disponible hoy a las [Horario Alternativo] o en la [Otra Cancha]. ¿Te gustaría que te reservemos esa opción? Quedamos a tu disposición."*
+---
 
-### Plantilla 3: Consulta sobre Torneos del Circuito
-> *"¡Hola [Nombre]! Con mucho gusto te brindamos la información del torneo. El certamen se disputará del [Fecha de Inicio] al [Fecha de Fin] en las categorías [Categorías]. El costo de inscripción por pareja incluye remera oficial, hidratación durante los partidos y acceso al cóctel de premiación. ¿En qué categoría te gustaría participar con tu dupla?"*
+## 8. Ajustes del club
+
+Todo se aplica al instante en la web y en la agenda.
+
+**Horarios y reservas online**
+- **Abre / Cierra:** horario de canchas. "Cierra" es la hora en que termina el último turno.
+- **Minutos para confirmar una solicitud** (hoy: 60).
+- **Días de anticipación** para reservar online (hoy: 14).
+- **Cancelación online** hasta cuántas horas antes (hoy: 3).
+- **Alquiler de paleta** y **tubo de pelotas.**
+
+**Canchas**
+- **Precio por hora** de cada cancha. Debajo ves cuánto sale 1 h, 1 h 30 y 2 h.
+- **Habilitada para reservas online:** apagala si la cancha está en mantenimiento; deja de aparecer en la web.
+
+**Bar y productos**
+- **Editar un producto:** tocalo para cambiar nombre, categoría, precio o stock.
+- **Disponibilidad:** el interruptor lo marca como disponible o agotado en la carta.
+- **Nuevo producto:** con **+ Producto**.
 
 ---
 
-## 11. PREGUNTAS FRECUENTES, CONTINGENCIAS Y SOPORTE
+## 9. Quién puede hacer qué
 
-#### 1. ¿Qué sucede si se corta la conexión a Internet en el club?
-El sistema cuenta con un motor de resiliencia desconectada (*Modo Offline*). Podés seguir cambiando estados de reservas y cargando consumos al bar normalmente. La información queda resguardada en la memoria local y, en cuanto vuelve el servicio de Internet, el sistema sincroniza automáticamente los cambios con la base de datos central sin perder ningún dato.
-
-#### 2. ¿Cómo funciona la prevención de turnos duplicados?
-La base de datos cuenta con una regla estricta de exclusión. Si dos clientes estuviesen intentando solicitar la misma pista al mismo tiempo, el sistema acepta la primera solicitud y de inmediato bloquea el botón para la segunda, impidiendo cualquier posibilidad de doble reserva.
-
-#### 3. ¿El sistema calcula propinas o impuestos adicionales?
-Los precios configurados en **"Tarifas & Stock"** son precios finales en Guaraníes. La calculadora divide con exactitud el total adeudado entre la cantidad de jugadores seleccionados, facilitando el cobro en mesa o mostrador.
-
-#### 4. Canales de Asistencia y Soporte
-- **WhatsApp Oficial del Club:** `+595 983573396` / `+595 983 573 396`
-- **Enlace Directo:** [https://wa.me/595983573396](https://wa.me/595983573396)
-- **Desarrollo y Plataforma:** Preparado para despliegue automatizado continuo en Git & Vercel.
+| Acción | Recepción | Dueño |
+|---|:-:|:-:|
+| Ver y manejar la agenda | ✓ | ✓ |
+| Confirmar, mover, cancelar reservas | ✓ | ✓ |
+| Turnos fijos y bloqueos | ✓ | ✓ |
+| Cobrar, abrir y cerrar caja | ✓ | ✓ |
+| Ver clientes | ✓ | ✓ |
+| Panel del dueño (números) | | ✓ |
+| Cambiar precios, horarios, productos | | ✓ |
+| Borrar reservas o cuentas | | ✓ |
 
 ---
-*Manual aprobado para la administración y operación oficial de Black Club Elite.*
+
+## 10. Rutina recomendada
+
+**Al abrir**
+1. Entrar al panel.
+2. **Abrir caja** con el fondo inicial.
+3. Revisar las **solicitudes por confirmar** y confirmarlas o rechazarlas.
+
+**Durante el día**
+- Cuando llegan los jugadores, tocar la reserva y elegir **Llegaron**.
+- Al terminar, **cobrar** desde la reserva o desde Caja.
+- Si alguien no viene, marcar **No vino**. No lo canceles: así queda en su historial.
+
+**Al cerrar**
+1. Revisar que no queden cuentas de hoy sin cobrar.
+2. **Cerrar caja**, contar el efectivo y anotar la diferencia si la hay.
+
+**Una vez por semana (dueño)**
+- Revisar el **Panel** de los últimos 7 días.
+- Mirar **Clientes → Hace +30 días** y mandar una promo.
+
+---
+
+## 11. Preguntas frecuentes
+
+**¿El cliente paga online?**
+No. La reserva es sin seña y se paga en el club.
+
+**¿Qué pasa si dos personas quieren el mismo horario a la vez?**
+El sistema no permite dos reservas que se pisen en la misma cancha. El segundo recibe el aviso "Ese horario se acaba de ocupar".
+
+**¿Y si se corta internet en el club?**
+Lo que cargues en la agenda se guarda en el dispositivo y se envía solo cuando vuelve la conexión. Los **cobros** necesitan conexión para registrarse.
+
+**¿Qué significa un aviso rojo abajo de la pantalla?**
+El sistema no aceptó un cambio, por ejemplo porque el horario ya estaba ocupado. La pantalla se actualiza con los datos reales.
+
+**Un cliente perdió su código.**
+Lo encontrás en la agenda, tocando su reserva, y se lo pasás por WhatsApp.
+
+**¿Puedo cambiar el precio de una sola reserva?**
+Sí. Al crearla desde el panel, el campo **Precio** se puede editar.
+
+**¿Cómo agrego a alguien del personal?**
+Pedíselo al soporte: se crea su usuario y se le asigna el rol de recepción o de dueño.
+
+**¿Puedo usarlo en el celular?**
+Sí. Está pensado primero para el celular. Desde el navegador del celular podés tocar "Agregar a pantalla de inicio" para tenerlo como una app.
+
+---
+
+## 12. Soporte y mantenimiento
+
+Incluido según el plan contratado:
+
+- Hosting de la web y de la base de datos, con copias de seguridad.
+- Corrección de errores.
+- Altas y bajas de usuarios del personal.
+- Cambios de textos, fotos, planes, profesores y torneos.
+- Actualizaciones de seguridad.
+
+**Para pedir soporte**, mandá por WhatsApp:
+1. Qué pasó.
+2. En qué pantalla.
+3. Una captura si podés.
+
+Recomendaciones:
+- Usar **una cuenta por persona** y no compartir contraseñas.
+- Cerrar sesión en dispositivos que no sean del club.
+- Reemplazar las fotos de la web por **fotos reales del club**: es lo que más confianza genera.
