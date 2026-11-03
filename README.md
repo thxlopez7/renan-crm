@@ -321,4 +321,3 @@ Las reglas críticas también están en la base: aunque el navegador falle, no s
 - **Avisos automáticos por WhatsApp:** requieren WhatsApp Business API, que tiene costo por mensaje.
 - **Compartir el partido:** un link para que los otros jugadores vean la reserva.
 - **Campeones del Circuito:** agregar resultados y fotos de la edición finalizada.
-- **Datos de ejemplo:** limpiar las cuentas de prueba del 22/10 antes de entregar.
