@@ -141,3 +141,37 @@ Elegís día (próximos 7) → elegís cancha y hora (bloques de 60 min) → com
 | **2. Recepción** | Estados simples, A1 cuentas fantasma, turnos fijos, bloqueos, no-show, agenda mobile |
 | **3. Caja** | Pagos parciales y mixtos, medios PY, datos de factura, apertura y cierre de caja, venta rápida |
 | **4. Dueño** | Configuración del club en una pantalla, panel de ocupación e ingresos, clientes con historial y segmentos |
+
+---
+
+## 10. Estado de implementación (2026-11-02)
+
+Decisiones del club: turnos de **60 / 90 / 120 min a elección del cliente**, **sin tarifa Prime** (precio por hora × duración), solicitudes web que **vencen a los 60 min**, **sin seña**.
+
+| Punto | Estado |
+|---|---|
+| R1 Prime | No aplica (decisión: sin Prime) |
+| R2 vencimiento | ✅ `pg_cron` cada 5 min + liberación al reservar |
+| R3 WhatsApp en iPhone | ✅ botón directo en la pantalla de éxito |
+| R4 duración | ✅ 60/90/120, inicio cada 30 min, sin solapamientos (restricción en la base) |
+| R5–R8 flujo | ✅ Día → duración → hora (canchas libres) → cancha → confirmar; extras plegados; precios desde la configuración |
+| R7 / P1 teléfono | ✅ normalizado `+595 9XX…`, validado en web y servidor |
+| R9 ventana | ✅ configurable (14 días) |
+| R10 Mi reserva | ✅ consultar y cancelar con código + celular, con política de horas |
+| R11 recordar datos | ✅ |
+| A1 cuentas fantasma | ✅ cancelar / no vino cierra la cuenta |
+| A2 turnos fijos | ✅ 4/8/12 semanas, saltea fechas ocupadas |
+| A3 bloqueos | ✅ |
+| A4 no-show | ✅ |
+| A5 estados | ✅ Pendiente / Confirmada / Jugando / Finalizada / Cancelada / No vino |
+| A6 mover | ✅ cancha, día, hora y duración |
+| C1 cierre de caja | ✅ apertura con fondo, cierre con arqueo y diferencia |
+| C2–C3 pagos | ✅ mixtos: Efectivo, Transferencia, QR, Débito, Crédito, Billetera; dividir en 2/4; vuelto |
+| C4 factura | ✅ RUC validado (dígito verificador SET) + razón social |
+| C6 venta sin reserva | ✅ |
+| P3–P4 clientes | ✅ historial, segmentos, WhatsApp |
+| §5 configuración | ✅ pantalla de Ajustes del dueño |
+| §6 panel | ✅ facturación, ocupación por franja y cancha, medios de pago, top clientes, cierres |
+| Formularios gym / torneos | ✅ ahora se guardan en Supabase (antes solo en el navegador) |
+
+Pendiente: R12 (link para compartir el partido), emisión de factura electrónica SIFEN (requiere el sistema de facturación del club), notificaciones automáticas por WhatsApp Business API.
