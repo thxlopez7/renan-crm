@@ -1,197 +1,101 @@
 import React, { useState } from 'react';
 import { useClub } from '../../context/ClubContext';
 import { ExecutiveDashboard } from './ExecutiveDashboard';
-import { MasterScheduleView } from './MasterScheduleView';
+import { ScheduleView } from './ScheduleView';
 import { POSTerminalView } from './POSTerminalView';
 import { PlayersDirectoryView } from './PlayersDirectoryView';
 import { CatalogManagementView } from './CatalogManagementView';
-import { 
-  TrendingUp, 
-  Calendar, 
-  Receipt, 
-  Users, 
-  Sliders
-} from 'lucide-react';
+import { TrendingUp, Calendar, Receipt, Users, Sliders } from 'lucide-react';
+import '../../styles/admin.css';
 
 export function ExecutiveSuite() {
-  const { userRole } = useClub();
+  const { userRole, kpis } = useClub();
   const isOwner = userRole === 'owner';
-  const [selectedSection, setActiveSection] = useState(null);
+  const [selectedSection, setActiveSection] = useState('schedule');
   const [highlightedTabId, setHighlightedTabId] = useState(null);
 
-  // Financial panel and pricing/catalog are owner-only (enforced by RLS as well)
-  const sidebarItems = [
-    { id: 'dashboard', label: 'Panel', fullLabel: 'Panel de Control', icon: TrendingUp, ownerOnly: true },
-    { id: 'schedule', label: 'Agenda', fullLabel: 'Agenda de Canchas', icon: Calendar },
-    { id: 'pos', label: 'Caja & Cuentas', fullLabel: 'Caja & Cuentas (Terminal)', icon: Receipt },
-    { id: 'players', label: 'Clientes', fullLabel: 'Directorio de Clientes', icon: Users },
-    { id: 'catalog', label: 'Tarifas & Stock', fullLabel: 'Tarifas & Inventario', icon: Sliders, ownerOnly: true }
+  // Agenda first: it is what reception uses all day. Panel and pricing are owner-only (RLS too).
+  const sections = [
+    { id: 'schedule', label: 'Agenda', fullLabel: 'Agenda de canchas', icon: Calendar, badge: kpis.pendingRequestsCount },
+    { id: 'pos', label: 'Caja', fullLabel: 'Caja y cuentas', icon: Receipt },
+    { id: 'players', label: 'Clientes', fullLabel: 'Clientes', icon: Users },
+    { id: 'dashboard', label: 'Panel', fullLabel: 'Panel del dueño', icon: TrendingUp, ownerOnly: true },
+    { id: 'catalog', label: 'Ajustes', fullLabel: 'Precios, stock y ajustes', icon: Sliders, ownerOnly: true }
   ].filter(item => isOwner || !item.ownerOnly);
 
-  const activeSection = sidebarItems.some(item => item.id === selectedSection)
-    ? selectedSection
-    : sidebarItems[0].id;
+  const activeSection = sections.some(item => item.id === selectedSection) ? selectedSection : sections[0].id;
+
+  const go = (id) => {
+    setActiveSection(id);
+    if (id !== 'pos') setHighlightedTabId(null);
+    window.scrollTo({ top: 0 });
+  };
 
   const handleOpenPosTab = (tabId) => {
     setHighlightedTabId(tabId);
     setActiveSection('pos');
+    window.scrollTo({ top: 0 });
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: 'calc(100vh - 56px)', width: '100%' }}>
-      {/* Mobile Top Sub-Nav Bar (Screens < 769px) */}
-      <nav 
-        className="show-mobile-only"
-        style={{
-          backgroundColor: '#09090B',
-          borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-          position: 'sticky',
-          top: '56px',
-          zIndex: 80,
-          padding: '8px 12px',
-          overflowX: 'auto',
-          scrollbarWidth: 'none',
-          WebkitOverflowScrolling: 'touch'
-        }}
-      >
-        <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-          {sidebarItems.map(item => {
+    <div className="crm-shell">
+      <aside className="crm-sidebar hide-mobile">
+        <div className="crm-sidebar-title">
+          <span>Black Club</span>
+          <strong>{isOwner ? 'Administración' : 'Recepción'}</strong>
+        </div>
+        <nav className="crm-sidebar-nav">
+          {sections.map(item => {
             const Icon = item.icon;
             const isActive = activeSection === item.id;
-
             return (
               <button
                 key={item.id}
-                onClick={() => {
-                  setActiveSection(item.id);
-                  if (item.id !== 'pos') setHighlightedTabId(null);
-                }}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '7px 12px',
-                  borderRadius: '20px',
-                  border: isActive ? '1px solid #FFFFFF' : '1px solid rgba(255, 255, 255, 0.08)',
-                  backgroundColor: isActive ? '#FFFFFF' : '#111113',
-                  color: isActive ? '#09090B' : '#A1A1AA',
-                  fontSize: '11px',
-                  fontWeight: isActive ? 700 : 500,
-                  cursor: 'pointer',
-                  whiteSpace: 'nowrap',
-                  flexShrink: 0,
-                  transition: 'all 120ms ease'
-                }}
+                type="button"
+                className={`crm-nav-item ${isActive ? 'is-active' : ''}`}
+                aria-current={isActive ? 'page' : undefined}
+                onClick={() => go(item.id)}
               >
-                <Icon size={12} strokeWidth={isActive ? 2.5 : 1.5} color={isActive ? '#09090B' : '#71717A'} />
-                <span>{item.label}</span>
+                <Icon size={17} strokeWidth={isActive ? 2.2 : 1.6} />
+                <span>{item.fullLabel}</span>
+                {item.badge > 0 && <span className="crm-badge">{item.badge}</span>}
               </button>
             );
           })}
+        </nav>
+      </aside>
+
+      <main className="crm-main">
+        <div className="crm-content">
+          {activeSection === 'schedule' && <ScheduleView onOpenPosTab={handleOpenPosTab} />}
+          {activeSection === 'pos' && <POSTerminalView highlightedTabId={highlightedTabId} />}
+          {activeSection === 'players' && <PlayersDirectoryView />}
+          {activeSection === 'dashboard' && <ExecutiveDashboard onNavigate={go} />}
+          {activeSection === 'catalog' && <CatalogManagementView />}
         </div>
+      </main>
+
+      <nav className="crm-tabbar show-mobile-flex" aria-label="Secciones">
+        {sections.map(item => {
+          const Icon = item.icon;
+          const isActive = activeSection === item.id;
+          return (
+            <button
+              key={item.id}
+              type="button"
+              className={`crm-tab ${isActive ? 'is-active' : ''}`}
+              aria-current={isActive ? 'page' : undefined}
+              onClick={() => go(item.id)}
+            >
+              <span className="crm-tab-icon">
+                <Icon size={21} strokeWidth={isActive ? 2.2 : 1.6} />
+                {item.badge > 0 && <span className="crm-badge is-dot">{item.badge}</span>}
+              </span>
+              <span>{item.label}</span>
+            </button>
+          );
+        })}
       </nav>
-
-      {/* Main Suite Layout with Desktop Sidebar */}
-      <div style={{ display: 'flex', flex: 1, width: '100%' }}>
-        {/* Fixed Desktop Sidebar (Hidden on Mobile) */}
-        <aside 
-          className="crm-desktop-sidebar hide-mobile"
-          style={{ 
-            width: '260px', 
-            backgroundColor: 'rgba(9, 9, 11, 0.88)', 
-            backdropFilter: 'blur(16px)',
-            WebkitBackdropFilter: 'blur(16px)',
-            borderRight: '1px solid rgba(255, 255, 255, 0.08)',
-            padding: '24px 16px',
-            flexDirection: 'column',
-            justifyContent: 'space-between',
-            flexShrink: 0
-          }}
-        >
-          <div>
-            <div style={{ padding: '0 8px 18px', borderBottom: '1px solid rgba(255, 255, 255, 0.06)', marginBottom: '18px' }}>
-              <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em', color: '#A1A1AA', textTransform: 'uppercase' }}>
-                Suite Operativa
-              </div>
-              <div style={{ fontSize: '13px', fontWeight: 700, color: '#FFFFFF', marginTop: '2px' }}>
-                Recepción & Gestión
-              </div>
-            </div>
-
-            <nav style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              {sidebarItems.map(item => {
-                const Icon = item.icon;
-                const isActive = activeSection === item.id;
-
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => {
-                      setActiveSection(item.id);
-                      if (item.id !== 'pos') setHighlightedTabId(null);
-                    }}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '10px',
-                      width: '100%',
-                      padding: '11px 14px',
-                      borderRadius: '6px',
-                      border: 'none',
-                      backgroundColor: isActive ? '#18181B' : 'transparent',
-                      color: isActive ? '#FFFFFF' : '#71717A',
-                      fontSize: '12.5px',
-                      fontWeight: isActive ? 700 : 500,
-                      cursor: 'pointer',
-                      textAlign: 'left',
-                      transition: 'all 120ms ease',
-                      borderLeft: isActive ? '3px solid #FFFFFF' : '3px solid transparent'
-                    }}
-                  >
-                    <Icon size={15} strokeWidth={isActive ? 2 : 1.5} color={isActive ? '#FFFFFF' : '#71717A'} />
-                    <span>{item.fullLabel}</span>
-                  </button>
-                );
-              })}
-            </nav>
-          </div>
-
-          {/* Desktop Sidebar Footer */}
-          <div style={{ 
-            padding: '14px', 
-            backgroundColor: '#111113', 
-            borderRadius: '6px', 
-            border: '1px solid rgba(255, 255, 255, 0.06)',
-            fontSize: '11px',
-            color: '#71717A'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
-              <span className="status-dot emerald"></span>
-              <span style={{ color: '#FFFFFF', fontWeight: 600 }}>Caja & Canchas Activas</span>
-            </div>
-            <div>Terminal operativa · Moneda: Gs.</div>
-          </div>
-        </aside>
-
-        {/* Content View Area */}
-        <main style={{ 
-          flex: 1, 
-          padding: '16px 12px 90px', 
-          overflowY: 'auto', 
-          backgroundColor: 'transparent',
-          width: '100%',
-          maxWidth: '100%',
-          minWidth: 0
-        }}>
-          <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
-            {activeSection === 'dashboard' && <ExecutiveDashboard onNavigate={setActiveSection} />}
-            {activeSection === 'schedule' && <MasterScheduleView onOpenPosTab={handleOpenPosTab} />}
-            {activeSection === 'pos' && <POSTerminalView highlightedTabId={highlightedTabId} />}
-            {activeSection === 'players' && <PlayersDirectoryView />}
-            {activeSection === 'catalog' && <CatalogManagementView />}
-          </div>
-        </main>
-      </div>
     </div>
   );
 }

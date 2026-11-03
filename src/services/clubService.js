@@ -1,3 +1,4 @@
+import { clubNow } from '../utils/clubTime';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
 // Helper to convert snake_case object to camelCase object
@@ -121,6 +122,7 @@ export const mapTabFromDb = (t, tabItems = []) => ({
   activityStatus: t.activity_status,
   paymentMethod: t.payment_method,
   settledAt: t.settled_at,
+  cashedDate: t.cashed_at ? clubNow(new Date(t.cashed_at)).date : null,
   barTableRequested: Boolean(t.bar_table_requested),
   openedAt: t.opened_at,
   items: tabItems.filter(item => item.tab_id === t.id).map(i => ({
@@ -282,6 +284,36 @@ export const dbUpdateBookingStatus = async (bookingId, newStatus, depositAmount)
   // Sync tab deposit if changed
   if (depositAmount !== undefined) {
     unwrap(await supabase.from('tabs').update({ deposit_paid: Number(depositAmount) }).eq('linked_booking_id', bookingId));
+  }
+};
+
+// Move or resize a booking; the schedule trigger recomputes time_slot/starts_at and
+// the overlap constraint rejects conflicts. The linked POS tab follows court and price.
+export const dbUpdateBooking = async (bookingId, patch) => {
+  if (!isSupabaseConfigured()) return;
+
+  const payload = {};
+  if (patch.courtId !== undefined) payload.court_id = patch.courtId;
+  if (patch.date !== undefined) payload.date = patch.date;
+  if (patch.startTime !== undefined) payload.start_time = patch.startTime;
+  if (patch.durationMinutes !== undefined) payload.duration_minutes = patch.durationMinutes;
+  if (patch.courtAmount !== undefined) payload.court_amount = Number(patch.courtAmount);
+  if (patch.clientName !== undefined) payload.client_name = patch.clientName;
+  if (patch.clientPhone !== undefined) payload.client_phone = patch.clientPhone;
+
+  const updated = unwrap(await supabase.from('bookings').update(payload).eq('id', bookingId).select('linked_tab_id').single());
+
+  if (updated?.linked_tab_id) {
+    const tabPayload = {};
+    if (patch.courtId !== undefined) {
+      tabPayload.court_id = patch.courtId;
+      if (patch.courtName) tabPayload.court_name = patch.courtName;
+    }
+    if (patch.courtAmount !== undefined) tabPayload.court_amount = Number(patch.courtAmount);
+    if (patch.clientName !== undefined) tabPayload.client_name = patch.clientName;
+    if (Object.keys(tabPayload).length > 0) {
+      unwrap(await supabase.from('tabs').update(tabPayload).eq('id', updated.linked_tab_id));
+    }
   }
 };
 

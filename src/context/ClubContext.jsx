@@ -7,14 +7,14 @@ import {
   INITIAL_TOURNAMENTS,
   INITIAL_BOOKINGS,
   INITIAL_TABS,
-  INITIAL_PLAYERS,
-  TIME_SLOTS
+  INITIAL_PLAYERS
 } from './initialData';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import {
   fetchAllClubData,
   dbCreateBookingAndTab,
   dbUpdateBookingStatus,
+  dbUpdateBooking,
   dbAdjustTabItem,
   dbUpdateTabEquipment,
   dbUpdateCourtRate,
@@ -45,13 +45,40 @@ const getInitialPendingQueue = () => {
   }
 };
 
+const LEGACY_STATUS = {
+  'Solicitud Pendiente': 'Pendiente',
+  'Seña Pendiente': 'Pendiente',
+  'En Cancha': 'Jugando',
+  'En Pista': 'Jugando'
+};
+
+// Seed data and older caches use "HH:MM - HH:MM" slots and the old status names
+const upgradeLegacyBooking = (b) => {
+  if (b.startTime && b.durationMinutes) return { ...b, status: LEGACY_STATUS[b.status] || b.status };
+  const [start, end] = String(b.timeSlot || '07:00 - 08:00').split(' - ');
+  let duration = toMinutes(end) - toMinutes(start);
+  if (duration <= 0) duration += 24 * 60;
+  return {
+    ...b,
+    startTime: start,
+    endTime: end,
+    durationMinutes: duration,
+    status: LEGACY_STATUS[b.status] || b.status
+  };
+};
+
+// Local-only demo: `npm run dev` without Supabase and `?demo` opens the CRM with seed data
+const DEMO_STAFF = import.meta.env.DEV && !isSupabaseConfigured()
+  && typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('demo');
+
 export function ClubProvider({ children }) {
   // Load state from localStorage or initial seed
   const [data, setData] = useState(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        return { ...parsed, bookings: (parsed.bookings || []).map(upgradeLegacyBooking) };
       }
     } catch {
       // ignore
@@ -62,7 +89,7 @@ export function ClubProvider({ children }) {
       menuItems: INITIAL_MENU_ITEMS,
       gymPlans: INITIAL_GYM_PLANS,
       tournaments: INITIAL_TOURNAMENTS,
-      bookings: INITIAL_BOOKINGS,
+      bookings: INITIAL_BOOKINGS.map(upgradeLegacyBooking),
       tabs: INITIAL_TABS,
       players: INITIAL_PLAYERS,
       gymApplications: [],
@@ -73,7 +100,7 @@ export function ClubProvider({ children }) {
   const [selectedDate, setSelectedDate] = useState(() => clubNow().date);
   const [isSupabaseLive, setIsSupabaseLive] = useState(false);
   const [isLoadingDb, setIsLoadingDb] = useState(false);
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(DEMO_STAFF ? { id: 'demo-owner', email: 'demo@local' } : null);
   const [session, setSession] = useState(null);
   const [userRole, setUserRole] = useState('anon'); // 'owner' | 'reception' | 'anon'
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -102,7 +129,9 @@ export function ClubProvider({ children }) {
 
   // Fetch Staff Role when user changes
   useEffect(() => {
-    if (user && user.id) {
+    if (DEMO_STAFF) {
+      setUserRole(new URLSearchParams(window.location.search).get('demo') === 'reception' ? 'reception' : 'owner');
+    } else if (user && user.id) {
       fetchStaffRole(user.id).then(role => setUserRole(role));
     } else {
       setUserRole('anon');
@@ -232,6 +261,8 @@ export function ClubProvider({ children }) {
       try {
         if (item.type === 'CREATE_BOOKING') {
           await dbCreateBookingAndTab(item.newBooking, item.newTab);
+        } else if (item.type === 'UPDATE_BOOKING') {
+          await dbUpdateBooking(item.bookingId, item.patch);
         } else if (item.type === 'UPDATE_STATUS') {
           await dbUpdateBookingStatus(item.bookingId, item.newStatus, item.depositAmount);
         } else if (item.type === 'ADJUST_TAB_ITEM') {
@@ -348,38 +379,33 @@ export function ClubProvider({ children }) {
   // Tab calculations helper using shared finance helper
   const calculateTabBalances = useCallback((tab) => computeTabBalances(tab, pricingConfig), [pricingConfig]);
 
-  // Live KPIs Calculation
+  // Live KPIs for the selected day
   const kpis = useMemo(() => {
-    const todayBookings = data.bookings.filter(b => b.date === selectedDate);
-    const totalSlotsPossible = data.courts.length * TIME_SLOTS.length; // 3 * 17
-    const activeBookingsCount = todayBookings.filter(b => b.status !== 'Cancelada').length;
-    const occupancyRate = totalSlotsPossible > 0
-      ? Math.round((activeBookingsCount / totalSlotsPossible) * 100)
-      : 0;
+    const ACTIVE = ['Pendiente', 'Confirmada', 'Jugando', 'Finalizada'];
+    const dayBookings = data.bookings.filter(b => b.date === selectedDate && b.category !== 'Bloqueo');
+    const activeBookings = dayBookings.filter(b => ACTIVE.includes(b.status));
+    const operationalCourts = data.courts.filter(c => c.status === 'operational').length;
+    const openMinutes = Math.max(0, (Number(pricingConfig.closeHour) - Number(pricingConfig.openHour)) * 60);
+    const capacityMinutes = operationalCourts * openMinutes;
+    const bookedMinutes = activeBookings.reduce((sum, b) => sum + (b.durationMinutes || 60), 0);
+    const occupancyRate = capacityMinutes > 0 ? Math.min(100, Math.round((bookedMinutes / capacityMinutes) * 100)) : 0;
 
-    // Financials
+    // Revenue counts tabs cashed on the selected day (club time)
     let totalRevenueToday = 0;
     let courtRevenueToday = 0;
     let barRevenueToday = 0;
     let openTabsTotal = 0;
 
     data.tabs.forEach(tab => {
-      const { itemsTotal, courtBase, depositDeduction, racketCharge, ballTubeCharge, netPending } = calculateTabBalances(tab);
-      
-      if (tab.status === 'settled') {
-        totalRevenueToday += (courtBase + racketCharge + ballTubeCharge + itemsTotal);
-        courtRevenueToday += (courtBase + racketCharge + ballTubeCharge);
+      const { itemsTotal, courtBase, racketCharge, ballTubeCharge, netPending } = calculateTabBalances(tab);
+      if (tab.status === 'settled' && tab.cashedDate === selectedDate) {
+        totalRevenueToday += courtBase + racketCharge + ballTubeCharge + itemsTotal;
+        courtRevenueToday += courtBase + racketCharge + ballTubeCharge;
         barRevenueToday += itemsTotal;
       } else if (tab.status === 'open') {
-        totalRevenueToday += depositDeduction;
-        courtRevenueToday += depositDeduction;
         openTabsTotal += netPending;
       }
     });
-
-    const pendingDepositsCount = todayBookings.filter(b => b.status === 'Seña Pendiente').length;
-    const barTableRequestsCount = todayBookings.filter(b => b.barTableRequested && b.status !== 'Cancelada').length;
-    const courtsInPlayCount = todayBookings.filter(b => b.status === 'En Cancha' || b.status === 'En Pista').length;
 
     return {
       totalRevenueToday,
@@ -387,13 +413,14 @@ export function ClubProvider({ children }) {
       barRevenueToday,
       occupancyRate,
       openTabsTotal,
-      pendingDepositsCount,
-      barTableRequestsCount,
-      courtsInPlayCount,
-      activeBookingsCount,
-      totalSlotsPossible
+      pendingRequestsCount: data.bookings.filter(b => b.status === 'Pendiente').length,
+      barTableRequestsCount: activeBookings.filter(b => b.barTableRequested).length,
+      courtsInPlayCount: dayBookings.filter(b => b.status === 'Jugando').length,
+      activeBookingsCount: activeBookings.length,
+      bookedMinutes,
+      capacityMinutes
     };
-  }, [data.bookings, data.tabs, data.courts, selectedDate, calculateTabBalances]);
+  }, [data.bookings, data.tabs, data.courts, selectedDate, calculateTabBalances, pricingConfig]);
 
   // Actions
   // Accepts { startTime, durationMinutes } or a legacy "HH:MM - HH:MM" timeSlot
@@ -529,6 +556,10 @@ export function ClubProvider({ children }) {
       const updatedTabs = prev.tabs.map(tab => {
         if (tab.linkedBookingId === bookingId) {
           const updatedTab = { ...tab };
+          // Mirrors trg_booking_close_tab: no charge for cancelled or no-show bookings
+          if (['Cancelada', 'No vino'].includes(newStatus) && tab.status === 'open') {
+            updatedTab.status = 'cancelled';
+          }
           if (depositAmount !== undefined) {
             updatedTab.depositPaid = Number(depositAmount);
           }
@@ -547,6 +578,36 @@ export function ClubProvider({ children }) {
     persistMutation(
       () => dbUpdateBookingStatus(bookingId, newStatus, depositAmount),
       { type: 'UPDATE_STATUS', bookingId, newStatus, depositAmount }
+    );
+  };
+
+  const updateBooking = (bookingId, patch) => {
+    const court = patch.courtId ? data.courts.find(c => c.id === patch.courtId) : null;
+    const fullPatch = court ? { ...patch, courtName: court.name } : patch;
+
+    setData(prev => ({
+      ...prev,
+      bookings: prev.bookings.map(b => {
+        if (b.id !== bookingId) return b;
+        const next = { ...b, ...patch };
+        next.endTime = fromMinutes(toMinutes(next.startTime) + next.durationMinutes);
+        next.timeSlot = `${next.startTime} - ${next.endTime}`;
+        return next;
+      }),
+      tabs: prev.tabs.map(t => {
+        if (t.linkedBookingId !== bookingId) return t;
+        return {
+          ...t,
+          ...(court ? { courtId: court.id, courtName: court.name } : {}),
+          ...(patch.courtAmount !== undefined ? { courtAmount: Number(patch.courtAmount) } : {}),
+          ...(patch.clientName !== undefined ? { clientName: patch.clientName } : {})
+        };
+      })
+    }));
+
+    persistMutation(
+      () => dbUpdateBooking(bookingId, fullPatch),
+      { type: 'UPDATE_BOOKING', bookingId, patch: fullPatch }
     );
   };
 
@@ -827,7 +888,6 @@ export function ClubProvider({ children }) {
         bookings: data.bookings,
         tabs: data.tabs,
         players: data.players,
-        timeSlots: TIME_SLOTS,
         selectedDate,
         setSelectedDate,
         kpis,
@@ -850,6 +910,7 @@ export function ClubProvider({ children }) {
         calculateTabBalances,
         createBooking,
         updateBookingStatus,
+        updateBooking,
         addItemToTab,
         updateTabItemQty,
         updateTabEquipment,
