@@ -2,6 +2,23 @@
 
 Fecha: 2026-11-02 · Proyecto Supabase: `renan_crm` (`dsrascitdnjbaylgjrno`)
 
+## Estado de las correcciones (2026-11-02)
+
+| Hallazgo | Estado |
+|---|---|
+| C1–C3 RLS abierto, datos expuestos, `settle_tab` anónimo | ✅ Corregido (migración `lockdown_rls`) |
+| C4 usuario autenticado = recepción | ✅ Corregido (`current_user_role()` → `anon`); falta desactivar sign-up en el panel |
+| C5 contraseñas filtradas | ⏳ Activar en Supabase → Authentication |
+| A1 esquema vs base | ✅ `supabase/migrations/` + `supabase_schema.sql` actualizados |
+| A2 errores ignorados | ✅ Se revisan; rechazos del servidor muestran aviso y recargan |
+| A3 cobro sin RPC | ✅ Solo `settle_tab` |
+| A4 roles cosméticos | ✅ Recepción no ve Panel ni Tarifas & Stock; RLS solo dueño |
+| A5 reservas del CRM directas | ✅ RPC `create_staff_booking` |
+| M1 códigos repetidos | ✅ `gen_booking_code()` |
+| Extra: cantidades del POS no se guardaban | ✅ RPC `adjust_tab_item` |
+| Extra: seña por defecto 50% (config mal leída) | ✅ Se lee `pricing_config` clave/valor |
+| M3, M4, M5 | Pendiente (mantenimiento) |
+
 ## Resumen
 
 | Área | Estado |
