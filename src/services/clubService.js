@@ -1,4 +1,5 @@
 import { clubNow } from '../utils/clubTime';
+import { normalizePyPhone } from '../utils/phone';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
 // Helper to convert snake_case object to camelCase object
@@ -530,4 +531,61 @@ export const rpcCloseCashRegister = async (registerId, countedCash, notes) => {
     p_counted_cash: Math.round(Number(countedCash) || 0),
     p_notes: notes || null
   })));
+};
+
+// Club settings live in pricing_config (key/value). Only the owner can write them (RLS).
+export const SETTING_KEYS = {
+  openHour: 'open_hour',
+  closeHour: 'close_hour',
+  holdExpiresMinutes: 'booking_hold_minutes',
+  bookingWindowDays: 'booking_window_days',
+  cancelNoticeHours: 'cancel_notice_hours',
+  racketRentalFee: 'racket_rental_fee',
+  ballTubeFee: 'ball_tube_fee'
+};
+
+export const dbUpdateClubSettings = async (patch) => {
+  if (!isSupabaseConfigured()) return;
+  const rows = Object.entries(patch)
+    .filter(([key]) => SETTING_KEYS[key])
+    .map(([key, value]) => ({ key: SETTING_KEYS[key], value: Number(value), updated_at: new Date().toISOString() }));
+  if (rows.length === 0) return;
+  const saved = unwrap(await supabase.from('pricing_config').upsert(rows, { onConflict: 'key' }).select('key'));
+  // RLS silently skips rows it does not allow: treat that as a permission error
+  if (!saved || saved.length !== rows.length) throw { code: '42501', message: 'permission denied' };
+};
+
+export const dbUpdateCourt = async (courtId, patch) => {
+  if (!isSupabaseConfigured()) return;
+  const payload = {};
+  if (patch.rate !== undefined) payload.rate = Number(patch.rate);
+  if (patch.status !== undefined) payload.status = patch.status;
+  const saved = unwrap(await supabase.from('courts').update(payload).eq('id', courtId).select('id'));
+  if (!saved || saved.length === 0) throw { code: '42501', message: 'permission denied' };
+};
+
+// Public forms: visitors can insert but not read back (RLS), so no .select() here
+export const dbInsertGymApplication = async (app) => {
+  if (!isSupabaseConfigured()) return;
+  unwrap(await supabase.from('gym_applications').insert({
+    id: app.id,
+    plan_id: app.planId,
+    client_name: app.clientName,
+    client_phone: normalizePyPhone(app.clientPhone) || app.clientPhone,
+    email: app.email || null,
+    date: app.date
+  }));
+};
+
+export const dbInsertTournamentRegistration = async (reg) => {
+  if (!isSupabaseConfigured()) return;
+  unwrap(await supabase.from('tournament_registrations').insert({
+    id: reg.id,
+    tournament_id: reg.tournamentId,
+    pair_name: reg.pairName,
+    player1: reg.player1,
+    player2: reg.player2,
+    phone: normalizePyPhone(reg.phone) || reg.phone,
+    category: reg.category
+  }));
 };

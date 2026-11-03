@@ -26,6 +26,10 @@ import {
   rpcSettleTab,
   rpcPayTab,
   dbOpenWalkinTab,
+  dbUpdateClubSettings,
+  dbUpdateCourt,
+  dbInsertGymApplication,
+  dbInsertTournamentRegistration,
   isRetryableError,
   describeServerError
 } from '../services/clubService';
@@ -263,6 +267,14 @@ export function ClubProvider({ children }) {
       try {
         if (item.type === 'CREATE_BOOKING') {
           await dbCreateBookingAndTab(item.newBooking, item.newTab);
+        } else if (item.type === 'GYM_APPLICATION') {
+          await dbInsertGymApplication(item.app);
+        } else if (item.type === 'TOURNAMENT_REGISTRATION') {
+          await dbInsertTournamentRegistration(item.reg);
+        } else if (item.type === 'UPDATE_SETTINGS') {
+          await dbUpdateClubSettings(item.patch);
+        } else if (item.type === 'UPDATE_COURT') {
+          await dbUpdateCourt(item.courtId, item.patch);
         } else if (item.type === 'OPEN_WALKIN_TAB') {
           await dbOpenWalkinTab(item.tabId, item.clientName);
         } else if (item.type === 'UPDATE_BOOKING') {
@@ -853,6 +865,7 @@ export function ClubProvider({ children }) {
         tournamentRegistrations: [newReg, ...prev.tournamentRegistrations]
       };
     });
+    persistMutation(() => dbInsertTournamentRegistration(newReg), { type: 'TOURNAMENT_REGISTRATION', reg: newReg });
 
     return newReg;
   };
@@ -871,6 +884,7 @@ export function ClubProvider({ children }) {
       ...prev,
       gymApplications: [newApp, ...prev.gymApplications]
     }));
+    persistMutation(() => dbInsertGymApplication(newApp), { type: 'GYM_APPLICATION', app: newApp });
 
     return newApp;
   };
@@ -910,6 +924,16 @@ export function ClubProvider({ children }) {
     );
 
     return itemWithId;
+  };
+
+  const updateClubSettings = (patch) => {
+    setPricingConfig(prev => ({ ...prev, ...patch }));
+    persistMutation(() => dbUpdateClubSettings(patch), { type: 'UPDATE_SETTINGS', patch });
+  };
+
+  const updateCourt = (courtId, patch) => {
+    setData(prev => ({ ...prev, courts: prev.courts.map(c => (c.id === courtId ? { ...c, ...patch } : c)) }));
+    persistMutation(() => dbUpdateCourt(courtId, patch), { type: 'UPDATE_COURT', courtId, patch });
   };
 
   const updateCourtRate = (courtId, newRate, newPrimeRate) => {
@@ -990,6 +1014,8 @@ export function ClubProvider({ children }) {
         updateMenuItem,
         addMenuItem,
         updateCourtRate,
+        updateClubSettings,
+        updateCourt,
         resetToSeedData
       }}
     >
