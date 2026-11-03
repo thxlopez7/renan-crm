@@ -287,6 +287,17 @@ export function ClubProvider({ children }) {
     }
   }, [syncFromSupabase]);
 
+  // Re-sync when staff signs in or out: visible data depends on the session
+  const userId = user?.id;
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+    syncFromSupabase();
+    // Realtime only delivers rows the viewer can read, so public visitors poll slot occupancy
+    if (userId) return;
+    const timer = setInterval(syncFromSupabase, 60000);
+    return () => clearInterval(timer);
+  }, [userId, syncFromSupabase]);
+
   // Save to localStorage on change as cache fallback
   useEffect(() => {
     try {

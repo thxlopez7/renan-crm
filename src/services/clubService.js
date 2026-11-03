@@ -132,6 +132,9 @@ export const fetchAllClubData = async () => {
   }
 
   try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return fetchPublicClubData();
+
     const [
       courtsRes,
       coachesRes,
@@ -174,6 +177,40 @@ export const fetchAllClubData = async () => {
     console.error('[Supabase] Error loading data:', err);
     return null;
   }
+};
+
+// Public visitors only see catalogs and slot occupancy (no client names or phones)
+const fetchPublicClubData = async () => {
+  const [courtsRes, coachesRes, menuRes, gymRes, tournRes, slotsRes] = await Promise.all([
+    supabase.from('courts').select('*'),
+    supabase.from('coaches').select('*'),
+    supabase.from('menu_items').select('*'),
+    supabase.from('gym_plans').select('*'),
+    supabase.from('tournaments').select('*'),
+    supabase.rpc('get_public_occupied_slots')
+  ]);
+
+  if (courtsRes.error) throw courtsRes.error;
+  if (slotsRes.error) throw slotsRes.error;
+
+  return {
+    courts: (courtsRes.data || []).map(mapCourtFromDb),
+    coaches: (coachesRes.data || []).map(mapCoachFromDb),
+    menuItems: (menuRes.data || []).map(mapMenuItemFromDb),
+    gymPlans: (gymRes.data || []).map(mapGymPlanFromDb),
+    tournaments: (tournRes.data || []).map(mapTournamentFromDb),
+    players: [],
+    bookings: (slotsRes.data || []).map(s => ({
+      id: `slot-${s.court_id}-${s.date}-${s.time_slot}`,
+      courtId: s.court_id,
+      date: typeof s.date === 'string' ? s.date.substring(0, 10) : s.date,
+      timeSlot: s.time_slot,
+      status: s.status
+    })),
+    tabs: [],
+    gymApplications: [],
+    tournamentRegistrations: []
+  };
 };
 
 // Supabase Real-time Database Mutations
@@ -404,7 +441,7 @@ export const fetchPricingConfig = async () => {
 
 // Staff Roles Query
 export const fetchStaffRole = async (userId) => {
-  if (!isSupabaseConfigured() || !userId) return 'reception';
+  if (!isSupabaseConfigured() || !userId) return 'anon';
   try {
     const { data, error } = await supabase
       .from('staff_roles')
@@ -412,10 +449,10 @@ export const fetchStaffRole = async (userId) => {
       .eq('user_id', userId)
       .maybeSingle();
 
-    if (error || !data) return 'owner'; // Safe fallback for current authenticated staff
-    return data.role || 'reception';
+    if (error || !data) return 'anon';
+    return data.role || 'anon';
   } catch {
-    return 'owner';
+    return 'anon';
   }
 };
 
