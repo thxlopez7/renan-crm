@@ -177,7 +177,7 @@ export function CashView({ highlightedTabId }) {
   const visible = useMemo(() => tabs
     .filter(t => (filter === 'open' ? t.status === 'open' : t.status === 'settled' && t.cashedDate === today))
     // Open tabs of future bookings are not charged yet: show today's play and walk-ins
-    .filter(t => filter !== 'open' || t.isWalkin || !bookingOf(t) || bookingOf(t).date <= today)
+    .filter(t => filter !== 'open' || t.isWalkin || !bookingOf(t) || bookingOf(t).date <= today || bookingOf(t).status === 'Jugando')
     .filter(t => t.clientName.toLowerCase().includes(query.trim().toLowerCase()))
     .sort((a, b) => (bookingOf(a)?.startTime || a.openedAt || '').localeCompare(bookingOf(b)?.startTime || b.openedAt || '')),
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -229,7 +229,7 @@ export function CashView({ highlightedTabId }) {
                 <div className="cash-tab-name">{tab.clientName}</div>
                 <div className="cash-tab-meta">
                   {tab.isWalkin ? 'Venta de barra' : tab.courtName?.replace(/\s*\(.*\)/, '')}
-                  {booking && ` · ${booking.startTime}–${booking.endTime}`}
+                  {booking && ` · ${booking.date !== today ? `${booking.date.slice(8, 10)}/${booking.date.slice(5, 7)} ` : ''}${booking.startTime}–${booking.endTime}`}
                   {booking?.status === 'Jugando' && ' · jugando'}
                   {tab.items.length > 0 && (() => {
                     const count = tab.items.reduce((sum, i) => sum + i.qty, 0);

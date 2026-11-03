@@ -13,7 +13,7 @@ import { formatGs } from '../../utils/formatters';
 
 const parseGs = (value) => Number(String(value).replace(/\D/g, '')) || 0;
 const showGs = (value) => (value ? Number(value).toLocaleString('es-PY') : '');
-const timeOf = (iso) => new Date(iso).toLocaleTimeString('es-PY', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Asuncion' });
+const timeOf = (iso) => new Date(iso).toLocaleTimeString('es-PY', { hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZone: 'America/Asuncion' });
 
 // Shift cash register: open with a float, close with a cash count against the expected amount
 export function CashRegisterBar({ refreshKey, tabs }) {

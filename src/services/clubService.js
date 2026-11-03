@@ -518,6 +518,15 @@ export const fetchRegisterPayments = async (registerId) => {
   return rows || [];
 };
 
+// Payments since a club-local date (YYYY-MM-DD), for per-method revenue
+export const fetchPaymentsSince = async (fromDate) => {
+  const rows = unwrap(await supabase
+    .from('tab_payments')
+    .select('method, amount, tab_id, created_at')
+    .gte('created_at', `${fromDate}T00:00:00-03:00`));
+  return rows || [];
+};
+
 export const rpcOpenCashRegister = async (openingBalance, shiftName) => {
   return mapRegister(unwrap(await supabase.rpc('open_cash_register', {
     p_opening_balance: Math.round(Number(openingBalance) || 0),

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useClub } from '../../context/ClubContext';
 import { isSupabaseConfigured } from '../../lib/supabase';
-import { fetchRecentRegisters } from '../../services/clubService';
+import { fetchPaymentsSince, fetchRecentRegisters } from '../../services/clubService';
 import { addDays, clubNow, toMinutes } from '../../utils/clubTime';
 import { formatGs } from '../../utils/formatters';
 import { formatPyPhone } from '../../utils/phone';
@@ -43,6 +43,7 @@ export function OwnerDashboard() {
   const { bookings, tabs, courts, pricingConfig, calculateTabBalances } = useClub();
   const [range, setRange] = useState(7);
   const [registers, setRegisters] = useState([]);
+  const [payments, setPayments] = useState(null);
   const today = clubNow().date;
   const from = addDays(today, -(range - 1));
 
@@ -50,6 +51,11 @@ export function OwnerDashboard() {
     if (!isSupabaseConfigured()) return;
     fetchRecentRegisters(5).then(setRegisters).catch(() => setRegisters([]));
   }, []);
+
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+    fetchPaymentsSince(from).then(setPayments).catch(() => setPayments(null));
+  }, [from]);
 
   const stats = useMemo(() => {
     const inRange = (date) => date >= from && date <= today;
@@ -66,6 +72,17 @@ export function OwnerDashboard() {
       revenue.total += b.grossTotal;
       byMethod[t.paymentMethod || 'Sin dato'] = (byMethod[t.paymentMethod || 'Sin dato'] || 0) + b.netPending;
     });
+
+    // Real split per method from tab_payments (a "Mixto" tab counts in each method it used);
+    // change is handed back in cash, so it comes off the cash total
+    let methodTotals = byMethod;
+    if (payments) {
+      methodTotals = {};
+      payments.forEach(p => { methodTotals[p.method] = (methodTotals[p.method] || 0) + p.amount; });
+      const paidTabIds = new Set(payments.map(p => p.tab_id));
+      const change = tabs.filter(t => paidTabIds.has(t.id)).reduce((sum, t) => sum + (t.changeGiven || 0), 0);
+      if (change && methodTotals.Efectivo) methodTotals.Efectivo -= change;
+    }
 
     const openMin = Number(pricingConfig.openHour) * 60;
     const closeMin = Number(pricingConfig.closeHour) * 60;
@@ -101,7 +118,10 @@ export function OwnerDashboard() {
 
     return {
       revenue,
-      byMethod: Object.entries(byMethod).map(([label, value]) => ({ label, value })).sort((a, b) => b.value - a.value),
+      byMethod: Object.entries(methodTotals)
+        .filter(([, value]) => value > 0)
+        .map(([label, value]) => ({ label, value }))
+        .sort((x, y) => y.value - x.value),
       occupancy: capacity ? Math.round((bookedMinutes / capacity) * 100) : 0,
       bookingsCount: played.length,
       hours: Math.round(bookedMinutes / 60),
@@ -111,7 +131,7 @@ export function OwnerDashboard() {
       perCourt,
       topClients: Object.values(clients).sort((a, b) => b.spent - a.spent).slice(0, 5)
     };
-  }, [bookings, tabs, courts, pricingConfig, calculateTabBalances, from, today, range]);
+  }, [bookings, tabs, courts, pricingConfig, calculateTabBalances, from, today, range, payments]);
 
   return (
     <div className="ag dash">

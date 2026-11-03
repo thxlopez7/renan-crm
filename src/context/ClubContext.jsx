@@ -429,7 +429,7 @@ export function ClubProvider({ children }) {
       barRevenueToday,
       occupancyRate,
       openTabsTotal,
-      pendingRequestsCount: data.bookings.filter(b => b.status === 'Pendiente').length,
+      pendingRequestsCount: data.bookings.filter(b => b.status === 'Pendiente' && b.date >= clubNow().date).length,
       barTableRequestsCount: activeBookings.filter(b => b.barTableRequested).length,
       courtsInPlayCount: dayBookings.filter(b => b.status === 'Jugando').length,
       activeBookingsCount: activeBookings.length,

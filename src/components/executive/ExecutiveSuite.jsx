@@ -8,10 +8,19 @@ import { SettingsView } from './SettingsView';
 import { TrendingUp, Calendar, Receipt, Users, Sliders } from 'lucide-react';
 import '../../styles/admin.css';
 
+const SECTION_KEY = 'bc_crm_section';
+
 export function ExecutiveSuite() {
   const { userRole, kpis } = useClub();
   const isOwner = userRole === 'owner';
-  const [selectedSection, setActiveSection] = useState('schedule');
+  const [selectedSection, setSelectedSection] = useState(() => {
+    try { return sessionStorage.getItem(SECTION_KEY) || 'schedule'; } catch { return 'schedule'; }
+  });
+  // Remember the section across reloads within the same browser tab
+  const setActiveSection = (id) => {
+    setSelectedSection(id);
+    try { sessionStorage.setItem(SECTION_KEY, id); } catch { /* private mode */ }
+  };
   const [highlightedTabId, setHighlightedTabId] = useState(null);
 
   // Agenda first: it is what reception uses all day. Panel and pricing are owner-only (RLS too).
