@@ -4,7 +4,7 @@ import { cancelMyBooking, describeServerError, fetchMyBooking } from '../../serv
 import { formatFullDate, formatGs } from '../../utils/formatters';
 import { formatDuration } from '../../utils/clubTime';
 import { formatPyPhone, normalizePyPhone } from '../../utils/phone';
-import { downloadBookingIcs } from '../../utils/calendar';
+import { addBookingToCalendar } from '../../utils/calendar';
 import { CLUB_WHATSAPP_URL } from '../../config/contact';
 import { LAST_BOOKING_KEY } from './BookingSheet';
 import '../../styles/booking.css';
@@ -151,7 +151,7 @@ export function MyBookingView({ onBack }) {
               <button
                 type="button"
                 className="bk-secondary"
-                onClick={() => downloadBookingIcs({
+                onClick={() => addBookingToCalendar({
                   code: booking.code,
                   courtName: booking.courtName,
                   date: booking.date,

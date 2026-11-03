@@ -4,7 +4,7 @@ import { useClub } from '../../context/ClubContext';
 import { formatGs, formatFullDate } from '../../utils/formatters';
 import { formatDuration, fromMinutes, toMinutes } from '../../utils/clubTime';
 import { formatPyPhone, normalizePyPhone } from '../../utils/phone';
-import { downloadBookingIcs } from '../../utils/calendar';
+import { addBookingToCalendar } from '../../utils/calendar';
 import { CLUB_WHATSAPP_URL } from '../../config/contact';
 
 const PROFILE_KEY = 'bc_booking_profile';
@@ -161,7 +161,7 @@ export function BookingSheet({ court, date, startTime, duration, price, isStaff,
               <button
                 type="button"
                 className="bk-secondary"
-                onClick={() => downloadBookingIcs({ code: booking.code, courtName: court.name, date, startTime, duration })}
+                onClick={() => addBookingToCalendar({ code: booking.code, courtName: court.name, date, startTime, duration })}
               >
                 <CalendarPlus size={17} /> Agregar a mi calendario
               </button>

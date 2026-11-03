@@ -30,14 +30,30 @@ export function buildBookingIcs({ code, courtName, date, startTime, duration }) 
   ].join('\r\n');
 }
 
-export function downloadBookingIcs(booking) {
-  const blob = new Blob([buildBookingIcs(booking)], { type: 'text/calendar;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = `reserva-${booking.code || 'black-club'}.ics`;
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
+const isAppleMobile = () =>
+  /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+export function googleCalendarUrl({ code, courtName, date, startTime, duration }) {
+  const endTotal = toMinutes(startTime) + duration;
+  const endDate = endTotal >= 24 * 60 ? addDays(date, 1) : date;
+  const params = new URLSearchParams({
+    action: 'TEMPLATE',
+    text: `Pádel en Black Club · ${courtName}`,
+    dates: `${icsStamp(date, startTime)}/${icsStamp(endDate, fromMinutes(endTotal))}`,
+    ctz: 'America/Asuncion',
+    details: `Reserva ${code || ''}`,
+    location: 'Black Club, San Juan Bautista, Misiones, Paraguay'
+  });
+  return `https://calendar.google.com/calendar/render?${params}`;
+}
+
+// iPhone opens the .ics in the Calendar "add event" sheet; everyone else gets
+// Google Calendar with the event filled in, instead of a loose file in Downloads
+export function addBookingToCalendar(booking) {
+  if (isAppleMobile()) {
+    window.location.href = `data:text/calendar;charset=utf-8,${encodeURIComponent(buildBookingIcs(booking))}`;
+    return;
+  }
+  window.open(googleCalendarUrl(booking), '_blank', 'noopener');
 }
